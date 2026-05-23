@@ -5,7 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BrandMarkNative } from '@/components/BrandMarkNative';
 import { unlockWithBiometrics } from '@/lib/biometric';
-import { theme } from '@/lib/theme';
+import { theme, withOpacity } from '@/lib/theme';
+import { ORG, USER } from '@/lib/persona';
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -27,18 +28,19 @@ export default function SignInScreen() {
         <View style={styles.top}>
           <BrandMarkNative size={96} variant="color" />
           <Text style={styles.eyebrow}>CLIENT PORTAL</Text>
-          <Text style={styles.h1}>{'Welcome back,\nMaya.'}</Text>
-          <Text style={styles.sub}>Apex Regional Logistics · Director of Ops</Text>
+          <Text style={styles.h1}>{`Welcome back,\n${USER.firstName}.`}</Text>
+          <Text style={styles.sub}>{`${ORG.name} · Director of Ops`}</Text>
         </View>
 
         <View style={styles.bottom}>
-          <Pressable style={styles.faceCard} onPress={handleBiometric}>
+          <Pressable
+            style={styles.faceCard}
+            onPress={handleBiometric}
+            accessibilityLabel="Unlock with Face ID"
+            accessibilityRole="button"
+          >
             <Text style={styles.faceText}>Use Face ID</Text>
             <Text style={styles.faceArrow}>→</Text>
-          </Pressable>
-
-          <Pressable style={styles.ssoButton}>
-            <Text style={styles.ssoText}>Continue with SSO (Okta)</Text>
           </Pressable>
 
           <Text style={styles.footer}>SOC 2 · ISO 27001 · HIPAA · END-TO-END ENCRYPTED</Text>
@@ -72,13 +74,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontFamily: 'Inter',
     fontSize: 13,
-    color: 'rgba(248,244,238,0.6)',
+    color: withOpacity(theme.colors.cream, 0.6),
   },
   bottom: { gap: 14 },
   faceCard: {
     padding: 18,
     borderRadius: 18,
-    backgroundColor: 'rgba(248,244,238,0.06)',
+    backgroundColor: withOpacity(theme.colors.cream, 0.06),
     borderWidth: 1,
     borderColor: theme.hairlines.dark,
     flexDirection: 'row',
@@ -87,20 +89,12 @@ const styles = StyleSheet.create({
   },
   faceText: { color: theme.colors.cream, fontFamily: 'Sora', fontSize: 16, fontWeight: '500' },
   faceArrow: { color: theme.colors.cream, fontSize: 18 },
-  ssoButton: {
-    padding: 18,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: theme.hairlines.dark,
-    alignItems: 'center',
-  },
-  ssoText: { color: theme.colors.cream, fontFamily: 'Sora', fontSize: 15 },
   footer: {
     marginTop: 18,
     textAlign: 'center',
     fontFamily: 'IBMPlexMono',
     fontSize: 10,
     letterSpacing: 1.8,
-    color: 'rgba(248,244,238,0.4)',
+    color: withOpacity(theme.colors.cream, 0.4),
   },
 });
