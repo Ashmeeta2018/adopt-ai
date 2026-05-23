@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { theme } from '@/lib/theme';
+import { theme, withOpacity } from '@/lib/theme';
 
 interface WorkflowNode {
   id: string;
@@ -71,11 +71,11 @@ const WORKFLOW_DATA: Record<string, {
 };
 
 const NODE_KIND_COLORS: Record<string, { bg: string; text: string }> = {
-  trigger: { bg: 'rgba(16,185,129,0.12)', text: '#10b981' },
-  agent: { bg: 'rgba(217,70,44,0.10)', text: '#d9462c' },
-  condition: { bg: 'rgba(245,158,11,0.12)', text: '#f59e0b' },
-  transform: { bg: 'rgba(99,102,241,0.10)', text: '#6366f1' },
-  output: { bg: 'rgba(61,26,15,0.06)', text: 'rgba(61,26,15,0.5)' },
+  trigger: { bg: withOpacity(theme.colors.success, 0.12), text: theme.colors.success },
+  agent: { bg: withOpacity(theme.colors.accent, 0.10), text: theme.colors.accent },
+  condition: { bg: withOpacity(theme.colors.warning, 0.12), text: theme.colors.warning },
+  transform: { bg: withOpacity(theme.colors.glow, 0.10), text: theme.colors.glow },
+  output: { bg: withOpacity(theme.colors.ink, 0.06), text: withOpacity(theme.colors.ink, 0.5) },
 };
 
 export default function WorkflowDetailScreen() {
@@ -136,8 +136,8 @@ export default function WorkflowDetailScreen() {
 
 function PressableBack({ onPress }: { onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} style={styles.backButton}>
-      <Ionicons name="chevron-back" size={20} color="rgba(248,244,238,0.6)" />
+    <Pressable onPress={onPress} style={styles.backButton} accessibilityLabel="Go back" accessibilityRole="button">
+      <Ionicons name="chevron-back" size={20} color={withOpacity(theme.colors.cream, 0.6)} />
       <Text style={styles.backText}>Workflows</Text>
     </Pressable>
   );
@@ -158,13 +158,13 @@ const styles = StyleSheet.create({
   backText: {
     fontFamily: 'IBMPlexMono',
     fontSize: 13,
-    color: 'rgba(248,244,238,0.55)',
+    color: withOpacity(theme.colors.cream, 0.55),
   },
   eyebrow: {
     fontFamily: 'IBMPlexMono',
     fontSize: 11,
     letterSpacing: 2.2,
-    color: 'rgba(248,244,238,0.55)',
+    color: withOpacity(theme.colors.cream, 0.55),
   },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 },
   title: { fontFamily: 'Sora', fontSize: 24, color: theme.colors.cream, fontWeight: '600' },
@@ -174,14 +174,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter',
     fontSize: 14,
     lineHeight: 20,
-    color: 'rgba(248,244,238,0.6)',
+    color: withOpacity(theme.colors.cream, 0.6),
   },
   metricsGrid: { flexDirection: 'row', gap: 10, marginTop: 22 },
   statCard: {
     flex: 1,
     padding: 14,
     borderRadius: 12,
-    backgroundColor: 'rgba(248,244,238,0.05)',
+    backgroundColor: withOpacity(theme.colors.cream, 0.05),
     borderWidth: 1,
     borderColor: theme.hairlines.dark,
   },
@@ -191,33 +191,33 @@ const styles = StyleSheet.create({
     fontFamily: 'IBMPlexMono',
     fontSize: 10,
     letterSpacing: 1.8,
-    color: 'rgba(248,244,238,0.55)',
+    color: withOpacity(theme.colors.cream, 0.55),
   },
   sectionHeader: { marginTop: 28, marginBottom: 10 },
   sectionTitle: {
     fontFamily: 'IBMPlexMono',
     fontSize: 11,
     letterSpacing: 2.2,
-    color: 'rgba(248,244,238,0.55)',
+    color: withOpacity(theme.colors.cream, 0.55),
   },
   pipelineScroll: { flexDirection: 'row' },
   pipelineItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   nodePill: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
   nodeLabel: { fontFamily: 'IBMPlexMono', fontSize: 11, fontWeight: '500' },
-  arrow: { color: 'rgba(248,244,238,0.25)', fontSize: 14 },
+  arrow: { color: withOpacity(theme.colors.cream, 0.25), fontSize: 14 },
   executionCard: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
     padding: 14,
     borderRadius: 12,
-    backgroundColor: 'rgba(248,244,238,0.05)',
+    backgroundColor: withOpacity(theme.colors.cream, 0.05),
     borderWidth: 1,
     borderColor: theme.hairlines.dark,
   },
   executionText: {
     fontFamily: 'IBMPlexMono',
     fontSize: 12,
-    color: 'rgba(248,244,238,0.75)',
+    color: withOpacity(theme.colors.cream, 0.75),
   },
 });

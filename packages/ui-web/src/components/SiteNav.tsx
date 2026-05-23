@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
-import { Button } from './Button';
 import { BrandMark } from './BrandMark';
 import { cn } from '../utils/cn';
 
@@ -33,9 +32,9 @@ const items = [
   { label: 'Pricing', href: '/pricing' },
 ] as const;
 
-function MenuIcon({ dark }: { dark: boolean }) {
+function MenuIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={dark ? '#F8F4EE' : '#3D1A0F'} strokeWidth="2" strokeLinecap="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
       <line x1="3" y1="6" x2="21" y2="6" />
       <line x1="3" y1="12" x2="21" y2="12" />
       <line x1="3" y1="18" x2="21" y2="18" />
@@ -43,9 +42,9 @@ function MenuIcon({ dark }: { dark: boolean }) {
   );
 }
 
-function CloseIcon({ dark }: { dark: boolean }) {
+function CloseIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={dark ? '#F8F4EE' : '#3D1A0F'} strokeWidth="2" strokeLinecap="round">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
       <line x1="6" y1="6" x2="18" y2="18" />
       <line x1="6" y1="18" x2="18" y2="6" />
     </svg>
@@ -116,19 +115,28 @@ export function SiteNav({
         >
           Sign in
         </Link>
-        <Button size="md" variant="primary" className="hidden md:inline-flex">
-          Book a call
-        </Button>
+        <Link
+          href="/book"
+          className={cn(
+            'hidden md:inline-flex items-center gap-2 rounded-full font-display font-medium',
+            'px-[18px] py-[12px] text-[14px] tracking-tight',
+            'transition-[transform,box-shadow] duration-150 ease-out',
+            'bg-ember-cta text-[#FFF8F0] shadow-cta',
+            'hover:scale-[1.02] active:scale-[0.99]',
+          )}
+        >
+          Book a call <span className="ml-0.5">→</span>
+        </Link>
 
         {/* Mobile hamburger */}
         <button
           type="button"
-          className="flex items-center justify-center md:hidden"
+          className={cn('flex items-center justify-center md:hidden', dark ? 'text-cream' : 'text-ink')}
           onClick={() => setMenuOpen((v) => !v)}
           aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={menuOpen}
         >
-          {menuOpen ? <CloseIcon dark={dark} /> : <MenuIcon dark={dark} />}
+          {menuOpen ? <CloseIcon /> : <MenuIcon />}
         </button>
       </div>
 
@@ -168,13 +176,19 @@ export function SiteNav({
               >
                 Sign in
               </Link>
-              <Button
-                variant={dark ? 'primary' : 'dark'}
-                className="w-full"
+              <Link
+                href="/book"
                 onClick={() => setMenuOpen(false)}
+                className={cn(
+                  'inline-flex w-full items-center justify-center gap-2 rounded-full font-display font-medium',
+                  'px-[18px] py-[12px] text-[14px] tracking-tight',
+                  'transition-[transform,box-shadow] duration-150 ease-out',
+                  'bg-ember-cta text-[#FFF8F0] shadow-cta',
+                  'hover:scale-[1.02] active:scale-[0.99]',
+                )}
               >
-                <Link href="/book" className="text-cream">Book a call</Link>
-              </Button>
+                Book a call <span className="ml-0.5">→</span>
+              </Link>
             </div>
           </div>
         </nav>

@@ -4,7 +4,7 @@ const envSchema = z.object({
   AUTH_SECRET:
     process.env.NODE_ENV === 'production'
       ? z.string().min(32, 'AUTH_SECRET must be set explicitly in production')
-      : z.string().min(32).default('dev-local-only-secret-not-for-production-please-rotate'),
+      : z.string().min(1).default('dev-local-only-secret-not-for-production-please-rotate'),
   AUTH_TRUST_HOST: z
     .union([z.literal('true'), z.literal('false')])
     .default('false')

@@ -7,8 +7,25 @@ import {
 } from '@adopt-ai/api-contract';
 import { TRPCError } from '@trpc/server';
 import { observable } from '@trpc/server/observable';
+import { z } from 'zod';
 
 import { protectedProcedure, router } from '../trpc';
+
+const agentStatusMap = { RUNNING: 'running', QUEUED: 'queued', ERROR: 'error', PAUSED: 'paused' } as const;
+
+const alertSeverityMap = { OPS: 'ops', DRIFT: 'drift', TEAM: 'team' } as const;
+
+const alertSeveritySchema = z.enum(['OPS', 'DRIFT', 'TEAM']);
+
+function toAlertSeverity(raw: unknown): 'ops' | 'drift' | 'team' {
+  const parsed = alertSeveritySchema.safeParse(raw);
+  return parsed.success ? alertSeverityMap[parsed.data] : 'ops';
+}
+
+function pctChange(current: number, previous: number): number {
+  if (previous === 0) return current > 0 ? 100 : 0;
+  return Math.round(((current - previous) / previous) * 1000) / 10;
+}
 
 function greetingFor(name: string | undefined): string {
   const hour = new Date().getHours();
@@ -37,8 +54,9 @@ export const portalRouter = router({
 
     const orgId = membership.organisationId;
     const cutoff24h = new Date(Date.now() - 86_400_000);
+    const cutoff48h = new Date(Date.now() - 2 * 86_400_000);
 
-    const [agents, alertCount] = await Promise.all([
+    const [agents, alertCount, prevRunsCount] = await Promise.all([
       ctx.prisma.agent.findMany({
         where: { organisationId: orgId, deletedAt: null },
         select: {
@@ -60,16 +78,20 @@ export const portalRouter = router({
         },
       }),
       ctx.prisma.alert.count({ where: { organisationId: orgId, read: false } }),
+      ctx.prisma.agentRun.count({
+        where: { organisationId: orgId, ts: { gte: cutoff48h, lt: cutoff24h }, agent: { deletedAt: null } },
+      }),
     ]);
 
     const totalRuns24h = agents.reduce((sum, a) => sum + a._count.runs, 0);
-    const hoursEstimate = Math.round((totalRuns24h * 2.5) / 60);
+    const hoursRaw = (totalRuns24h * 2.5) / 60;
+    const prevHoursRaw = (prevRunsCount * 2.5) / 60;
 
     return {
       greeting: greetingFor(ctx.session.user.name ?? undefined),
       weekRange: weekRange(),
-      hoursReallocated: hoursEstimate,
-      hoursTrendPct: 12,
+      hoursReallocated: Math.round(hoursRaw),
+      hoursTrendPct: pctChange(hoursRaw, prevHoursRaw),
       liveAgents: agents.filter((a) => a.status === 'RUNNING').length,
       openAlerts: alertCount,
       agents: agents.map((a) => {
@@ -81,7 +103,7 @@ export const portalRouter = router({
           slug: a.slug,
           name: a.name,
           description: a.description,
-          status: a.status.toLowerCase() as 'running' | 'queued' | 'error' | 'paused',
+          status: agentStatusMap[a.status],
           tasks24h: a._count.runs,
           successRate: Math.round(successRate * 10000) / 10000,
           lastRunAt: lastRun?.ts?.toISOString() ?? null,
@@ -109,7 +131,9 @@ export const portalRouter = router({
 
     const runs24h = agent.runs.length;
     const successCount = agent.runs.filter((r) => r.status === 'success').length;
-    const avgLatency = runs24h > 0 ? Math.round(agent.runs.reduce((s, r) => s + r.latencyMs, 0) / runs24h) : 0;
+    const p95LatencyMs = runs24h > 0
+      ? [...agent.runs].sort((a, b) => a.latencyMs - b.latencyMs)[Math.ceil(runs24h * 0.95) - 1]!.latencyMs
+      : 0;
 
     const throughput = agent.runs
       .reverse()
@@ -131,7 +155,7 @@ export const portalRouter = router({
         tasks24h: runs24h,
         successRate: runs24h > 0 ? Math.round((successCount / runs24h) * 10000) / 10000 : 1,
       },
-      metrics: { tasks24h: runs24h, successRate: runs24h > 0 ? successCount / runs24h : 1, p95LatencyMs: avgLatency },
+      metrics: { tasks24h: runs24h, successRate: runs24h > 0 ? successCount / runs24h : 1, p95LatencyMs },
       throughput,
     };
   }),
@@ -214,12 +238,20 @@ export const portalRouter = router({
     });
 
     if (report) {
+      const prevReport = await ctx.prisma.weeklyReport.findFirst({
+        where: { organisationId: orgId, weekStart: { lt: report.weekStart } },
+        orderBy: { weekStart: 'desc' },
+      });
+
+      const hoursTrend = prevReport ? pctChange(Number(report.hoursSaved), Number(prevReport.hoursSaved)) : 0;
+      const costTrend = prevReport ? pctChange(Number(report.costReducedUsd), Number(prevReport.costReducedUsd)) : 0;
+
       return {
         range: { start: report.weekStart.toISOString().slice(0, 10), end: report.weekEnd.toISOString().slice(0, 10) },
         hoursSaved: Number(report.hoursSaved),
-        hoursSavedTrendPct: 12,
+        hoursSavedTrendPct: hoursTrend,
         costReducedUsd: Number(report.costReducedUsd),
-        costReducedTrendPct: 8,
+        costReducedTrendPct: costTrend,
         pipelines: (report.pipelinesJson as Array<Record<string, unknown>>) as Array<{
           name: string;
           hoursSaved: number;
@@ -230,16 +262,24 @@ export const portalRouter = router({
       };
     }
 
-    const agents = await ctx.prisma.agent.findMany({
-      where: { organisationId: orgId, deletedAt: null },
-      include: { runs: { where: { ts: { gte: weekStart } } } },
-    });
+    const weekStartMs = weekStart.getTime();
+    const prevWeekStart = new Date(weekStartMs - 7 * 86400000);
+
+    const [agents, prevRunsCount] = await Promise.all([
+      ctx.prisma.agent.findMany({
+        where: { organisationId: orgId, deletedAt: null },
+        include: { runs: { where: { ts: { gte: weekStart } } } },
+      }),
+      ctx.prisma.agentRun.count({
+        where: { organisationId: orgId, ts: { gte: prevWeekStart, lt: weekStart }, agent: { deletedAt: null } },
+      }),
+    ]);
 
     const pipelines = agents.map((agent, i) => {
       const successCount = agent.runs.filter((r) => r.status === 'success').length;
       return {
         name: agent.name,
-        hoursSaved: Math.round(agent.runs.length * 2.5) / 10,
+        hoursSaved: Math.round((agent.runs.length * 2.5 / 60) * 10) / 10,
         tasks: agent.runs.length,
         successRate: agent.runs.length > 0 ? successCount / agent.runs.length : 1,
         accent: (['accent', 'glow', 'amber'] as const)[i % 3],
@@ -248,52 +288,65 @@ export const portalRouter = router({
 
     const totalHours = pipelines.reduce((s, p) => s + p.hoursSaved, 0);
     const totalCost = totalHours * 40;
+    const prevHours = Math.round((prevRunsCount * 2.5) / 60 * 10) / 10;
+    const prevCost = prevHours * 40;
 
     return {
       range: weekRange(),
       hoursSaved: Math.round(totalHours * 10) / 10,
-      hoursSavedTrendPct: 12,
+      hoursSavedTrendPct: pctChange(totalHours, prevHours),
       costReducedUsd: Math.round(totalCost),
-      costReducedTrendPct: 8,
+      costReducedTrendPct: pctChange(totalCost, prevCost),
       pipelines,
     };
   }),
 
-  listAlerts: protectedProcedure.input(listAlertsInput).query(async ({ ctx }) => {
+  listAlerts: protectedProcedure.input(listAlertsInput).query(async ({ input, ctx }) => {
     const membership = ctx.session.user.memberships?.[0];
     if (!membership) throw new TRPCError({ code: 'FORBIDDEN' });
 
     const orgId = membership.organisationId;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const [todayAlerts, earlierAlerts] = await Promise.all([
-      ctx.prisma.alert.findMany({
-        where: { organisationId: orgId, ts: { gte: today } },
-        orderBy: { ts: 'desc' },
-        take: 50,
-      }),
-      ctx.prisma.alert.findMany({
-        where: { organisationId: orgId, ts: { lt: today } },
-        orderBy: { ts: 'desc' },
-        take: 50,
-      }),
-    ]);
+    const { cursor, limit = 20 } = input;
 
     const mapAlert = (a: { id: string; ts: Date; severity: string; title: string; body: string; read: boolean }) => ({
       id: a.id,
       ts: a.ts.toISOString(),
-      severity: a.severity.toLowerCase() as 'ops' | 'drift' | 'team',
+      severity: toAlertSeverity(a.severity),
       title: a.title,
       body: a.body,
       read: a.read,
     });
 
-    return {
-      today: todayAlerts.map(mapAlert),
-      earlier: earlierAlerts.map(mapAlert),
-      nextCursor: null,
-    };
+    if (cursor) {
+      const earlier = await ctx.prisma.alert.findMany({
+        where: { organisationId: orgId },
+        orderBy: { ts: 'desc' },
+        take: limit,
+        skip: 1,
+        cursor: { id: cursor },
+      });
+      const nextCursor = earlier.length === limit ? earlier[earlier.length - 1]!.id : null;
+      return { today: [], earlier: earlier.map(mapAlert), nextCursor };
+    }
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const [todayAlerts, earlierAlerts] = await Promise.all([
+      ctx.prisma.alert.findMany({
+        where: { organisationId: orgId, ts: { gte: todayStart } },
+        orderBy: { ts: 'desc' },
+        take: 100,
+      }),
+      ctx.prisma.alert.findMany({
+        where: { organisationId: orgId, ts: { lt: todayStart } },
+        orderBy: { ts: 'desc' },
+        take: limit,
+      }),
+    ]);
+
+    const nextCursor = earlierAlerts.length === limit ? earlierAlerts[earlierAlerts.length - 1]!.id : null;
+    return { today: todayAlerts.map(mapAlert), earlier: earlierAlerts.map(mapAlert), nextCursor };
   }),
 
   markAlertRead: protectedProcedure.input(markAlertReadInput).mutation(async ({ input, ctx }) => {
