@@ -1,0 +1,27 @@
+{
+  "name": "@adopt-ai/config-eslint",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared ESLint flat configs for Adopt AI.",
+  "exports": {
+    "./base": "./base.mjs",
+    "./next": "./next.mjs",
+    "./react-native": "./react-native.mjs"
+  },
+  "dependencies": {
+    "@eslint/js": "^9.18.0",
+    "@typescript-eslint/eslint-plugin": "^8.21.0",
+    "@typescript-eslint/parser": "^8.21.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import-x": "^4.6.1",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^15.14.0",
+    "typescript-eslint": "^8.21.0"
+  },
+  "peerDependencies": {
+    "eslint": "^9"
+  }
+}

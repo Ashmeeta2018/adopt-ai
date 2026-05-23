@@ -1,0 +1,148 @@
+---
+title: "A minimal confidence-gated router"
+date: "2026-03-10"
+type: "Code"
+format: "TypeScript · MIT"
+externalLabel: "View on GitHub"
+externalUrl: "https://github.com/adoptai/confidence-gated-router"
+dek: "A drop-in TypeScript module for routing LLM classification outputs through a confidence gate. Two thresholds, carrier overrides, structured escalation payloads."
+---
+
+This is the confidence-gating implementation we built for the Apex intake agent, extracted into a standalone module. MIT-licensed.
+
+## What it does
+
+Takes an LLM classification result (label + confidence score) and routes it to one of three destinations:
+
+- **Route** — confidence above the high threshold; agent acts
+- **Review** — confidence between low and high threshold; human confirms
+- **Escalate** — confidence below the low threshold; human takes over
+
+Optionally applies per-entity threshold overrides — useful when specific carriers, customers, or document types have different accuracy profiles.
+
+## Installation
+
+```bash
+npm install @adoptai/confidence-gate
+# or
+pnpm add @adoptai/confidence-gate
+```
+
+## Basic usage
+
+```typescript
+import { createConfidenceGate } from '@adoptai/confidence-gate';
+
+const gate = createConfidenceGate({
+  thresholds: {
+    route: 0.85,    // above this: route without review
+    review: 0.65,   // between review and route: queue for human confirmation
+    // below review threshold: escalate immediately
+  },
+});
+
+const result = gate.evaluate({
+  label: 'urgent',
+  confidence: 0.79,
+  entityId: 'carrier-abc',
+});
+
+// result.decision === 'review'
+// result.escalationPayload contains structured context for the reviewer
+```
+
+## With entity overrides
+
+```typescript
+const gate = createConfidenceGate({
+  thresholds: { route: 0.85, review: 0.65 },
+  entityOverrides: {
+    'cold-chain-freight': { route: 0.90, review: 0.70 },
+    // This carrier has a worse accuracy profile on our model;
+    // we require higher confidence before routing automatically.
+  },
+});
+```
+
+## Escalation payload structure
+
+When the gate returns `review` or `escalate`, the `escalationPayload` is structured for consumption by your review UI or Slack integration:
+
+```typescript
+interface EscalationPayload {
+  decision: 'review' | 'escalate';
+  priority: 'normal' | 'high';   // 'high' for escalate, 'normal' for review
+  topLabel: string;
+  topConfidence: number;
+  alternativeLabels: Array<{ label: string; confidence: number }>;
+  entityId?: string;
+  appliedThresholds: { route: number; review: number };
+  // Context for the reviewer — your code populates this
+  context?: Record<string, unknown>;
+}
+```
+
+## Slack integration example
+
+```typescript
+import { createConfidenceGate } from '@adoptai/confidence-gate';
+import { WebClient } from '@slack/web-api';
+
+const gate = createConfidenceGate({ thresholds: { route: 0.85, review: 0.65 } });
+const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
+
+async function processEmail(email: Email, classification: Classification) {
+  const result = gate.evaluate(classification);
+
+  if (result.decision === 'route') {
+    await tms.createShipment(email);
+    return;
+  }
+
+  // Escalate or review — notify a human
+  await slack.chat.postMessage({
+    channel: '#ops-ai-review',
+    blocks: [
+      {
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `*Review needed* — ${result.escalationPayload.topLabel} (${(result.escalationPayload.topConfidence * 100).toFixed(0)}% confident)`,
+        },
+      },
+      {
+        type: 'section',
+        text: { type: 'plain_text', text: email.subject },
+      },
+      {
+        type: 'actions',
+        elements: ['urgent', 'routine', 'spam', 'info-request'].map((label) => ({
+          type: 'button',
+          text: { type: 'plain_text', text: label },
+          action_id: `classify_${label}`,
+          value: JSON.stringify({ emailId: email.id, label }),
+        })),
+      },
+    ],
+  });
+}
+```
+
+## What's not in this module
+
+This module is intentionally minimal. It doesn't:
+
+- Make LLM calls (bring your own classifier)
+- Handle the persistence or audit log (bring your own storage)
+- Implement the reviewer feedback loop (bring your own webhook handler)
+- Make assumptions about your escalation channel (Slack, email, web form — all work)
+
+The eval suite for this module is in the same repo under `/eval`. It includes the 40-check suite described in the [Eval suites playbook](/resources/eval-suites).
+
+## Contributing
+
+Issues and PRs welcome. If you're using this in a production system and have edge cases to contribute, open an issue with the input shape and expected behaviour.
+
+---
+
+*The module is MIT-licensed. If you use it and find it useful, [let us know](/contact) — we'd appreciate it.*

@@ -1,0 +1,74 @@
+---
+title: "Owning your model weights"
+date: "2026-02-17"
+type: "Whitepaper"
+format: "24 pages"
+downloadLabel: "Download PDF — free"
+downloadUrl: "/downloads/owning-model-weights.pdf"
+dek: "A buyer's guide to VPC-deployed LLMs for small and mid-sized businesses — what you can own, what you're licensing, and what the legal layer looks like."
+---
+
+When we say "your data stays in your cloud," there's a layer underneath that statement worth understanding: the model itself. This whitepaper is a buyer's guide to understanding what you're getting when a vendor deploys an AI agent "in your infrastructure."
+
+## The three deployment models
+
+Most AI agent vendors operate one of three ways:
+
+**1. Cloud-native.** The vendor's infrastructure processes your data. Your inputs go to their API endpoint, their model sees your data, and the output comes back. This is the default for most AI SaaS tools and for most LLM API providers.
+
+**2. VPC-deployed inference.** The vendor runs model inference within your cloud account — your AWS, Azure, or GCP. Your data never leaves your VPC. The vendor accesses the compute environment to operate the model, but doesn't touch your data.
+
+**3. Air-gapped deployment.** The model runs entirely within your environment, including deployment and operation. The vendor ships the model artefacts; your team runs them. No external network access required.
+
+Each model has different cost, complexity, and compliance implications.
+
+## What "VPC-deployed" means in practice
+
+When we build an agent for a client, we deploy it into their AWS account. What this means technically:
+
+- The compute (a Lambda function or an ECS task) runs in their account
+- The LLM API calls go from their account to the model provider (OpenAI, Anthropic, or self-hosted)
+- The data — emails, invoices, customer tickets — never passes through our infrastructure
+- Our access is limited to the compute environment (via IAM role with least-privilege permissions)
+
+What we can see: logs from the agent's runs (structured, PII-redacted). What we can't see: the actual emails, invoices, or documents the agent processes.
+
+This matters because: under most data processing agreements, any vendor who can access your data must be listed as a data processor and must operate under your privacy policy. If the agent runs in your account, we're not a data processor — we're a service provider to the compute environment.
+
+## The model weights question
+
+The LLM that powers the agent — the actual model — is not owned by you or by us. It's licensed from the model provider.
+
+For API-based models (Claude, GPT-4, Gemini), you're accessing a hosted model under the provider's terms of service. Those terms include data processing commitments (none of your inputs are used for training) and availability SLAs.
+
+For open-weight models (Llama, Mistral, Phi), you can technically self-host the model weights. The weights are released under an open-source or community license. You're not constrained by API availability or by the provider's rate limits. But you're responsible for the infrastructure.
+
+For fine-tuned models built on top of open-weight base models: the fine-tuned weights are yours. You can transfer them, store them offline, and use them independently of any vendor. We include this in our contracts as an explicit deliverable for any project that includes fine-tuning.
+
+## Data residency and compliance
+
+The most common compliance questions we get:
+
+**HIPAA.** The health data safe harbor requires that data is processed under a BAA (Business Associate Agreement). The BAA is with the model provider, not with us. If you use Claude or GPT-4 for a healthcare workflow, you need a BAA with Anthropic or OpenAI. We don't process your health data, so you don't need one with us.
+
+**GDPR / data residency.** EU data residents may require that their data is processed within the EU. This depends on the model provider — most offer EU-hosted inference options. VPC deployment in EU regions is straightforward for both AWS and Azure.
+
+**SOC 2.** Our SOC 2 Type II certification covers our access to client compute environments. It doesn't cover the model provider's infrastructure (they have their own SOC 2). Both are needed for an enterprise procurement.
+
+**ISO 27001.** Similar to SOC 2. Our certification covers our practices; the model provider's certification covers theirs.
+
+## What to ask a vendor
+
+Before signing any contract for an AI agent deployed in production, ask:
+
+1. **Where does my data go?** If the answer is "to our API," ask whether you can have VPC deployment instead.
+2. **Who has access to my data?** If the vendor has access, they're a data processor. That has legal implications.
+3. **Who are your sub-processors?** Specifically: which model provider(s) are you using, and do they have the compliance certifications relevant to your industry?
+4. **What happens to my data if we end the contract?** You should get a documented data deletion process.
+5. **Do I own the model artefacts if a fine-tune was performed?** If the project included fine-tuning, the fine-tuned weights should be yours.
+
+---
+
+The full 24-page whitepaper includes sample contract language for VPC deployment agreements, a model provider comparison table, and a compliance checklist for common regulatory frameworks.
+
+*Download the PDF using the button above — free, no email required.*

@@ -1,0 +1,100 @@
+---
+title: "Reading the audit log your model leaves behind"
+date: "2026-02-03"
+type: "Guide"
+format: "12 min read"
+dek: "What your agent is actually recording — and how to use those records for compliance, debugging, and the retraining cycle."
+---
+
+Every production agent creates a paper trail. Most teams don't use it. This guide explains what the audit log contains and how to get value from it.
+
+## What goes into the log
+
+A well-instrumented agent logs every processed item with:
+
+- **Timestamp.** When the item was received, when it was classified, when the output was written.
+- **Input summary.** Not the raw input (which may contain PII) — a structured summary: the item type, the sender if applicable, the category it fell into.
+- **Classification result.** The top label, confidence score, and the next two alternatives with their scores.
+- **Gate decision.** Which tier the item was routed to: silent route, review-and-confirm, or escalate.
+- **Output action.** What the agent actually did — wrote to TMS, created a Zendesk ticket, posted to Slack.
+- **Outcome.** Whether the downstream write succeeded or failed.
+- **Reviewer action** (if escalated). What label the human assigned and how long the decision took.
+
+This log entry is about 400 bytes per item. At 14,000 items per week, that's 100MB per year — negligible.
+
+## Three uses of the audit log
+
+### 1. Compliance and accountability
+
+For any workflow that touches customer data, financial records, or health information, the audit log is the paper trail that answers "what happened to document X on date Y."
+
+A client's auditor asked us: "For invoice #INV-2026-4421, what happened between receipt and QuickBooks posting, and who touched it?"
+
+Answer: received at 09:14:03, classified as "vendor invoice" with 94% confidence, routed silently to extraction at 09:14:04, fields extracted and posted to QuickBooks at 09:14:07. No human review. The audit log answered the question in thirty seconds.
+
+Without the log, the answer would have been "we think the agent handled it."
+
+### 2. Debugging and incident response
+
+When something goes wrong in production, the audit log is where you look first.
+
+The most common incident: a coordinator reports that an email "got missed." The audit log lets you trace exactly what happened: was the email processed at all? What was it classified as? Did the gate fire? Did the downstream write succeed?
+
+In our experience, "got missed" resolves to one of four causes:
+1. The email arrived outside the polling window (gap in trigger coverage)
+2. The email was classified correctly but the downstream write failed silently
+3. The email was classified as spam and routed to archive (wrong classification)
+4. The email triggered a Tier 3 escalation that wasn't acknowledged
+
+All four are diagnosable in under five minutes with the audit log. Without it, you're asking the coordinator to reconstruct what happened from memory.
+
+### 3. The retraining signal
+
+This is the use most teams miss.
+
+The audit log contains the most valuable dataset you have: production examples with reviewer labels. Every time a human overrides the agent's classification, that's a labelled example of what the correct answer looks like on real production data.
+
+We review the override log every two weeks with the client. The questions:
+
+- How many overrides happened this week?
+- Which classifications were overridden most?
+- Were the overrides consistent (reviewer always changes "urgent" to "routine" for emails from carrier X) or inconsistent (reviewer is applying a different logic than the agent)?
+
+Consistent overrides are the signal to retrain. Inconsistent overrides are the signal to call the reviewer and figure out what rule they're applying that you haven't captured in the prompt.
+
+## What the log should NOT contain
+
+The audit log should not contain:
+
+- **Raw PII.** Reviewer email addresses, customer names in unredacted form, account numbers. Redact or hash before logging.
+- **Full input text.** The email body or invoice content shouldn't be in the log. A structured summary is enough for debugging and compliance.
+- **Authentication credentials.** Access tokens, API keys, or session tokens that appear in workflow payloads must be stripped before logging.
+
+Use a structured logging library with a redaction layer. We use `pino` with a redact config that strips common PII field names:
+
+```typescript
+const logger = pino({
+  redact: {
+    paths: ['*.email', '*.phone', '*.ssn', '*.account_number', '*.auth_token'],
+    censor: '[REDACTED]',
+  },
+});
+```
+
+This doesn't cover every case. Review the log schema for your specific workflow and add any domain-specific PII fields.
+
+## Retention and access control
+
+The audit log is potentially sensitive. Two rules:
+
+**Retention policy.** 90 days is a reasonable default. Longer if you have a compliance requirement. Delete records automatically when they age out — don't let the log grow indefinitely.
+
+**Access control.** The audit log should be readable by the ops lead and by the agent operator (us, during the operate period). It should not be readable by general staff. In AWS, this means a specific IAM policy that restricts CloudWatch log group access.
+
+---
+
+If your current agent doesn't produce a structured audit log like this, add it before the next retraining cycle. The data you're missing is the most valuable data you could have.
+
+---
+
+*Have questions about audit log design for a specific workflow? [Book a call](/contact) — we're happy to help.*

@@ -1,0 +1,25 @@
+{
+  "name": "@adopt-ai/workspaces",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Multi-tenant workspace management for Adopt AI organisations.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@adopt-ai/db": "workspace:*",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@adopt-ai/config-eslint": "workspace:*",
+    "@adopt-ai/config-tsconfig": "workspace:*",
+    "typescript": "^5.7.3"
+  }
+}

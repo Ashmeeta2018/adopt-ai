@@ -1,0 +1,79 @@
+---
+title: "Why we stopped doing pilots"
+date: "2026-03-18"
+type: "Talk"
+format: "22 min talk"
+externalLabel: "Watch on YouTube"
+externalUrl: "https://www.youtube.com/watch?v=placeholder"
+dek: "The talk from PrecisionConf 2026 — on the structural problem with 90-day proof-of-concept engagements and why we replaced them with fixed-price builds."
+---
+
+*This is the transcript from a 22-minute talk given at PrecisionConf 2026 in Austin, TX. The video is linked above.*
+
+---
+
+When we started doing this work, we did pilots. Everyone does pilots. The client gets a proof of concept, we get a paid engagement, and after 90 days everyone evaluates whether it worked.
+
+We stopped doing them eighteen months ago. I want to explain why, because I think the pilot model is one of the main reasons most AI projects at small and mid-sized businesses fail.
+
+## What a pilot actually is
+
+A pilot is a bet hedge. The client gets to say "we're not really committed to this yet" and the vendor gets to say "we're just testing." Both parties are protected from the consequences of the project failing.
+
+That protection is the problem.
+
+When there are no consequences for failure, the definition of success becomes vague. "Let's see how it goes" is not a success criterion. "90 days" is not a timeline. A pilot is a project without a brief — and projects without briefs don't ship.
+
+## The economics of the pilot
+
+Here's what actually happens in a 90-day pilot:
+
+- Weeks 1–3: setup, access, integration work
+- Weeks 4–8: the agent runs in parallel with the existing process
+- Weeks 9–12: evaluation and decision
+
+The agent runs in parallel with the existing process for the entire middle period. Nobody changes their behaviour. The operations team continues to do things the way they've always done them. The agent is an additional thing, not a replacement for the old thing.
+
+At week 12, the evaluation question is "did the agent work as well as the existing process?" The answer is almost always yes, because you've been running it in ideal conditions: the team has been reviewing its output, correcting its errors, and it's had access to all the context it needs.
+
+Then the client says: "let's start actually using it." And that's when the problems start. Because now you've removed the old process without having properly calibrated the agent for production conditions.
+
+## What we do instead
+
+We replaced pilots with fixed-price builds. Two weeks of scoping, four to eight weeks of build, delivered at the end. The agent is in production — not in parallel — before we collect the final payment.
+
+The key difference: we make the success criteria explicit before we start. Before we write a line of code, we write down:
+
+- How many items per week the agent will handle
+- What accuracy we expect in production
+- What the escalation rate should fall within
+- How we'll know if it's working
+
+Then we build to that brief. If we can't hit the brief, we don't collect the final milestone.
+
+This is scarier for us than a pilot. We carry the production risk. But it's also what produces the outcome the client actually needs: an agent that runs in production, not a demonstration that runs alongside production.
+
+## The objection
+
+The most common objection to this model is: "what if we're not sure it will work?"
+
+My answer: that's what the two-week scoping sprint is for. By the end of the scoping sprint, we know whether the project will work. We've read the real data, we've mapped the seam, we've done the return calculation. If we can't show the math, we don't start the build.
+
+The pilot model papers over this uncertainty by buying time. We'd rather spend two weeks being certain than 90 days being uncertain.
+
+## What this means for you
+
+If you're evaluating an AI project and a vendor proposes a pilot, ask them two questions:
+
+1. What does success look like at the end of the pilot?
+2. What happens at the end of the 90 days if it's working?
+
+If they can't answer the first question with specifics, the pilot will end in a vague evaluation that produces a vague decision.
+
+If the answer to the second question is "we negotiate a production contract," the pilot is a sales process with a 90-day timeline, not a project.
+
+Neither of those is what you need.
+
+---
+
+*Questions from the talk can be sent to [hello@adoptai.com](mailto:hello@adoptai.com). I answered all the ones from the Q&A session in a follow-up post.*

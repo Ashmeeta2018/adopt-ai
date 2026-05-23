@@ -1,0 +1,323 @@
+// Adopt AI — Prisma schema.
+// Source of truth for the relational model behind the client portal.
+//
+// Conventions:
+//   - cuid2 ids
+//   - createdAt/updatedAt on every mutable row
+//   - tenant scoping via organisationId on every portal-scoped table
+//   - soft-delete via deletedAt where the data is sensitive (Users, Agents)
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters", "fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ──────────────────────────────────────────────────────────────
+// Identity
+// ──────────────────────────────────────────────────────────────
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model Organisation {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  plan      String   @default("spark") // spark | lift | scale
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships    Membership[]
+  agents         Agent[]
+  workflows      Workflow[]
+  weeklyReports  WeeklyReport[]
+  alerts         Alert[]
+  auditLogs      AuditLog[]
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  deletedAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts     Account[]
+  sessions     Session[]
+  memberships  Membership[]
+  auditLogs    AuditLog[]
+  alerts       Alert[]
+}
+
+model Membership {
+  id             String   @id @default(cuid())
+  userId         String
+  organisationId String
+  role           Role     @default(MEMBER)
+  createdAt      DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organisationId])
+  @@index([organisationId])
+}
+
+// ──────────────────────────────────────────────────────────────
+// Auth.js tables
+// ──────────────────────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ──────────────────────────────────────────────────────────────
+// Portal domain
+// ──────────────────────────────────────────────────────────────
+
+enum AgentStatus {
+  RUNNING
+  QUEUED
+  ERROR
+  PAUSED
+}
+
+enum AgentKind {
+  INBOX_TRIAGE
+  DOCUMENT_EXTRACTION
+  SUPPORT_ROUTING
+  CUSTOM
+}
+
+model Agent {
+  id             String      @id @default(cuid())
+  organisationId String
+  slug           String
+  name           String
+  description    String
+  kind           AgentKind   @default(CUSTOM)
+  status         AgentStatus @default(QUEUED)
+  systemPrompt   String?     @db.Text
+  modelConfig    Json?
+  scheduleJson   Json?
+  toolsJson      Json?
+  workflowId     String?
+  deletedAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organisation Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  runs         AgentRun[]
+  workflow     Workflow?     @relation(fields: [workflowId], references: [id], onDelete: SetNull)
+
+  @@unique([organisationId, slug])
+  @@index([organisationId, status])
+  @@index([organisationId, kind])
+}
+
+model AgentRun {
+  id             String   @id @default(cuid())
+  agentId        String
+  organisationId String
+  trigger        String   @default("manual") // manual | schedule | webhook | event
+  status         String   @default("queued") // queued | running | success | failed | cancelled | timed_out
+  inputJson      Json?
+  outputJson     Json?
+  tokenInput     Int      @default(0)
+  tokenOutput    Int      @default(0)
+  costUsd        Decimal  @default(0) @db.Decimal(10, 6)
+  latencyMs      Int      @default(0)
+  error          String?  @db.Text
+  ts             DateTime @default(now())
+  completedAt    DateTime?
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId, ts])
+  @@index([organisationId, ts])
+}
+
+// ──────────────────────────────────────────────────────────────
+// Workflows
+// ──────────────────────────────────────────────────────────────
+
+enum WorkflowStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum WorkflowTrigger {
+  MANUAL
+  WEBHOOK
+  SCHEDULE
+  EVENT
+}
+
+model Workflow {
+  id             String          @id @default(cuid())
+  organisationId String
+  name           String
+  description    String?
+  version        Int             @default(1)
+  status         WorkflowStatus  @default(DRAFT)
+  trigger        WorkflowTrigger @default(MANUAL)
+  nodesJson      Json
+  edgesJson      Json
+  inputSchema    Json?
+  outputSchema   Json?
+  deletedAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  agents      Agent[]
+  executions  WorkflowExecution[]
+
+  @@index([organisationId, status])
+}
+
+model WorkflowExecution {
+  id          String   @id @default(cuid())
+  workflowId  String
+  status      String   @default("running") // running | completed | failed | cancelled
+  trigger     String   @default("manual")
+  inputJson   Json?
+  outputJson  Json?
+  nodesJson   Json     // NodeExecution[] serialised
+  error       String?  @db.Text
+  durationMs  Int      @default(0)
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId, startedAt])
+}
+
+model WeeklyReport {
+  id              String   @id @default(cuid())
+  organisationId  String
+  weekStart       DateTime @db.Date
+  weekEnd         DateTime @db.Date
+  hoursSaved      Decimal  @db.Decimal(10, 2)
+  costReducedUsd  Decimal  @db.Decimal(12, 2)
+  pipelinesJson   Json
+  createdAt       DateTime @default(now())
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@unique([organisationId, weekStart])
+  @@index([organisationId])
+}
+
+enum AlertSeverity {
+  OPS
+  DRIFT
+  TEAM
+}
+
+model Alert {
+  id             String        @id @default(cuid())
+  organisationId String
+  userId         String?
+  ts             DateTime      @default(now())
+  severity       AlertSeverity
+  title          String
+  body           String        @db.Text
+  read           Boolean       @default(false)
+
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organisationId, read, ts])
+}
+
+// ──────────────────────────────────────────────────────────────
+// Contact submissions — marketing form leads
+// ──────────────────────────────────────────────────────────────
+
+model ContactSubmission {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  company    String
+  engagement String   // spark | lift | scale | not-sure
+  workflow   String   @db.Text
+  ticketId   String   @unique
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([email])
+}
+
+// ──────────────────────────────────────────────────────────────
+// Compliance — track every read or change to sensitive data
+// ──────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  ts             DateTime @default(now())
+  userId         String?
+  organisationId String?
+  action         String   // e.g. "user.read", "agent.update"
+  targetType     String
+  targetId       String
+  metadata       Json?
+  ip             String?
+  userAgent      String?
+
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organisation Organisation? @relation(fields: [organisationId], references: [id], onDelete: SetNull)
+
+  @@index([organisationId, ts])
+  @@index([userId, ts])
+}

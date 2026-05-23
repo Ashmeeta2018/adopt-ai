@@ -1,0 +1,71 @@
+---
+title: "The boring half of agent production work"
+date: "2026-03-24"
+category: "Engineering"
+readMinutes: 7
+dek: "Everyone talks about prompt engineering and model selection. Nobody talks about the other half of the job."
+---
+
+There's a version of AI agent work that looks like this: clever prompts, model comparisons, benchmark runs, architecture diagrams. That version exists. It's maybe 40% of the job.
+
+The other 60% looks like this.
+
+## OAuth tokens expire
+
+Every integration we build touches an external service. QuickBooks, Zendesk, their TMS, their email server. All of them use OAuth 2.0. OAuth tokens expire.
+
+The standard expiry is one hour for an access token, thirty days for a refresh token. In practice: clients change passwords, IT rotates credentials, compliance teams revoke access, and your refresh token stops working on a Sunday evening when nobody is looking.
+
+We handle this by storing credentials in AWS Secrets Manager with automatic rotation. When a rotation happens, the agent picks up the new credentials on the next run. We test this in staging every time we ship a new integration.
+
+We've had four credential-related incidents across all our clients in the past eighteen months. All four were caught by the monitoring before the client noticed. Average resolution: twelve minutes.
+
+That's not clever engineering. That's remembering that OAuth tokens expire.
+
+## APIs change their schemas
+
+The carrier TMS we connect to for Apex updated their API in March. They changed the field name for the pickup confirmation number from `pickup_id` to `confirmation_number`. They sent a deprecation notice. It went to an email alias that nobody checked.
+
+The agent started throwing errors on pickup confirmation writes. The confidence gate caught it — the agent escalated rather than failing silently — but still: a schema change in a dependency broke production.
+
+We handle this with a contract test that runs every night. It calls the real API endpoint with a test payload and checks that the response schema matches what we expect. When the schema changes, the test fails, and we know before the agent does.
+
+Three lines of code. Runs nightly. Has caught two schema changes in production before they caused incidents.
+
+## PDF layouts are not a spec
+
+We built a document extraction agent that reads invoice PDFs. The training data was 200 invoices from their ten largest carriers. Accuracy on those carriers: 99%.
+
+Month two, they added a carrier whose PDFs use a non-standard column layout — the invoice number in the footer, the line items in a landscape-rotated table. The model had never seen this layout. Accuracy on this carrier: 71%.
+
+There's no fix for this that doesn't involve more training data. We asked the ops team to collect 30 invoices from this carrier and label them. The model now handles this carrier at 96%.
+
+The boring lesson: document extraction models are only as good as the document formats they've seen. You will always encounter a new format. The question is whether you have a process for handling it — a review queue, a labelling workflow, a retrain cadence — before it causes a downstream problem.
+
+## Log storage fills up
+
+We run agents in the client's cloud account. One client's agent was writing a structured log entry for every email classified. At 14,000 emails a week, that's 730,000 log entries a month. At the default CloudWatch retention policy — indefinite — log storage was going to be a material cost by month six.
+
+We add a log retention policy (30 days) to every new deployment now. We didn't before this.
+
+## Timezone bugs
+
+One client's agent was triggering on a daily schedule. The schedule was defined in UTC. The client's team expected it to run at 8 AM Eastern. It ran at 8 AM UTC — 3 AM Eastern in winter, 4 AM Eastern in summer.
+
+Nobody noticed for three weeks because the downstream system was idempotent. When they finally looked at the run logs, they found the agent had been running in the middle of the night.
+
+We define schedules in local timezone with explicit DST handling now.
+
+## Why this matters
+
+The reason I'm writing this is not to complain. It's to say: if you're evaluating AI agent vendors on the basis of model quality, you're evaluating the wrong thing.
+
+Model quality matters. Prompt engineering matters. Architecture matters.
+
+But what determines whether your agent is still running correctly in month nine is whether the team that built it thought about OAuth rotation, schema drift, document edge cases, log retention, and timezone bugs.
+
+Those aren't exciting. They don't appear in demo videos. They are exactly the thing that separates an agent that runs for two years from one that quietly breaks in month four.
+
+---
+
+*If you want to see the checklist we run through before every launch, [ask us about it](/contact). It's the least glamorous document we have.*

@@ -1,0 +1,92 @@
+---
+title: "Eval suites that actually catch regressions"
+date: "2026-04-08"
+type: "Playbook"
+format: "18 min read"
+dek: "How to write an eval suite that's useful in production — not just at training time. Covers the forty checks we run before promoting any inbox agent."
+---
+
+Most eval suites catch the problems you expected when you wrote them. They don't catch the problems you didn't know to look for. This is a guide to writing evals that actually catch regressions — including the ones you didn't anticipate.
+
+## The two types of eval
+
+**Coverage evals** check whether the model handles the cases in your test set correctly. They're useful for catching obvious regressions when you retrain or change the prompt.
+
+**Behavioral evals** check whether the model behaves correctly in production-like conditions: noisy inputs, edge cases, adversarial examples. These are harder to write and much more valuable.
+
+Most teams only write coverage evals. This playbook is mostly about behavioral evals.
+
+## The forty checks
+
+The intake-agent eval suite we use for every inbox triage project. Grouped by category.
+
+### Input validity (8 checks)
+
+1. Empty email body — should escalate, not classify as any intent
+2. Email with only an image attachment — should escalate
+3. Email in a language other than English — should escalate with language flag
+4. Email longer than 4,000 words — should truncate correctly and classify the header section
+5. Email with no sender name — should handle gracefully
+6. Email with a forwarded chain — should extract the most recent message, not the entire thread
+7. Email with a malformed subject line — should classify from body, not subject
+8. Email with only emojis in the body — should escalate
+
+### Classification accuracy (12 checks)
+
+9–20: One example from each high-frequency class (urgent, routine, spam, info-request) at three confidence levels: clear, borderline, ambiguous. The model should handle clear cases correctly, escalate borderline cases, and always escalate ambiguous cases regardless of classification.
+
+### Confidence calibration (5 checks)
+
+21. Clear urgent email: confidence should be > 0.90
+22. Clear spam email: confidence should be > 0.90
+23. Ambiguous email: confidence should be < 0.75 regardless of classification
+24. Two-intent email: confidence should reflect the dominant intent, with a note flag
+25. Novel-format email (carrier not in training set): confidence should be lower than same-intent email from known carrier
+
+### Escalation trigger (8 checks)
+
+26. Email below the hard escalate threshold: should escalate with high priority
+27. Email in the soft escalate band: should escalate with normal priority and context
+28. Email from a carrier on the override list: should use the override threshold, not the default
+29. Email that was previously misclassified and corrected: should now classify correctly
+30. Batch of 50 emails with mixed intents: escalation rate should fall within expected range (5–15%)
+31. Email with urgency signals in the subject but routine body: should classify by body
+32. Forwarded email from a customer (not a carrier): should escalate as "unknown sender"
+33. Email with an explicit instruction ("please route this to accounting"): should route to accounting
+
+### Integration (4 checks)
+
+34. Correctly classified urgent email: should write to TMS with correct fields
+35. TMS write failure: should escalate rather than retry indefinitely
+36. Slack escalation: should include the structured summary with classification and confidence
+37. Slack escalation acknowledgment: should mark the item as acknowledged and stop retrying
+
+### Regression guards (3 checks)
+
+38. The last 10 items that were manually overridden by a reviewer: agent should now classify correctly
+39. The last misclassification incident: the input that caused it should now classify correctly
+40. Performance baseline: accuracy on the original test set should not decrease by more than 2 percentage points
+
+## Running the suite
+
+Run the full suite on every:
+- Prompt change (even "small" ones — phrasing changes affect confidence calibration)
+- Threshold change
+- Retraining run
+- Integration dependency update (TMS schema change, Slack API version bump)
+
+The suite should run in under five minutes. If it takes longer, you have too many expensive API calls in the eval path. Cache model outputs for known inputs or run against a fast local model for speed.
+
+## What to do when an eval fails
+
+A failing eval is information. Before fixing it, understand it.
+
+- Is the failure in a case you care about in production? If the model fails on email-with-only-emojis, that's probably fine.
+- Is the failure new (regression) or did it always fail (gap)? New failures are more urgent.
+- Is the failure a model problem or an eval problem? Evals have bugs too.
+
+Fix the model (via prompt tuning or retraining) before fixing the eval. If you need to change the eval to make it pass, you're probably lowering the bar, not improving the system.
+
+---
+
+*The code for the intake-agent eval suite is available as a GitHub repo. [See the Code resource](/resources/confidence-gated-router) for the link.*

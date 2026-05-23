@@ -1,0 +1,70 @@
+---
+title: "How we run an on-call rotation for one workflow"
+date: "2026-04-14"
+category: "Operations"
+readMinutes: 6
+dek: "The boring, specific thing we actually do during the 90-day operate period — and why it matters more than the build."
+---
+
+When we say "we stay on the pager for 90 days," clients sometimes picture a NOC with blinking dashboards. It's quieter than that. Here's what it actually looks like.
+
+## What we're watching
+
+Every agent produces three numbers we care about:
+
+**Task volume.** How many items is it processing per hour? A drop in volume can mean the trigger stopped working — the webhook stopped firing, the email inbox isn't being polled, the schedule job failed.
+
+**Escalation rate.** What percentage of items is the agent sending to a human? We expect this to drift over time as input data changes. A sudden jump means something upstream changed. A slow creep means the model is starting to see data it wasn't trained on.
+
+**Error rate.** What percentage of items failed outright — not escalated, not routed, just failed? This is usually a downstream integration problem: the TMS API rate-limiting us, the QuickBooks OAuth token expiring, a schema change in the data we're writing.
+
+We look at these three numbers twice a day during the first four weeks, once a day in weeks five through twelve, and weekly after that.
+
+## The alert that wakes someone up
+
+We only wake up a human for two things:
+
+1. **Volume drops to zero for more than fifteen minutes during business hours.** This is always a broken trigger, not a model problem. The on-call person restarts the poller and files a post-mortem.
+
+2. **Error rate exceeds 5% for more than ten minutes.** This is almost always a downstream integration issue. We don't touch the model. We look at the logs, find the failing integration, and fix it.
+
+Escalation rate changes never wake us up. They're signals to review, not emergencies. We review them in the twice-weekly sync with the client.
+
+## The on-call rotation
+
+For a single-agent engagement, we have two people on rotation: the engineer who built the agent and one other. Two-week on-call cycles, overlapping by two days.
+
+We use PagerDuty for the alerts. The integration is simple: the agent's monitoring script posts to a PagerDuty Events API endpoint when a threshold is breached. PagerDuty handles the escalation to the phone.
+
+The on-call phone is a shared number with a SIM that we hand off physically between rotation shifts. Yes, physically. It's more reliable than virtual forwarding for 3 AM pages.
+
+## The weekly sync
+
+Every week, we send a written report to the client's ops lead. It covers:
+
+- Volume for the week (compared to the previous week and to forecast)
+- Escalation rate and whether it's trending
+- Any incidents — what happened, how long it took to fix, whether it will happen again
+- One recommendation for the following week
+
+The report is one page. It takes us about thirty minutes to write. Most weeks, there's nothing dramatic in it.
+
+## What the 90 days actually produces
+
+By the end of the operate period, three things have happened.
+
+**The model has been tuned at least once.** In 90 days of production data, we almost always find a cluster of misclassifications we can fix with additional training. We do one retrain, not many. We flag it to the client before we do it.
+
+**The runbook exists.** By week twelve, we've documented every incident, every alert condition, and every common fix. The runbook is plain English, not pseudocode. The ops lead can follow it without us.
+
+**Trust is established.** Clients don't hand over a critical workflow to an algorithm they've known for six weeks. They hand it over to a system that has run quietly for three months and has a track record. The 90-day operate period isn't about keeping the agent alive — it's about building the trust that lets us hand it off.
+
+---
+
+The most common question we get during the operate period: "Is this thing actually working?"
+
+We understand why people ask. The answer is almost always yes. We check twice a day.
+
+---
+
+*Curious what an operate SLA looks like in practice? [Talk to us](/contact) — we're happy to share the contract language.*

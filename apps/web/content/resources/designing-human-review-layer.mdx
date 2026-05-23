@@ -1,0 +1,95 @@
+---
+title: "Designing the human-review layer"
+date: "2026-04-20"
+type: "Playbook"
+format: "14 min read"
+dek: "Where confidence thresholds, escalation paths, and reviewer UX actually live — and why most teams get the hand-off wrong."
+---
+
+Every agent that classifies, extracts, or routes has a failure mode: the case it handles wrong. The human-review layer is what catches that failure before it causes a downstream problem.
+
+Most teams build this layer as an afterthought. They set a confidence threshold, point low-confidence items at a Slack channel, and call it done. This works until it doesn't — until the Slack channel gets noisy, reviewers stop engaging with it, and low-confidence items start accumulating unreviewed.
+
+This playbook describes how to design the human-review layer properly.
+
+## What the layer has to do
+
+A well-designed human-review layer does four things:
+
+**1. Deliver the right context.** When a reviewer sees an escalated item, they need enough information to make a decision quickly. Not the raw input. Not the model's internal state. A structured summary: what the model saw, what it was uncertain about, what the likely classifications were.
+
+**2. Make the decision frictionless.** The reviewer should be able to approve or override a classification in one action. If they have to open a second tool, navigate to a record, or type a response, you've added enough friction that they'll start ignoring the queue.
+
+**3. Close the feedback loop.** Every reviewer decision is a labelled example. If you're not collecting that data and using it in the next retraining cycle, you're wasting your best signal.
+
+**4. Not cry wolf.** A review queue that fills with easy cases — things the model handles correctly 99% of the time — trains reviewers to stop looking. The gate needs to be calibrated so that what reaches humans is genuinely uncertain.
+
+## The three escalation tiers
+
+We design every review layer with three distinct tiers:
+
+**Tier 1 — Silent route.** The agent acts without any escalation. Confidence above the high threshold. Reserved for clear cases. The agent logs the action and moves on.
+
+**Tier 2 — Review-and-confirm.** The agent proposes an action but waits for human confirmation before executing. Confidence between the low and high thresholds. This is where most of the interesting cases live.
+
+**Tier 3 — Human takes over.** The agent escalates with context and steps back. Confidence below the low threshold, or any case matching an override rule. The human owns this case entirely.
+
+The thresholds that define these tiers are business decisions, not engineering numbers. They depend on the cost of a wrong action versus the cost of an unnecessary escalation.
+
+## Building the reviewer interface
+
+The reviewer interface is the most underestimated part of this design.
+
+The minimum viable interface: a Slack message with structured content and two buttons. One button confirms the agent's classification. One button opens a form to provide a different label.
+
+The ideal interface: a lightweight web form embedded in the client's existing tools (e.g. a sidebar in Gmail, a tab in their TMS). Built once, reused across every agent type.
+
+Whatever the form, the structure is the same:
+
+- **What the agent received** — the raw input, truncated to the relevant part
+- **What the agent classified it as** — the top label with confidence score
+- **What the alternatives were** — the second and third labels with scores
+- **What action the agent would take** — in plain English, not a system call
+
+One action button per possible classification. No free-text response unless the reviewer needs to add context.
+
+## Collecting the feedback
+
+Every reviewer action writes a record:
+
+```
+{
+  input_id: "msg_abc123",
+  agent_classification: "urgent",
+  agent_confidence: 0.71,
+  reviewer_classification: "routine",
+  reviewer_id: "maya@apex.example",
+  reviewed_at: "2026-04-18T14:32:00Z",
+  time_to_decision_ms: 8400
+}
+```
+
+This record goes into a review log. We review the log every two weeks with the client. When the volume of overrides in any classification bucket exceeds 5%, that's the signal to schedule a retraining.
+
+`time_to_decision_ms` is the most useful field that teams consistently forget to collect. A reviewer who takes twelve seconds on a case is seeing something clear. A reviewer who takes three minutes has either been interrupted or is genuinely uncertain. The distribution of decision times tells you whether the queue is well-calibrated.
+
+## The calibration cadence
+
+The review layer needs regular recalibration — not just the model.
+
+Every quarter, review:
+
+- Escalation rate by tier: is the balance between Tier 1 / 2 / 3 right?
+- Override rate by classification: which buckets do reviewers override most?
+- Mean decision time: is it going up (queue getting harder) or down (model getting better)?
+- Queue drain rate: is the backlog clearing within the SLA?
+
+Most of this is a fifteen-minute spreadsheet review. If you have an escalation rate above 20%, something is wrong — either the model needs more training data, or the gate is too conservative. If you have a rate below 2%, you're either over-trained (fragile) or under-gating (risky).
+
+---
+
+The human-review layer is not a fallback. It's the part of the system that makes the agent trustworthy enough to run in production. Build it with the same care as the classifier.
+
+---
+
+*Want to see the Slack integration template we use for Tier 2 escalations? [Get in touch](/contact) and we'll share it.*

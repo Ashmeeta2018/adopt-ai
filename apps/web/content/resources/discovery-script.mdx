@@ -1,0 +1,80 @@
+---
+title: "The 7-question discovery script"
+date: "2026-04-15"
+type: "Template"
+format: "Template · 12 min"
+downloadLabel: "Download as PDF"
+downloadUrl: "/downloads/discovery-script.pdf"
+dek: "The exact questions we ask in every scoping session — in the order we ask them, with notes on what we're listening for."
+---
+
+This is the script we run in every two-hour scoping session. It's not a survey. It's a conversation guide — the questions are a skeleton, and the real work is listening for what's underneath the answer.
+
+We've run this session with logistics coordinators, finops teams, healthcare practice managers, and e-commerce operators. The questions are the same every time. What changes is what the answers reveal.
+
+## How to use this
+
+Don't read the questions off a page. Know them well enough to ask them naturally. The most important part of each question is the follow-up: "can you give me a specific example from last week?"
+
+Specificity is everything. "We have a lot of email" is not a scope. "We get 300 carrier emails a day, I personally read about 80 of them, and I'd say 20 require me to actually do something" is a scope.
+
+## The seven questions
+
+### 1. Walk me through what happens from the moment [the trigger] arrives.
+
+Replace `[the trigger]` with whatever they described in the first conversation: an email, a document, a form submission, a customer message.
+
+You're mapping the actual steps, not the intended steps. Listen for: handoffs between people, tools used at each step, decisions made and how they're made, and where things go wrong.
+
+### 2. How much of that do you think is genuinely judgment-dependent?
+
+You're trying to separate the classification / extraction task (automatable) from the escalation / decision task (human). Most people overestimate how much of their work requires real judgment.
+
+Listen for: "well, most of the time it's obvious, but sometimes…" — that "sometimes" is where you're building.
+
+### 3. What does a bad output look like, and what does it cost?
+
+This is the most important question. The cost of a wrong action determines everything about the confidence gate, the escalation design, and whether the project is worth building.
+
+Listen for: financial costs (a missed pickup, a wrong invoice line item), time costs (how long to unwind a mistake), and relationship costs (a carrier or customer affected by an error).
+
+### 4. Who would review the agent's work before it's fully trusted?
+
+Every agent needs a review phase. You're learning who has the judgment to catch errors and the time to do review work consistently.
+
+Listen for: is this person available? Do they care about accuracy? Will they give you feedback on errors, or will they just fix them silently?
+
+### 5. What does the data look like?
+
+You need to understand the input data before you can assess whether a model will perform well on it. Ask to see real examples: actual emails, actual invoices, actual tickets.
+
+Listen for: how structured the data is, how variable the formats are, whether there are recurring edge cases, and whether there are any obvious privacy constraints.
+
+### 6. What tools does the output need to touch?
+
+Integration complexity is often the hidden cost in a project. A well-classified email that goes nowhere is worthless. You need to understand where the agent's output needs to land.
+
+Listen for: named tools (specific TMS, QuickBooks version, Zendesk plan), API access availability, IT constraints, and whether there's a staging environment for testing.
+
+### 7. If this agent was running well six months from now, what would you most want to be different?
+
+This is the outcome question. The answer tells you what the client actually cares about — which is often not the same as what they asked for.
+
+Listen for: "I'd have my Tuesdays back," "my team would stop dreading Monday morning," "we'd finally be able to take on more volume without hiring." Those phrases are the real brief.
+
+## After the session
+
+Within 24 hours, write a one-page brief that covers:
+
+1. The workflow being automated (one sentence)
+2. The seam: what the agent handles vs. what it escalates
+3. The return calculation: tasks/week, confidence threshold estimate, hours saved, payback in weeks
+4. The integration chain: trigger → agent → output systems
+5. The review owner and their availability
+6. Open questions and blockers
+
+Share it with the client before building anything. If they correct something, the brief saved you weeks of building the wrong thing.
+
+---
+
+*Download the PDF version (formatted for printing and use in-session) using the button above.*

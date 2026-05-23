@@ -1,0 +1,115 @@
+---
+title: "Confidence gating, in three lines of code and twelve weeks of operations"
+date: "2026-05-18"
+category: "Engineering"
+readMinutes: 14
+featured: true
+dek: "Why the confidence threshold in our intake-agent is not 0.5 — and what happens when you treat the gate as a product surface."
+---
+
+The Apex intake agent classifies inbound carrier emails. Urgent. Routine. Spam. Info-request. Four buckets. The model is fine-tuned on eight hundred real emails from the operations team.
+
+When we first shipped it, the gate looked like this:
+
+```typescript
+if (result.confidence < 0.5) {
+  await slack.escalate(message, result);
+} else {
+  await tms.route(message, result);
+}
+```
+
+That's it. Under 50% confident, escalate to a human. Over 50%, route it. We thought we were done.
+
+We were three weeks into operations when Maya sent us a Slack message at 7 AM.
+
+> *"Something is sending everything to the TMS. Including a spam email from a carrier who retired two years ago."*
+
+## The problem with 0.5
+
+A 0.5 threshold means the model only needs to be slightly more confident in one label than another to commit. On a four-class problem, that's barely better than random. We had trained ourselves to think of 0.5 as a "majority vote" — it isn't. It's just the midpoint.
+
+The actual distribution of our model's confidence scores looked like this after two weeks in production:
+
+| Confidence range | % of messages | Escalation rate |
+|---|---|---|
+| 0.90 – 1.00 | 61% | 0.3% |
+| 0.75 – 0.90 | 22% | 2.1% |
+| 0.50 – 0.75 | 11% | 34% |
+| 0.00 – 0.50 | 6% | 100% |
+
+That middle band — 50 to 75 — was where the model was wrong often enough to cause real problems, but confident enough to clear the gate. The agent wasn't bad. The gate was in the wrong place.
+
+## Treating the threshold as a product decision
+
+The first thing we did was stop thinking about the threshold as an engineering number. It's a business decision.
+
+A false escalation costs Maya about four minutes. A false route to the TMS — a misclassified email that gets treated as a pickup request — costs roughly forty minutes to unwind if someone catches it quickly, and potentially a missed pickup if they don't.
+
+The math said: escalate everything below 0.8, not 0.5.
+
+```typescript
+const ESCALATE_BELOW = 0.8; // Not 0.5. This is a business decision.
+
+if (result.confidence < ESCALATE_BELOW) {
+  await slack.escalate(message, result);
+} else {
+  await tms.route(message, result);
+}
+```
+
+Escalation volume went from 6% to 17%. Maya's team said: fine. They'd rather spend the extra time on the Slack queue than unpick TMS errors.
+
+## The gate as a dial, not a switch
+
+Two weeks after we moved to 0.8, we noticed something: the 0.75–0.80 band was clean. The model was consistently right in that range. We were over-escalating.
+
+We also noticed the model had a specific weakness with one carrier — a regional refrigerated freight company whose subject lines were unusually terse. They accounted for 40% of the misclassifications in the 0.65–0.75 range.
+
+So instead of one threshold, we moved to two:
+
+```typescript
+const HARD_ESCALATE = 0.65;   // Below this: always escalate
+const SOFT_ESCALATE = 0.80;   // Below this: escalate with a note
+const CARRIER_OVERRIDES = {
+  'coldchain-freight': 0.85,   // This carrier needs a higher bar
+};
+
+const effectiveThreshold = CARRIER_OVERRIDES[carrier] ?? SOFT_ESCALATE;
+
+if (result.confidence < HARD_ESCALATE) {
+  await slack.escalate(message, result, { priority: 'high' });
+} else if (result.confidence < effectiveThreshold) {
+  await slack.escalate(message, result, { priority: 'normal', note: 'borderline — check classification' });
+} else {
+  await tms.route(message, result);
+}
+```
+
+Escalation volume dropped back to 9%. Error rate in the TMS dropped from 2.1% to 0.3%. Maya's team's Slack queue got quieter and more meaningful — the escalations that did come through were actually uncertain cases, not lazy ones.
+
+## What twelve weeks taught us
+
+The code is still three if-statements. It always will be. The threshold is not an engineering problem — it's an operations problem that happens to live in code.
+
+What changed:
+
+**The threshold lives in config, not in code.** It's in a YAML file that the ops team can read and change without touching the codebase. We review it every two weeks in our operate check-in.
+
+**The escalation carries context.** When the agent escalates, it tells Maya's team *why* — what the model thought, what it was uncertain about, and what carrier the message came from. The humans have enough signal to make a quick decision.
+
+**We track the gate, not just the model.** We measure how often the gate fires, how often humans agree with the pre-gate classification, and whether the threshold is drifting over time. A model that gets slowly worse doesn't always show up in accuracy metrics — it shows up in escalation rate.
+
+**The boring version ships faster.** We spent two days on the fine-tuned model. We spent twelve weeks on the gate. The model was the easy part.
+
+---
+
+The intake agent runs 14,000 emails a week now. Escalation rate is 7%. Accuracy in the TMS is 99.4%.
+
+The threshold is 0.82.
+
+We will probably change it again.
+
+---
+
+*Want to talk through a confidence-gating problem on your workflow? [Book a call](/contact) — it's usually a 20-minute conversation.*

@@ -1,0 +1,89 @@
+---
+title: "Fine-tuning for tone, not capability"
+date: "2026-03-03"
+type: "Guide"
+format: "18 min read"
+dek: "Why most domain fine-tunes are solving the wrong problem, and when fine-tuning is actually the right answer."
+---
+
+Fine-tuning is the most-requested thing we don't usually do.
+
+Clients come to us having read that you can fine-tune a model on your data and get better performance on your specific domain. That's true. But the performance improvement they're imagining — a model that understands their specific edge cases and acts like a subject matter expert — is not what most fine-tuning actually produces.
+
+This guide explains what fine-tuning does and doesn't do, when it's the right answer, and when you should try something else first.
+
+## What fine-tuning actually does
+
+Fine-tuning adjusts a model's weights based on examples of the behaviour you want. It doesn't add knowledge. It doesn't teach the model to reason differently. What it does is change the *style* of the model's outputs — the format, the register, the vocabulary, and the confidence distribution across labels.
+
+This is more useful than it sounds for some problems. And it's the wrong tool for others.
+
+**Fine-tuning is good for:**
+- Getting a model to output in a specific format consistently (structured JSON, specific field names)
+- Getting a model to use your company's terminology instead of generic vocabulary
+- Getting a model to avoid phrases or register you don't want (jargon, corporate-speak)
+- Shifting confidence calibration for your specific data distribution
+
+**Fine-tuning is not good for:**
+- Teaching the model new factual information about your domain
+- Getting the model to understand your specific edge cases without examples of those edge cases
+- Improving accuracy on cases the base model already handles poorly
+
+The last point is the one that surprises people most. If the base model classifies 70% of your emails correctly, fine-tuning on those same emails will not get you to 85%. It will get you to maybe 72% with better-formatted outputs.
+
+## When fine-tuning is the right answer
+
+We use fine-tuning in three scenarios:
+
+**1. Output format is critical and prompt engineering can't reliably deliver it.**
+
+For invoice extraction, we need the model to output a specific JSON schema every time, with specific field names, handling missing fields in a specific way. A base model with a good prompt gets to 85–90% compliance. A fine-tuned model gets to 98%+.
+
+The gain is worth the fine-tuning cost because downstream systems can't handle malformed JSON.
+
+**2. You have a large labelled dataset and the task is genuinely specialized.**
+
+If you have 5,000 labelled examples of a classification task that no base model has seen (a very specific product category, an obscure regulatory document type), fine-tuning on that dataset will meaningfully improve performance.
+
+The keyword is "labelled." The examples need human-verified labels, not model-generated ones. Model-generated labels for fine-tuning are how you teach a model to confidently repeat its own mistakes.
+
+**3. Latency matters and you need a smaller model.**
+
+A fine-tuned small model can match a larger base model's accuracy on a specific narrow task while being 10x faster and cheaper. For high-volume triage tasks, this is a meaningful operational advantage.
+
+## What to try before fine-tuning
+
+Most accuracy problems that clients think require fine-tuning are actually prompt engineering problems, data quality problems, or gate calibration problems. These are worth exhausting before committing to a fine-tuning project.
+
+**Few-shot examples in the prompt.** Adding 5–10 carefully selected examples of your edge cases to the system prompt often gives you 80% of the gain you'd get from fine-tuning, in one afternoon instead of two weeks.
+
+**Data cleaning.** If your input data is noisy (inconsistent formatting, missing fields, variable encoding), cleaning the inputs will often improve accuracy more than fine-tuning the model.
+
+**Threshold recalibration.** If your problem is "the model gets the right answer but isn't confident enough," the answer is usually threshold recalibration, not fine-tuning. Fine-tuning to shift confidence calibration is expensive; updating a YAML file is not.
+
+## The dataset problem
+
+The most common reason fine-tuning projects fail is the dataset. Clients come to us with 200 labelled examples and expect meaningful improvement. 200 is not enough for most fine-tuning tasks.
+
+The minimum viable dataset depends on the task:
+- Classification (4 labels): ~1,000 examples per label for meaningful improvement
+- Extraction (structured output): ~2,000 examples with varied input formats
+- Tone/style transfer: ~500 examples, but they need to be highly consistent
+
+Getting to these numbers requires a labelling process. The labelling process requires time, and the time usually requires your best subject-matter experts — the same people the agent is supposed to free up. There's a genuine trade-off here.
+
+## The cost model
+
+Fine-tuning costs come in two buckets: the one-time fine-tuning cost and the ongoing inference cost.
+
+One-time fine-tuning on a typical classification task: $500–$2,000 depending on dataset size and model. This is not the expensive part.
+
+The ongoing inference cost is where fine-tuning can pay back. A fine-tuned small model can be 80% cheaper per inference than a large base model while matching its accuracy on the specific task. At 10,000 inferences per day, that difference is significant.
+
+---
+
+The bottom line: fine-tuning is a precision tool for specific problems. If someone tells you it's the default approach for any AI agent project, ask them how big their dataset is.
+
+---
+
+*Need help deciding whether your project needs fine-tuning? [Book a call](/contact) — it's usually a 20-minute conversation.*

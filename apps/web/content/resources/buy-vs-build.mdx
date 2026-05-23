@@ -1,0 +1,67 @@
+---
+title: "Buy-vs-build: when to bring an agent in-house"
+date: "2026-03-30"
+type: "Guide"
+format: "22 min read"
+dek: "The decision framework for when to buy a SaaS automation tool, when to build a custom agent, and when to do neither."
+---
+
+This is the most common question we're asked before a scoping call: "should we even be building something custom, or is there a tool we should just buy?"
+
+It's a good question. The honest answer is: often, you should buy. This guide explains how to decide.
+
+## The buy option
+
+The buy option means subscribing to a SaaS tool that automates part of your workflow — Zapier, Make, a vertical-specific tool, or a platform like HubSpot that includes automation as a feature.
+
+Buy is the right answer when:
+
+- **The workflow is standard.** If a hundred other businesses your size have the same workflow, there's almost certainly a tool built for it. The workflow being "common" is a feature: the tool has been refined by thousands of edge cases you haven't encountered yet.
+- **You want to move in days, not weeks.** A SaaS tool is live in hours. A custom agent takes two to eight weeks.
+- **Your volume is low.** If you're processing fifty documents a month, a custom agent is overkill. The operational overhead alone isn't worth it.
+- **You're not willing to own the infrastructure.** A custom agent runs in your cloud account. It needs monitoring, maintenance, and occasional retraining. If your team can't own that, buy.
+
+The cost of the buy option is per-seat or per-task pricing. For low-volume, standard workflows, that's probably the right answer.
+
+## When to build
+
+Build is the right answer when one or more of the following are true:
+
+**The workflow has non-standard inputs.** If your carrier emails, invoices, or support tickets don't look like what SaaS tools were trained on, a custom agent will outperform a generic one. The specificity is the point.
+
+**The cost of an error is high.** Generic automation tools are designed for standard cases. When an edge case falls through, the behaviour is often undefined. A custom agent is designed around your error cases explicitly.
+
+**The per-seat or per-task cost is significant at your volume.** If you're processing 10,000 items a month, the per-task fee on most SaaS tools starts to matter. Custom agents have a flat operate cost that doesn't scale with volume.
+
+**You need the data to stay in your infrastructure.** Most SaaS automation tools send your data through their servers. For healthcare, financial services, or any company with a data residency requirement, that's often a blocker.
+
+**You want to own the model.** A custom agent that's been fine-tuned on your data and your edge cases is a business asset. A SaaS subscription is a cost.
+
+## The "neither" answer
+
+Sometimes the right answer is to do neither — at least not yet.
+
+**Do neither when the workflow isn't stable.** If the process changes every few months, you'll be rewriting the agent constantly. Wait for the process to stabilise before automating it.
+
+**Do neither when the root problem is process, not volume.** If the workflow is slow because of unclear ownership or missing data, automating it will make it faster while preserving the chaos underneath. Fix the process first.
+
+**Do neither when you don't have a review owner.** Every production agent needs someone who can review its output and provide feedback. If you don't have that person, the agent will drift over time and no one will notice.
+
+## The decision framework
+
+Ask these four questions in order:
+
+1. **Is there a SaaS tool that handles this specific workflow for businesses our size?** If yes, evaluate it seriously before building anything.
+2. **Is our workflow standard enough that the SaaS tool will handle our edge cases well?** If no, or if the answer requires months of configuration, build.
+3. **Is our volume high enough that per-task pricing creates meaningful cost at maturity?** If yes, model out the cost comparison. Build often wins at scale.
+4. **Can we own the infrastructure and the review cadence?** If no, buy even if build would be technically superior.
+
+## The questions we ask clients
+
+When a client comes to us having already decided to build, we still ask the buy question. The answer is sometimes "you've already evaluated this and build is right" — but sometimes it's "you assumed build was the answer because that's what you came here for."
+
+There's no shame in the buy answer. We've told clients to use a tool rather than work with us. The right answer for the business is the right answer.
+
+---
+
+*Not sure which answer applies to your specific workflow? [Book a call](/contact). We'll tell you honestly whether you should hire us or subscribe to something.*

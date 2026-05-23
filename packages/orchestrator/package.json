@@ -1,0 +1,26 @@
+{
+  "name": "@adopt-ai/orchestrator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent orchestration engine — lifecycle, scheduling, routing, execution history.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@adopt-ai/model-wrapper": "workspace:*",
+    "@adopt-ai/workflow": "workspace:*",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@adopt-ai/config-eslint": "workspace:*",
+    "@adopt-ai/config-tsconfig": "workspace:*",
+    "typescript": "^5.7.3"
+  }
+}

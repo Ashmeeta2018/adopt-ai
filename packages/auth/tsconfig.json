@@ -1,0 +1,4 @@
+{
+  "extends": "@adopt-ai/config-tsconfig/library.json",
+  "include": ["src/**/*"]
+}

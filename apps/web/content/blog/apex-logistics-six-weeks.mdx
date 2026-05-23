@@ -1,0 +1,73 @@
+---
+title: "Apex Logistics, six weeks after launch"
+date: "2026-04-27"
+category: "Customer story"
+readMinutes: 10
+dek: "We shipped the intake agent in two weeks. Six weeks later, Maya's team is running three agents. Here's what changed — and what didn't go to plan."
+---
+
+We've [written about the Apex build before](/work/apex-regional-logistics). A 35-person logistics firm, an inbox getting 14,000 carrier emails a week, three coordinators spending most of their day triaging them.
+
+Two weeks to ship. Six weeks to pay back. Those numbers are real.
+
+This is the six-week follow-up. What actually happened after launch.
+
+## Week one: the edge cases we missed
+
+We knew we'd miss some. You always do on the first build.
+
+The first edge case that surfaced: carrier emails forwarded from customer inboxes. We'd trained the model on direct carrier messages. Forwarded emails have a different structure — the original email is often embedded in the body, not in the headers. The model would see the forwarder's address, not the carrier's, and misclassify the intent.
+
+Fix: a pre-processing step that detects forwarded email structure and extracts the embedded message before classification. Two hours of engineering, one week after launch.
+
+The second edge case: a carrier who sends multi-issue emails. One email, three separate pickup requests in the body. We were treating each email as one task. The model would classify the email's *dominant* intent and ignore the rest.
+
+Fix: a chunking step that splits emails on paragraph breaks when the classifier detects multiple distinct topics. Harder — took three days. But it caught a category of miss that was causing real problems.
+
+Maya's team sent us both of these the same day they noticed them. The confidence gate was working: the model was escalating its own uncertainty, not hiding it.
+
+## Week two to four: the metric that surprised us
+
+We expected to save time on email triage. We saved it. But the metric that surprised us was *decision latency*.
+
+Before the agent: a coordinator would read an email, decide what to do with it, and then do it. The average time from email receipt to action was four hours — not because coordinators were slow, but because email triage was interrupt-driven. People batched it.
+
+After the agent: emails that don't need a human get routed immediately. The median latency for a routine carrier update dropped from four hours to eleven minutes.
+
+Eleven minutes isn't because the agent is fast. It's because the agent is always on.
+
+Maya pointed this out before we did. "The speed thing is actually more important than the hours thing," she said. "Carriers have started noticing we respond faster. One of them asked what changed."
+
+We hadn't expected that to be the sell. It was.
+
+## Week four: the ask we almost said no to
+
+Four weeks after launch, Maya asked: can we run the same thing on our invoice inbox?
+
+Invoice emails are different. The classification task is similar — route to QuickBooks, route to accounts payable, flag for review — but the extraction task is much heavier. An invoice email often has a PDF attachment. The agent needs to open the PDF, extract line items, and write them to the ledger.
+
+We almost said no. Document extraction is a different problem from intent classification. The failure modes are different. The cost of a wrong number in the ledger is higher than the cost of a misrouted email.
+
+But we'd already done the scoping work on the first agent. We knew the ops team's trust level. We knew the escalation muscle was working. We said yes on three conditions: a separate confidence gate for the extraction step, a human review queue for every invoice over $10,000, and a two-week parallel run before we turned off the manual process.
+
+The invoice agent shipped four weeks later. It runs 2,100 invoices a week. 97% without escalation.
+
+## Week six: what we didn't fix
+
+I want to be honest about what's still broken.
+
+The intake agent doesn't handle scanned documents attached to emails. Carriers who fax things (yes, this still happens) and have their fax forwarded as an email attachment — those still go to a human. We know how to fix it. We haven't prioritised it because it's less than 3% of volume and the coordinators handle it faster than we'd expect the fix to perform.
+
+The invoice agent still struggles with one specific carrier's PDF format. They use a non-standard table layout. Extraction accuracy on their invoices is 91%, not 97%. It goes to the review queue every time. We're working on it.
+
+Neither of these is a crisis. Both are on the backlog.
+
+---
+
+Six weeks of operations is not a lot of data. But it's enough to know a few things. The model wasn't the hard part. The edge cases weren't the hard part. The confidence gate wasn't the hard part.
+
+The hard part was knowing, at each decision point, what "good enough" meant and when to escalate. That's true of the agent and true of us.
+
+---
+
+*Want to see what a post-launch operations cadence looks like for your team? [Get in touch](/contact).*

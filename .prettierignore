@@ -1,0 +1,13 @@
+node_modules/
+.next/
+.expo/
+dist/
+build/
+out/
+coverage/
+.turbo/
+*.lock
+pnpm-lock.yaml
+Design-Docs/
+playwright-report/
+test-results/

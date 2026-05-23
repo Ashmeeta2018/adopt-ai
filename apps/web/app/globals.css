@@ -1,0 +1,177 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-cream text-ink font-body;
+    font-feature-settings: 'ss01', 'cv11';
+  }
+
+  ::selection {
+    background-color: var(--color-accent, #d9462c);
+    color: #fff8f0;
+  }
+}
+
+@layer components {
+  .ember-text {
+    background: linear-gradient(90deg, #a82a28, #d9462c, #e67e22, #d6912a, #c68a1f);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .grid-bg-dark {
+    background-image: linear-gradient(rgba(248, 244, 238, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(248, 244, 238, 0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* ── Blog prose ────────────────────────────────────────────── */
+  /* Override Tailwind Typography to match the Adopt AI design system. */
+  .prose {
+    --tw-prose-body: #3d1a0f;
+    --tw-prose-headings: #3d1a0f;
+    --tw-prose-lead: rgba(61, 26, 15, 0.72);
+    --tw-prose-links: #d9462c;
+    --tw-prose-bold: #3d1a0f;
+    --tw-prose-counters: rgba(61, 26, 15, 0.55);
+    --tw-prose-bullets: rgba(61, 26, 15, 0.35);
+    --tw-prose-hr: rgba(61, 26, 15, 0.12);
+    --tw-prose-quotes: #3d1a0f;
+    --tw-prose-quote-borders: #d9462c;
+    --tw-prose-captions: rgba(61, 26, 15, 0.55);
+    --tw-prose-code: #3d1a0f;
+    --tw-prose-pre-code: #f8f4ee;
+    --tw-prose-pre-bg: #1a0f08;
+    --tw-prose-th-borders: rgba(61, 26, 15, 0.18);
+    --tw-prose-td-borders: rgba(61, 26, 15, 0.1);
+  }
+
+  .prose h2 {
+    @apply font-display font-medium;
+    font-size: 32px;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    margin-top: 3rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .prose h3 {
+    @apply font-display font-medium;
+    font-size: 24px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-top: 2.25rem;
+    margin-bottom: 0.875rem;
+  }
+
+  .prose p {
+    font-size: 17px;
+    line-height: 1.7;
+    color: rgba(61, 26, 15, 0.82);
+  }
+
+  .prose blockquote {
+    border-left-width: 2px;
+    border-left-color: #d9462c;
+    padding-left: 1.5rem;
+    font-style: normal;
+    background: transparent;
+  }
+
+  .prose blockquote p {
+    @apply font-editorial italic;
+    font-size: 22px;
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+    color: #3d1a0f;
+  }
+
+  .prose blockquote p::before,
+  .prose blockquote p::after {
+    content: none;
+  }
+
+  .prose code:not(pre code) {
+    @apply font-mono;
+    font-size: 14px;
+    background: rgba(61, 26, 15, 0.06);
+    border: 1px solid rgba(61, 26, 15, 0.12);
+    border-radius: 6px;
+    padding: 2px 6px;
+  }
+
+  .prose code:not(pre code)::before,
+  .prose code:not(pre code)::after {
+    content: none;
+  }
+
+  .prose pre {
+    background: #1a0f08;
+    border: 1px solid rgba(248, 244, 238, 0.1);
+    border-radius: 12px;
+    overflow-x: auto;
+  }
+
+  .prose table {
+    width: 100%;
+    font-size: 15px;
+  }
+
+  .prose thead th {
+    @apply font-mono text-[11px] uppercase tracking-[0.18em];
+    color: rgba(61, 26, 15, 0.55);
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(61, 26, 15, 0.18);
+    padding-bottom: 10px;
+  }
+
+  .prose tbody td {
+    padding-top: 14px;
+    padding-bottom: 14px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(61, 26, 15, 0.08);
+    vertical-align: top;
+  }
+
+  .prose hr {
+    border-color: rgba(61, 26, 15, 0.12);
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+  }
+
+  .prose a {
+    color: #d9462c;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: rgba(217, 70, 44, 0.35);
+    transition: text-decoration-color 150ms;
+  }
+
+  .prose a:hover {
+    text-decoration-color: #d9462c;
+  }
+
+  .prose ul > li::marker {
+    color: #d9462c;
+  }
+
+  .prose ol > li::marker {
+    @apply font-mono;
+    font-size: 13px;
+    color: rgba(61, 26, 15, 0.55);
+  }
+}

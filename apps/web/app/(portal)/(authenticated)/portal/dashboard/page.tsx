@@ -1,0 +1,109 @@
+'use client';
+
+import { trpc } from '@/lib/trpc/client';
+import { AgentPill, Eyebrow, GlassCard, Metric } from '@adopt-ai/ui-web';
+import Link from 'next/link';
+
+function formatNumber(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+  return n.toLocaleString();
+}
+
+export default function PortalDashboard() {
+  const { data, isLoading } = trpc.portal.getDashboard.useQuery();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-32">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <Eyebrow tone="accent">{data.weekRange.start} — {data.weekRange.end}</Eyebrow>
+        <h1 className="mt-2 font-display text-3xl font-semibold text-ink">{data.greeting}</h1>
+      </div>
+
+      {/* Hero metrics */}
+      <div className="grid grid-cols-3 gap-4">
+        <GlassCard variant="dark" className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/20 via-void to-void" />
+          <div className="relative p-6">
+            <Eyebrow tone="glow">Hours reallocated</Eyebrow>
+            <Metric value={data.hoursReallocated} label="this week" accent />
+            <p className="mt-2 font-mono text-xs text-cream/50">+{data.hoursTrendPct}% vs last week</p>
+          </div>
+        </GlassCard>
+
+        <GlassCard>
+          <div className="p-6">
+            <Eyebrow tone="muted">Live agents</Eyebrow>
+            <Metric value={data.liveAgents} label="running now" />
+          </div>
+        </GlassCard>
+
+        <GlassCard>
+          <div className="p-6">
+            <Eyebrow tone={data.openAlerts > 0 ? 'accent' : 'muted'}>Open alerts</Eyebrow>
+            <Metric value={data.openAlerts} label={data.openAlerts === 1 ? 'alert' : 'alerts'} />
+          </div>
+        </GlassCard>
+      </div>
+
+      {/* Agent list */}
+      <div>
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold text-ink">Your agents</h2>
+          <Link href="/portal/agents" className="font-mono text-xs uppercase tracking-wider text-accent hover:text-glow">
+            View all →
+          </Link>
+        </div>
+
+        <div className="mt-4 space-y-3">
+          {data.agents.map((agent) => (
+            <Link key={agent.id} href={`/portal/agents/${agent.id}`}>
+              <div className="group flex items-center justify-between rounded-xl border border-hairline bg-paper px-5 py-4 transition-all hover:border-accent/30 hover:shadow-sm">
+                <div className="flex items-center gap-4">
+                  <AgentPill status={agent.status} />
+                  <div>
+                    <p className="font-display text-sm font-semibold text-ink group-hover:text-accent">{agent.name}</p>
+                    <p className="font-body text-xs text-ink/50">{agent.description}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-8">
+                  <div className="text-right">
+                    <p className="font-mono text-sm font-medium text-ink">{formatNumber(agent.tasks24h)}</p>
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-ink/40">tasks/24h</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-mono text-sm font-medium text-ink">
+                      {(agent.successRate * 100).toFixed(2)}%
+                    </p>
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-ink/40">success</p>
+                  </div>
+                  <span className="text-ink/30 group-hover:text-accent">→</span>
+                </div>
+              </div>
+            </Link>
+          ))}
+
+          {data.agents.length === 0 && (
+            <div className="rounded-xl border border-dashed border-hairline py-12 text-center">
+              <p className="font-body text-sm text-ink/50">No agents yet.</p>
+              <p className="mt-1 font-mono text-xs text-ink/30">
+                Your architect will set these up during onboarding.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
