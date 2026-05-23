@@ -39,16 +39,16 @@ export function HeroCinematic() {
       </div>
 
       <FloatingChip x="14%" y="22%" rot={-4} dark>
-        📨 14k carrier emails routed last week
+        <span aria-hidden>📨</span> 14k carrier emails routed last week
       </FloatingChip>
       <FloatingChip x="74%" y="18%" rot={3} delay={1.5} dark>
-        ⚡ most replies in under a second
+        <span aria-hidden>⚡</span> most replies in under a second
       </FloatingChip>
       <FloatingChip x="10%" y="68%" rot={-2} delay={2.5} dark>
-        🔒 SOC 2 · your data stays in your cloud
+        <span aria-hidden>🔒</span> SOC 2 · your data stays in your cloud
       </FloatingChip>
       <FloatingChip x="78%" y="68%" rot={4} delay={3.5} dark>
-        💰 $3.7k saved this week · Apex Logistics
+        <span aria-hidden>💰</span> $3.7k saved this week · Apex Logistics
       </FloatingChip>
 
       <div className="relative mx-auto mt-10 max-w-[1080px] text-center">

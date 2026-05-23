@@ -26,6 +26,7 @@ interface CaseStudy {
   builtBody: string;
   math: { label: string; value: string }[];
   netReturn: string;
+  heroVideo?: string;
 }
 
 const cases: Record<string, CaseStudy> = {
@@ -106,11 +107,24 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
 
       <section className="px-14 pb-20">
         <div className="relative mx-auto aspect-[16/6] max-w-[1280px] overflow-hidden rounded-3xl bg-ink">
-          <NeuralMesh dark style={{ position: 'absolute', inset: 0 }} />
-          <AmbientOrbs intensity={1} dark />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <BrandMark size={140} mono dark withType={false} />
-          </div>
+          {c.heroVideo ? (
+            <video
+              src={c.heroVideo}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <>
+              <NeuralMesh dark style={{ position: 'absolute', inset: 0 }} />
+              <AmbientOrbs intensity={1} dark />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <BrandMark size={140} mono dark withType={false} />
+              </div>
+            </>
+          )}
           <div className="absolute bottom-6 left-6 font-mono text-eyebrow uppercase tracking-[0.18em] text-cream/65">
             {c.chrome}
           </div>

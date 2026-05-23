@@ -12,7 +12,8 @@ function getConsent(): string | null {
 }
 
 function setConsent(value: 'all' | 'essential') {
-  document.cookie = `${COOKIE_NAME}=${encodeURIComponent(value)};path=/;max-age=${COOKIE_MAX_AGE};samesite=lax`;
+  const secure = location.protocol === 'https:' ? ';secure' : '';
+  document.cookie = `${COOKIE_NAME}=${encodeURIComponent(value)};path=/;max-age=${COOKIE_MAX_AGE};samesite=lax${secure}`;
 }
 
 export function CookieBanner() {

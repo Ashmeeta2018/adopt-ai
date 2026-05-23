@@ -20,7 +20,7 @@
 
   ::selection {
     background-color: var(--color-accent, #d9462c);
-    color: #fff8f0;
+    color: var(--color-cream, #fff8f0);
   }
 }
 

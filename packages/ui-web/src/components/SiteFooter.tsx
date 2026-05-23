@@ -54,7 +54,7 @@ export function SiteFooter({ dark = true }: SiteFooterProps) {
     >
       <div className="grid gap-14 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
-          <BrandMark size={36} dark={dark} />
+          <BrandMark size={144} stacked dark={dark} />
           <p className={cn('mt-5 max-w-[320px] text-[14px] leading-[1.55]', soft)}>
             Turn AI into your competitive advantage. We design, ship, and run
             production-grade automation systems for enterprise teams.
@@ -65,7 +65,7 @@ export function SiteFooter({ dark = true }: SiteFooterProps) {
               faint,
             )}
           >
-            500 Enterprise Way, Suite 100 · Orlando, FL 32801
+            416 Morgan Ridge Road · Holly Springs, NC 27540
           </p>
           <p
             className={cn(
@@ -73,20 +73,28 @@ export function SiteFooter({ dark = true }: SiteFooterProps) {
               faint,
             )}
           >
-            hello@adoptai.com · +1 (555) 382-3830
+            contact@adopt-ai.net
+          </p>
+          <p
+            className={cn(
+              'mt-1 font-mono text-eyebrow uppercase tracking-[0.12em]',
+              faint,
+            )}
+          >
+            +1 703-477-4592
           </p>
         </div>
         {columns.map((col) => (
           <div key={col.title}>
             <div
               className={cn(
-                'mb-4.5 font-mono text-eyebrow uppercase tracking-[0.18em]',
+                'mb-3 font-mono text-eyebrow uppercase tracking-[0.18em]',
                 dark ? 'text-cream' : 'text-ink',
               )}
             >
               {col.title}
             </div>
-            <ul className="flex flex-col gap-2.5">
+            <ul className="flex flex-col gap-1.5">
               {col.links.map(([label, href]) => (
                 <li key={label}>
                   <Link href={href} className={cn('text-[14px]', soft)}>

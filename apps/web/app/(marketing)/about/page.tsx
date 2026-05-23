@@ -16,8 +16,8 @@ const principles = [
     body: 'Budget on day one, scope on day one, ship on day one. No timesheets, no scope-creep invoices.',
   },
   {
-    title: 'Your VPC',
-    body: 'Agents run in your cloud account, with your data, behind your IAM. We never aggregate, we never look.',
+    title: 'Your cloud',
+    body: 'Agents run in your cloud account, with your data, behind your access controls. We never aggregate, we never look.',
   },
   {
     title: 'On the pager',

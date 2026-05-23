@@ -66,7 +66,7 @@ export function ContactForm() {
         <Field label="Your name" error={errors.name?.message}>
           <input
             type="text"
-            className="field"
+            className="w-full rounded-xl border border-hairline bg-paper px-3.5 py-3 font-body text-[15px] text-ink transition-colors focus:border-accent focus:outline-none"
             autoComplete="name"
             {...register('name')}
           />
@@ -74,7 +74,7 @@ export function ContactForm() {
         <Field label="Work email" error={errors.email?.message}>
           <input
             type="email"
-            className="field"
+            className="w-full rounded-xl border border-hairline bg-paper px-3.5 py-3 font-body text-[15px] text-ink transition-colors focus:border-accent focus:outline-none"
             autoComplete="email"
             {...register('email')}
           />
@@ -85,7 +85,7 @@ export function ContactForm() {
         <Field label="Company" error={errors.company?.message}>
           <input
             type="text"
-            className="field"
+            className="w-full rounded-xl border border-hairline bg-paper px-3.5 py-3 font-body text-[15px] text-ink transition-colors focus:border-accent focus:outline-none"
             autoComplete="organization"
             {...register('company')}
           />
@@ -121,7 +121,7 @@ export function ContactForm() {
         <Field label="The workflow" error={errors.workflow?.message}>
           <textarea
             rows={5}
-            className="field min-h-[140px] resize-y"
+            className="w-full rounded-xl border border-hairline bg-paper px-3.5 py-3 font-body text-[15px] text-ink transition-colors focus:border-accent focus:outline-none min-h-[140px] resize-y"
             placeholder="What does someone on the team do today that you wish they didn't have to?"
             {...register('workflow')}
           />
@@ -143,23 +143,6 @@ export function ContactForm() {
         We never share your email. Ever.
       </p>
 
-      <style jsx>{`
-        :global(.field) {
-          width: 100%;
-          padding: 12px 14px;
-          border: 1px solid var(--hairline);
-          border-radius: 12px;
-          background: #fff;
-          font-family: var(--font-body);
-          font-size: 15px;
-          color: #3d1a0f;
-          transition: border-color 150ms ease-out;
-        }
-        :global(.field:focus) {
-          outline: none;
-          border-color: #d9462c;
-        }
-      `}</style>
     </form>
   );
 }

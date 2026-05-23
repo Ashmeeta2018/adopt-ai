@@ -66,7 +66,7 @@ export default function PricingPage() {
               }
             >
               {t.flag && (
-                <div className="absolute -top-3 left-8 rounded-full bg-ember-cta px-3 py-1 font-mono text-eyebrow uppercase tracking-[0.18em] text-[#fff8f0]">
+                <div className="absolute -top-3 left-8 rounded-full bg-ember-cta px-3 py-1 font-mono text-eyebrow uppercase tracking-[0.18em] text-cream">
                   {t.flag}
                 </div>
               )}

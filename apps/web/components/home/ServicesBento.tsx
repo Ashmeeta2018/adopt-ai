@@ -46,7 +46,7 @@ const tiles: Tile[] = [
 
 const bgClasses: Record<Tile['bg'], string> = {
   ember:
-    'bg-ember-cta text-[#fff8f0] shadow-cta border border-[rgba(255,255,255,0.08)]',
+    'bg-ember-cta text-cream shadow-cta border border-[rgba(255,255,255,0.08)]',
   obsidian: 'bg-obsidian text-cream border border-hairline-dark',
   smoke: 'bg-smoke text-cream border border-hairline-dark',
 };
@@ -86,7 +86,7 @@ export function ServicesBento() {
               className={`relative flex flex-col justify-between rounded-2xl p-7 ${tile.span} ${bgClasses[tile.bg]}`}
             >
               {tile.eyebrow && (
-                <div className="font-mono text-eyebrow uppercase tracking-[0.18em] text-[#fff8f0]/85">
+                <div className="font-mono text-eyebrow uppercase tracking-[0.18em] text-cream/85">
                   {tile.eyebrow}
                 </div>
               )}
@@ -104,7 +104,7 @@ export function ServicesBento() {
                 <p className="mt-2 text-[15.5px] text-cream/65">{tile.sub}</p>
               )}
               {tile.meta && (
-                <div className="font-mono text-eyebrow uppercase tracking-[0.18em] text-[#fff8f0]/85">
+                <div className="font-mono text-eyebrow uppercase tracking-[0.18em] text-cream/85">
                   {tile.meta}
                 </div>
               )}

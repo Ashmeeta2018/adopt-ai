@@ -29,6 +29,7 @@ export const marketingRouter = router({
         logger.info({ engagement: input.engagement }, 'contact.submit received');
 
         const ticketId = crypto.randomUUID();
+        const membership = ctx.session?.user?.memberships?.[0];
         await ctx.prisma.contactSubmission.create({
           data: {
             name: input.name,
@@ -37,6 +38,7 @@ export const marketingRouter = router({
             engagement: input.engagement,
             workflow: input.workflow,
             ticketId,
+            organisationId: membership?.organisationId,
           },
         });
         return { ok: true as const, ticketId };
