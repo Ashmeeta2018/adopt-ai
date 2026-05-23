@@ -58,8 +58,9 @@ export function generateStaticParams() {
   return Object.keys(cases).map((slug) => ({ slug }));
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
-  const c = cases[params.slug];
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const c = cases[slug];
   if (!c) {
     return { title: 'Case study' };
   }
@@ -69,8 +70,9 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   };
 }
 
-export default function CaseStudyPage({ params }: { params: { slug: string } }) {
-  const c = cases[params.slug];
+export default async function CaseStudyPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const c = cases[slug];
   if (!c) {
     notFound();
   }
