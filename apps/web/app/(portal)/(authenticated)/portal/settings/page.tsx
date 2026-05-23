@@ -79,33 +79,33 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <Eyebrow tone="muted">Workspace configuration</Eyebrow>
-        <h1 className="mt-2 font-display text-3xl font-semibold text-ink">Settings</h1>
+        <Eyebrow tone="cream">Workspace configuration</Eyebrow>
+        <h1 className="mt-2 font-display text-3xl font-semibold text-cream">Settings</h1>
       </div>
 
       <div className="flex items-start gap-8">
         {/* Avatar — initials derived from the signed-in user's name */}
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-void">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-cream/10">
             <span className="font-display text-2xl font-semibold text-cream">{avatar}</span>
           </div>
-          <p className="font-mono text-[10px] uppercase tracking-wider text-ink/40">{roleText}</p>
+          <p className="font-mono text-[10px] uppercase tracking-wider text-cream/40">{roleText}</p>
         </div>
 
         {/* Sections */}
         <div className="flex-1 space-y-6">
           {sections.map((section) => (
-            <GlassCard key={section.title}>
+            <GlassCard key={section.title} variant="dark">
               <div className="p-6">
-                <Eyebrow tone="muted">{section.title}</Eyebrow>
+                <Eyebrow tone="cream">{section.title}</Eyebrow>
                 <div className="mt-4 space-y-3">
                   {section.items.map((item) => (
                     <div
                       key={item.label}
-                      className="flex items-center justify-between border-b border-hairline/50 pb-3 last:border-0 last:pb-0"
+                      className="flex items-center justify-between border-b border-cream/[0.08] pb-3 last:border-0 last:pb-0"
                     >
-                      <span className="font-body text-sm text-ink/60">{item.label}</span>
-                      <span className="font-mono text-sm text-ink">{item.value}</span>
+                      <span className="font-body text-sm text-cream/60">{item.label}</span>
+                      <span className="font-mono text-sm text-cream">{item.value}</span>
                     </div>
                   ))}
                 </div>

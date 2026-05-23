@@ -25,8 +25,8 @@ export default function ReportsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <Eyebrow tone="muted">{data.range.start} — {data.range.end}</Eyebrow>
-        <h1 className="mt-2 font-display text-3xl font-semibold text-ink">Weekly Report</h1>
+        <Eyebrow tone="cream">{data.range.start} — {data.range.end}</Eyebrow>
+        <h1 className="mt-2 font-display text-3xl font-semibold text-cream">Weekly Report</h1>
       </div>
 
       {/* Hero metrics */}
@@ -35,7 +35,7 @@ export default function ReportsPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-accent/20 via-void to-void" />
           <div className="relative p-8">
             <Eyebrow tone="glow">Hours saved</Eyebrow>
-            <Metric value={data.hoursSaved.toFixed(1)} label="hours reallocated this week" accent />
+            <Metric value={data.hoursSaved.toFixed(1)} label="hours reallocated this week" accent dark />
             <p className="mt-2 font-mono text-xs text-cream/50">+{data.hoursSavedTrendPct}% vs last week</p>
           </div>
         </GlassCard>
@@ -44,7 +44,7 @@ export default function ReportsPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-glow/20 via-void to-void" />
           <div className="relative p-8">
             <Eyebrow tone="glow">Cost reduced</Eyebrow>
-            <Metric value={`$${data.costReducedUsd.toLocaleString()}`} label="estimated value recovered" accent />
+            <Metric value={`$${data.costReducedUsd.toLocaleString()}`} label="estimated value recovered" accent dark />
             <p className="mt-2 font-mono text-xs text-cream/50">+{data.costReducedTrendPct}% vs last week</p>
           </div>
         </GlassCard>
@@ -52,7 +52,7 @@ export default function ReportsPage() {
 
       {/* Pipeline breakdown */}
       <div>
-        <Eyebrow tone="muted">Pipeline breakdown</Eyebrow>
+        <Eyebrow tone="cream">Pipeline breakdown</Eyebrow>
         <div className="mt-4 space-y-3">
           {data.pipelines.map((pipeline) => {
             const maxHours = Math.max(...data.pipelines.map((p) => p.hoursSaved));
@@ -60,18 +60,18 @@ export default function ReportsPage() {
             const gradient = ACCENT_MAP[pipeline.accent as keyof typeof ACCENT_MAP] ?? ACCENT_MAP['accent']!;
 
             return (
-              <div key={pipeline.name} className="rounded-xl border border-hairline bg-paper px-6 py-4">
+              <div key={pipeline.name} className="rounded-xl border border-hairline-dark bg-cream/[0.04] px-6 py-4">
                 <div className="flex items-center justify-between">
-                  <p className="font-display text-sm font-semibold text-ink">{pipeline.name}</p>
+                  <p className="font-display text-sm font-semibold text-cream">{pipeline.name}</p>
                   <div className="flex items-center gap-6">
-                    <span className="font-mono text-sm text-ink">{pipeline.hoursSaved.toFixed(1)}h</span>
-                    <span className="font-mono text-xs text-ink/40">{pipeline.tasks.toLocaleString()} tasks</span>
-                    <span className="font-mono text-xs text-ink/40">
+                    <span className="font-mono text-sm text-cream">{pipeline.hoursSaved.toFixed(1)}h</span>
+                    <span className="font-mono text-xs text-cream/40">{pipeline.tasks.toLocaleString()} tasks</span>
+                    <span className="font-mono text-xs text-cream/40">
                       {(pipeline.successRate * 100).toFixed(1)}% success
                     </span>
                   </div>
                 </div>
-                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-cream">
+                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-cream/10">
                   <div
                     className={`h-full rounded-full bg-gradient-to-r ${gradient} transition-all duration-500`}
                     style={{ width: `${widthPct}%` }}
@@ -85,10 +85,10 @@ export default function ReportsPage() {
 
       {/* Export actions */}
       <div className="flex gap-3">
-        <button className="rounded-lg border border-hairline bg-paper px-4 py-2 font-mono text-xs uppercase tracking-wider text-ink transition-colors hover:border-accent hover:text-accent">
+        <button className="rounded-lg border border-hairline-dark bg-cream/[0.04] px-4 py-2 font-mono text-xs uppercase tracking-wider text-cream/60 transition-colors hover:border-accent hover:text-accent">
           Export PDF
         </button>
-        <button className="rounded-lg border border-hairline bg-paper px-4 py-2 font-mono text-xs uppercase tracking-wider text-ink transition-colors hover:border-accent hover:text-accent">
+        <button className="rounded-lg border border-hairline-dark bg-cream/[0.04] px-4 py-2 font-mono text-xs uppercase tracking-wider text-cream/60 transition-colors hover:border-accent hover:text-accent">
           Share Report
         </button>
       </div>

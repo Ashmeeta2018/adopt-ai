@@ -14,6 +14,11 @@ import { notFound } from 'next/navigation';
 
 interface CaseStudy {
   slug: string;
+  caseNumber: string;
+  clientLabel: string;
+  headline: string;
+  headlineAccent: string;
+  headlineAfter?: string;
   sector: string;
   team: string;
   tier: string;
@@ -24,6 +29,9 @@ interface CaseStudy {
   pullQuote: string;
   pullAttrib: string;
   builtBody: string;
+  builtWith: string;
+  shapeNote: string;
+  metrics: { label: string; value: string; accent?: boolean }[];
   math: { label: string; value: string }[];
   netReturn: string;
   heroVideo?: string;
@@ -32,6 +40,11 @@ interface CaseStudy {
 const cases: Record<string, CaseStudy> = {
   'apex-regional-logistics': {
     slug: 'apex-regional-logistics',
+    caseNumber: '0001',
+    clientLabel: 'Apex Regional Logistics',
+    headline: 'A 35-person logistics team got ',
+    headlineAccent: '22 hours a week back',
+    headlineAfter: ' — in two weeks.',
     sector: 'Logistics',
     team: '35 people',
     tier: 'Spark',
@@ -44,6 +57,15 @@ const cases: Record<string, CaseStudy> = {
     pullAttrib: 'Director of Operations · Apex Regional',
     builtBody:
       'One agent in front of Outlook and their TMS. Intent classification with a 90% confidence gate, escalation to a Slack channel below threshold, full audit log per message. Two-week build, deployed inside their own AWS account.',
+    builtWith: 'Outlook · their TMS · Slack · hosted in their AWS account',
+    shapeNote:
+      "One agent. One workflow. Two weeks to ship. We don't do six-month transformations.",
+    metrics: [
+      { label: 'Hours saved / wk', value: '22', accent: true },
+      { label: 'Emails / wk', value: '1,540' },
+      { label: 'Accuracy', value: '97%' },
+      { label: 'Payback', value: '6 wks' },
+    ],
     math: [
       { label: 'Spark build', value: '$2,400' },
       { label: '2 months operate ($149 × 2)', value: '$298' },
@@ -52,6 +74,44 @@ const cases: Record<string, CaseStudy> = {
       { label: 'Value @ $42/hr', value: '$7,392' },
     ],
     netReturn: '+$4,694',
+  },
+
+  'harlow-reid-advisory': {
+    slug: 'harlow-reid-advisory',
+    caseNumber: '0002',
+    clientLabel: 'Harlow & Reid Advisory',
+    headline: 'A 22-person advisory firm stopped doing ',
+    headlineAccent: 'two hours of copy-paste',
+    headlineAfter: ' before every client call.',
+    sector: 'Professional Services',
+    team: '22 people',
+    tier: 'Spark',
+    build: '3 weeks',
+    payback: '7 weeks',
+    chrome: 'Harlow & Reid · Client data prep · Shipped Apr 2026',
+    problemBody:
+      'Eight senior advisors each managed 15–20 clients across different portals, spreadsheets, and email threads. Every quarterly review started the same way: two hours of manual data-pulling before any real work could happen. The Managing Partner didn\'t want a dashboard. She wanted her best people doing the work only they could do.',
+    pullQuote: "The portal sprint used to eat my whole Monday morning. Now my brief is just there.",
+    pullAttrib: 'Managing Partner · Harlow & Reid Advisory',
+    builtBody:
+      'One agent per client data source. It logs into 14 portals on a nightly schedule, pulls the latest figures, normalises the schema, and drops a pre-filled review brief into each client folder in SharePoint — ready before the advisor opens their laptop. Three-week build, deployed on their Azure tenant. No new credentials to manage; it uses each advisor\'s existing SSO.',
+    builtWith: 'SharePoint · 14 client portals · Azure hosted',
+    shapeNote:
+      "One agent. Fourteen portals. Three weeks to ship. We don't do six-month transformations.",
+    metrics: [
+      { label: 'Hours saved / wk', value: '40', accent: true },
+      { label: 'Client portals', value: '14' },
+      { label: 'Accuracy', value: '99%' },
+      { label: 'Payback', value: '7 wks' },
+    ],
+    math: [
+      { label: 'Spark build', value: '$2,400' },
+      { label: '2 months operate ($149 × 2)', value: '$298' },
+      { label: 'Total 7 weeks', value: '$2,698' },
+      { label: 'Hours reclaimed (40h × 7 wks)', value: '280 hrs' },
+      { label: 'Value @ $68/hr (blended advisory rate)', value: '$19,040' },
+    ],
+    netReturn: '+$16,342',
   },
 };
 
@@ -85,14 +145,15 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
       <section className="px-14 py-24">
         <div className="mx-auto max-w-[1280px]">
           <Eyebrow className="mb-5">
-            Case study · 0001 · Apex Regional Logistics
+            Case study · {c.caseNumber} · {c.clientLabel}
           </Eyebrow>
           <h1
             className="max-w-[1080px] font-display"
             style={{ fontSize: 72, letterSpacing: '-0.04em', lineHeight: 0.98 }}
           >
-            A 35-person logistics team got{' '}
-            <EmberText>22 hours a week back</EmberText> — in two weeks.
+            {c.headline}
+            <EmberText>{c.headlineAccent}</EmberText>
+            {c.headlineAfter ?? ''}
           </h1>
 
           <div className="mt-14 grid grid-cols-2 gap-8 border-t border-hairline pt-8 md:grid-cols-5">
@@ -133,10 +194,9 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
 
       <section className="border-t border-hairline px-14 py-20">
         <div className="mx-auto grid max-w-[1280px] grid-cols-2 gap-8 md:grid-cols-4">
-          <Metric label="Hours saved / wk" value="22" accent />
-          <Metric label="Emails / wk" value="1,540" />
-          <Metric label="Accuracy" value="97%" />
-          <Metric label="Payback" value="6 wks" />
+          {c.metrics.map((m) => (
+            <Metric key={m.label} label={m.label} value={m.value} accent={!!m.accent} />
+          ))}
         </div>
       </section>
 
@@ -145,15 +205,14 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
           <aside className="md:sticky md:top-24 md:self-start">
             <Eyebrow className="mb-4">The shape of it</Eyebrow>
             <p className="text-[15.5px] leading-[1.6] text-ink/65">
-              One agent. One workflow. Two weeks to ship. We don&rsquo;t do six-month
-              transformations.
+              {c.shapeNote}
             </p>
             <div className="my-7 h-px bg-hairline" />
             <div className="font-mono text-eyebrow uppercase tracking-[0.18em] text-ink/55">
               Built with
             </div>
             <p className="mt-2 text-[14px] text-ink/65">
-              Outlook · their TMS · Slack · hosted in their AWS account
+              {c.builtWith}
             </p>
           </aside>
 
@@ -187,7 +246,7 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
                 ))}
                 <tr>
                   <td className="py-5 font-display text-[20px] font-medium">
-                    Net return in 8 weeks
+                    Net return in {c.payback}
                   </td>
                   <td className="py-5 text-right font-display text-[24px] font-medium text-accent">
                     {c.netReturn}

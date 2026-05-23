@@ -13,7 +13,7 @@ function formatTime(iso: string): string {
 function ThroughputChart({ data }: { data: { ts: string; value: number }[] }) {
   if (data.length === 0) {
     return (
-      <div className="flex h-40 items-center justify-center text-ink/30 font-mono text-xs">
+      <div className="flex h-40 items-center justify-center font-mono text-xs text-cream/30">
         No throughput data in the last 24h
       </div>
     );
@@ -94,58 +94,58 @@ export default function AgentDetailPage({ params }: { params: Promise<{ id: stri
     );
   }
 
-  if (!data) return <p className="py-20 text-center font-body text-ink/50">Agent not found.</p>;
+  if (!data) return <p className="py-20 text-center font-body text-cream/50">Agent not found.</p>;
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <Link href="/portal/agents" className="font-mono text-xs uppercase tracking-wider text-ink/40 hover:text-accent">
+          <Link href="/portal/agents" className="font-mono text-xs uppercase tracking-wider text-cream/40 hover:text-accent">
             ← Agents
           </Link>
           <div className="mt-2 flex items-center gap-4">
-            <h1 className="font-display text-3xl font-semibold text-ink">{data.agent.name}</h1>
+            <h1 className="font-display text-3xl font-semibold text-cream">{data.agent.name}</h1>
             <AgentPill status={data.agent.status} />
           </div>
-          <p className="mt-1 font-body text-sm text-ink/50">{data.agent.description}</p>
+          <p className="mt-1 font-body text-sm text-cream/50">{data.agent.description}</p>
         </div>
       </div>
 
       {/* Metrics */}
       <div className="grid grid-cols-3 gap-4">
-        <GlassCard>
+        <GlassCard variant="dark">
           <div className="p-5">
-            <Eyebrow tone="muted">Tasks / 24h</Eyebrow>
-            <Metric value={data.metrics.tasks24h.toLocaleString()} label="total runs" />
+            <Eyebrow tone="cream">Tasks / 24h</Eyebrow>
+            <Metric value={data.metrics.tasks24h.toLocaleString()} label="total runs" dark />
           </div>
         </GlassCard>
-        <GlassCard>
+        <GlassCard variant="dark">
           <div className="p-5">
-            <Eyebrow tone="muted">Success rate</Eyebrow>
-            <Metric value={`${(data.metrics.successRate * 100).toFixed(2)}%`} label="accuracy" accent />
+            <Eyebrow tone="cream">Success rate</Eyebrow>
+            <Metric value={`${(data.metrics.successRate * 100).toFixed(2)}%`} label="accuracy" accent dark />
           </div>
         </GlassCard>
-        <GlassCard>
+        <GlassCard variant="dark">
           <div className="p-5">
-            <Eyebrow tone="muted">p95 latency</Eyebrow>
-            <Metric value={`${data.metrics.p95LatencyMs}ms`} label="response time" />
+            <Eyebrow tone="cream">p95 latency</Eyebrow>
+            <Metric value={`${data.metrics.p95LatencyMs}ms`} label="response time" dark />
           </div>
         </GlassCard>
       </div>
 
       {/* Throughput + Live Feed */}
       <div className="grid grid-cols-2 gap-6">
-        <GlassCard>
+        <GlassCard variant="dark">
           <div className="p-5">
-            <Eyebrow tone="muted">Throughput (24h)</Eyebrow>
+            <Eyebrow tone="cream">Throughput (24h)</Eyebrow>
             <div className="mt-4">
               <ThroughputChart data={data.throughput} />
             </div>
           </div>
         </GlassCard>
 
-        <GlassCard>
+        <GlassCard variant="dark">
           <div className="p-5">
             <Eyebrow tone="glow">Live feed</Eyebrow>
             <div className="mt-4">

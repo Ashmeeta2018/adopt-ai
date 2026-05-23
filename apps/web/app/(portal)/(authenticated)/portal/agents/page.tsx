@@ -20,46 +20,46 @@ export default function AgentsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <Eyebrow tone="muted">{data.agents.length} agents</Eyebrow>
-        <h1 className="mt-2 font-display text-3xl font-semibold text-ink">Agents</h1>
+        <Eyebrow tone="cream">{data.agents.length} agents</Eyebrow>
+        <h1 className="mt-2 font-display text-3xl font-semibold text-cream">Agents</h1>
       </div>
 
       <div className="space-y-3">
         {data.agents.map((agent) => (
           <Link key={agent.id} href={`/portal/agents/${agent.id}`}>
-            <div className="group flex items-center justify-between rounded-xl border border-hairline bg-paper px-6 py-5 transition-all hover:border-accent/30 hover:shadow-md">
+            <div className="group flex items-center justify-between rounded-xl border border-hairline-dark bg-cream/[0.04] px-6 py-5 transition-all hover:border-accent/30 hover:bg-cream/[0.06]">
               <div className="flex items-center gap-5">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-void">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-cream/10">
                   <AgentPill status={agent.status} />
                 </div>
                 <div>
-                  <p className="font-display text-base font-semibold text-ink group-hover:text-accent">
+                  <p className="font-display text-base font-semibold text-cream group-hover:text-accent">
                     {agent.name}
                   </p>
-                  <p className="mt-0.5 font-body text-sm text-ink/50">{agent.description}</p>
+                  <p className="mt-0.5 font-body text-sm text-cream/50">{agent.description}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-10">
                 <div className="grid grid-cols-3 gap-8 text-right">
                   <div>
-                    <p className="font-mono text-lg font-medium text-ink">
+                    <p className="font-mono text-lg font-medium text-cream">
                       {agent.tasks24h.toLocaleString()}
                     </p>
-                    <p className="font-mono text-[10px] uppercase tracking-wider text-ink/40">tasks/24h</p>
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-cream/40">tasks/24h</p>
                   </div>
                   <div>
-                    <p className="font-mono text-lg font-medium text-ink">
+                    <p className="font-mono text-lg font-medium text-cream">
                       {(agent.successRate * 100).toFixed(2)}%
                     </p>
-                    <p className="font-mono text-[10px] uppercase tracking-wider text-ink/40">success rate</p>
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-cream/40">success rate</p>
                   </div>
                   <div>
-                    <p className="font-mono text-lg font-medium capitalize text-ink">{agent.status}</p>
-                    <p className="font-mono text-[10px] uppercase tracking-wider text-ink/40">status</p>
+                    <p className="font-mono text-lg font-medium capitalize text-cream">{agent.status}</p>
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-cream/40">status</p>
                   </div>
                 </div>
-                <span className="ml-4 text-lg text-ink/30 group-hover:text-accent">→</span>
+                <span className="ml-4 text-lg text-cream/30 group-hover:text-accent">→</span>
               </div>
             </div>
           </Link>

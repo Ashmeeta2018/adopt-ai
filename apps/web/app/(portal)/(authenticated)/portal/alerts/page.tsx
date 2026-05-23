@@ -4,9 +4,9 @@ import { trpc } from '@/lib/trpc/client';
 import { Eyebrow } from '@adopt-ai/ui-web';
 
 const SEVERITY_STYLES: Record<string, { dot: string; bg: string; border: string }> = {
-  ops: { dot: 'bg-accent', bg: 'bg-accent/5', border: 'border-accent/20' },
-  drift: { dot: 'bg-amber', bg: 'bg-amber/5', border: 'border-amber/20' },
-  team: { dot: 'bg-success', bg: 'bg-success/5', border: 'border-success/20' },
+  ops: { dot: 'bg-accent', bg: 'bg-accent/5', border: 'border-accent/25' },
+  drift: { dot: 'bg-amber', bg: 'bg-amber/5', border: 'border-amber/25' },
+  team: { dot: 'bg-success', bg: 'bg-success/5', border: 'border-success/25' },
 };
 
 function AlertCard({
@@ -22,34 +22,34 @@ function AlertCard({
   const dateStr = time.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
   return (
-    <div className={`group rounded-xl border bg-paper p-5 transition-all ${style.border} ${!alert.read ? style.bg : ''}`}>
+    <div className={`group rounded-xl border bg-cream/[0.03] p-5 transition-all ${style.border} ${!alert.read ? style.bg : ''}`}>
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-4">
-          <div className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${style.dot} ${!alert.read ? 'animate-pulse' : 'opacity-50'}`} />
+          <div className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${style.dot} ${!alert.read ? 'animate-pulse' : 'opacity-30'}`} />
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-ink/40">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-cream/40">
                 {alert.severity}
               </span>
               {!alert.read && (
-                <span className="rounded-full bg-accent/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-accent">
+                <span className="rounded-full bg-accent/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-accent">
                   new
                 </span>
               )}
             </div>
-            <p className={`mt-1 font-display text-sm font-semibold ${!alert.read ? 'text-ink' : 'text-ink/70'}`}>
+            <p className={`mt-1 font-display text-sm font-semibold ${!alert.read ? 'text-cream' : 'text-cream/60'}`}>
               {alert.title}
             </p>
-            <p className="mt-0.5 font-body text-sm text-ink/50">{alert.body}</p>
+            <p className="mt-0.5 font-body text-sm text-cream/50">{alert.body}</p>
           </div>
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
-          <span className="font-mono text-xs text-ink/30">{dateStr} {timeStr}</span>
+          <span className="font-mono text-xs text-cream/30">{dateStr} {timeStr}</span>
           {!alert.read && (
             <button
               onClick={() => onMarkRead(alert.id)}
-              className="rounded-md border border-hairline bg-paper px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-ink/50 transition-colors hover:border-accent hover:text-accent"
+              className="rounded-md border border-hairline-dark bg-cream/[0.04] px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-cream/50 transition-colors hover:border-accent hover:text-accent"
             >
               Dismiss
             </button>
@@ -82,15 +82,15 @@ export default function AlertsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <Eyebrow tone={unread > 0 ? 'accent' : 'muted'}>
+        <Eyebrow tone={unread > 0 ? 'accent' : 'cream'}>
           {unread > 0 ? `${unread} unread` : 'All caught up'}
         </Eyebrow>
-        <h1 className="mt-2 font-display text-3xl font-semibold text-ink">Alerts</h1>
+        <h1 className="mt-2 font-display text-3xl font-semibold text-cream">Alerts</h1>
       </div>
 
       {data.today.length > 0 && (
         <div>
-          <Eyebrow tone="muted">Today</Eyebrow>
+          <Eyebrow tone="cream">Today</Eyebrow>
           <div className="mt-3 space-y-3">
             {data.today.map((alert) => (
               <AlertCard key={alert.id} alert={alert} onMarkRead={(id) => markRead.mutate({ alertId: id })} />
@@ -101,7 +101,7 @@ export default function AlertsPage() {
 
       {data.earlier.length > 0 && (
         <div>
-          <Eyebrow tone="muted">Earlier</Eyebrow>
+          <Eyebrow tone="cream">Earlier</Eyebrow>
           <div className="mt-3 space-y-3">
             {data.earlier.map((alert) => (
               <AlertCard key={alert.id} alert={alert} onMarkRead={(id) => markRead.mutate({ alertId: id })} />
@@ -111,9 +111,9 @@ export default function AlertsPage() {
       )}
 
       {data.today.length === 0 && data.earlier.length === 0 && (
-        <div className="rounded-xl border border-dashed border-hairline py-16 text-center">
-          <p className="font-body text-sm text-ink/50">No alerts.</p>
-          <p className="mt-1 font-mono text-xs text-ink/30">
+        <div className="rounded-xl border border-dashed border-hairline-dark py-16 text-center">
+          <p className="font-body text-sm text-cream/50">No alerts.</p>
+          <p className="mt-1 font-mono text-xs text-cream/30">
             We'll surface issues here when agents need attention.
           </p>
         </div>
