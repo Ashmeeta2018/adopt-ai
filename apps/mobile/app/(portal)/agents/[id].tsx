@@ -1,36 +1,49 @@
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { theme } from '@/lib/theme';
+import { theme, withOpacity } from '@/lib/theme';
+import { ORG } from '@/lib/persona';
 
 interface FeedLine {
   id: string;
   ts: string;
-  status: 'ok' | 'warn';
+  status: 'ok' | 'warn' | 'error';
   message: string;
 }
+
+// Placeholder messages rotated by the mock feed generator.
+// TODO: Replace with tRPC subscription once WebSocket link + auth are wired.
+const MOCK_MESSAGES = [
+  { status: 'ok' as const, message: 'Routed inbound message → TMS dispatcher' },
+  { status: 'ok' as const, message: 'Extracted shipment data from carrier email' },
+  { status: 'ok' as const, message: 'Classified intent — action required' },
+  { status: 'warn' as const, message: 'Confidence below threshold — escalated' },
+  { status: 'ok' as const, message: 'Invoice matched to PO-4821' },
+  { status: 'ok' as const, message: 'Support ticket routed to Tier 2' },
+  { status: 'error' as const, message: 'TMS adapter timeout — retrying' },
+  { status: 'ok' as const, message: 'Carrier response parsed successfully' },
+];
 
 export default function AgentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [feed, setFeed] = useState<FeedLine[]>([]);
+  const seqRef = useRef(0);
 
   useEffect(() => {
-    const id = setInterval(() => {
-      setFeed((f) =>
-        [
-          {
-            id: Math.random().toString(36).slice(2),
-            ts: new Date().toLocaleTimeString(),
-            status: Math.random() > 0.85 ? 'warn' : 'ok',
-            message: 'Routed inbound message → TMS dispatcher',
-          } satisfies FeedLine,
-          ...f,
-        ].slice(0, 16),
-      );
+    const tick = setInterval(() => {
+      const msg = MOCK_MESSAGES[seqRef.current % MOCK_MESSAGES.length]!;
+      seqRef.current++;
+      const line: FeedLine = {
+        id: seqRef.current.toString(),
+        ts: new Date().toLocaleTimeString(),
+        status: msg.status,
+        message: msg.message,
+      };
+      setFeed((f) => [line, ...f].slice(0, 16));
     }, 1800);
-    return () => clearInterval(id);
+    return () => clearInterval(tick);
   }, []);
 
   return (
@@ -42,7 +55,7 @@ export default function AgentDetailScreen() {
             <Text style={styles.title}>{id ?? 'intake-agent-v4'}</Text>
             <View style={[styles.dot, { backgroundColor: theme.colors.success }]} />
           </View>
-          <Text style={styles.sub}>Apex Regional Logistics · Inbound coordination</Text>
+          <Text style={styles.sub}>{`${ORG.name} · Inbound coordination`}</Text>
 
           <View style={styles.metricsGrid}>
             <Stat label="24h tasks" value="14,235" />
@@ -54,17 +67,17 @@ export default function AgentDetailScreen() {
             <Text style={styles.chartLabel}>THROUGHPUT · 24H</Text>
           </View>
 
-          <Text style={styles.feedHeader}>LIVE · LAST 60s</Text>
+          <Text style={styles.feedHeader}>SIMULATED · LIVE PREVIEW</Text>
           {feed.map((line, i) => (
             <View key={line.id} style={[styles.feedRow, { opacity: 1 - i * 0.05 }]}>
               <Text style={styles.feedTs}>{line.ts}</Text>
               <Text
                 style={[
                   styles.feedStatus,
-                  { color: line.status === 'ok' ? theme.colors.success : theme.colors.warning },
+                  { color: line.status === 'ok' ? theme.colors.success : line.status === 'error' ? theme.colors.error : theme.colors.warning },
                 ]}
               >
-                {line.status === 'ok' ? '✓' : '⚙'}
+                {line.status === 'ok' ? '✓' : line.status === 'error' ? '✗' : '⚙'}
               </Text>
               <Text style={styles.feedMessage} numberOfLines={1}>
                 {line.message}
@@ -92,18 +105,18 @@ const styles = StyleSheet.create({
     fontFamily: 'IBMPlexMono',
     fontSize: 11,
     letterSpacing: 2.2,
-    color: 'rgba(248,244,238,0.55)',
+    color: withOpacity(theme.colors.cream, 0.55),
   },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 },
   title: { fontFamily: 'IBMPlexMono', fontSize: 22, color: theme.colors.cream },
   dot: { width: 8, height: 8, borderRadius: 99 },
-  sub: { marginTop: 4, fontFamily: 'Inter', fontSize: 13, color: 'rgba(248,244,238,0.55)' },
+  sub: { marginTop: 4, fontFamily: 'Inter', fontSize: 13, color: withOpacity(theme.colors.cream, 0.55) },
   metricsGrid: { flexDirection: 'row', gap: 10, marginTop: 22 },
   statCard: {
     flex: 1,
     padding: 14,
     borderRadius: 12,
-    backgroundColor: 'rgba(248,244,238,0.05)',
+    backgroundColor: withOpacity(theme.colors.cream, 0.05),
     borderWidth: 1,
     borderColor: theme.hairlines.dark,
   },
@@ -113,7 +126,7 @@ const styles = StyleSheet.create({
     fontFamily: 'IBMPlexMono',
     fontSize: 10,
     letterSpacing: 1.8,
-    color: 'rgba(248,244,238,0.55)',
+    color: withOpacity(theme.colors.cream, 0.55),
   },
   chartCard: {
     marginTop: 18,
@@ -127,7 +140,7 @@ const styles = StyleSheet.create({
     fontFamily: 'IBMPlexMono',
     fontSize: 10,
     letterSpacing: 1.8,
-    color: 'rgba(248,244,238,0.55)',
+    color: withOpacity(theme.colors.cream, 0.55),
   },
   feedHeader: {
     marginTop: 24,
@@ -144,12 +157,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: theme.hairlines.dark,
   },
-  feedTs: { fontFamily: 'IBMPlexMono', fontSize: 11, color: 'rgba(248,244,238,0.45)' },
+  feedTs: { fontFamily: 'IBMPlexMono', fontSize: 11, color: withOpacity(theme.colors.cream, 0.45) },
   feedStatus: { fontSize: 12 },
   feedMessage: {
     flex: 1,
     fontFamily: 'IBMPlexMono',
     fontSize: 11,
-    color: 'rgba(248,244,238,0.75)',
+    color: withOpacity(theme.colors.cream, 0.75),
   },
 });

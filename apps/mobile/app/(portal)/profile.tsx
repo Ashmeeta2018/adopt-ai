@@ -1,9 +1,11 @@
+import Constants from 'expo-constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AgentPillNative } from '@/components/AgentPillNative';
-import { theme } from '@/lib/theme';
+import { theme, withOpacity } from '@/lib/theme';
+import { ORG, USER } from '@/lib/persona';
 
 const sections = [
   {
@@ -44,10 +46,10 @@ export default function ProfileScreen() {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
-            <Text style={styles.avatarText}>ML</Text>
+            <Text style={styles.avatarText}>{USER.initials}</Text>
           </LinearGradient>
-          <Text style={styles.name}>Maya Lindqvist</Text>
-          <Text style={styles.sub}>Director of Operations · Apex Logistics</Text>
+          <Text style={styles.name}>{USER.fullName}</Text>
+          <Text style={styles.sub}>{`${USER.role} · ${ORG.shortName}`}</Text>
           <View style={{ marginTop: 14 }}>
             <AgentPillNative label="STUDIO PLAN" status="queue" />
           </View>
@@ -67,6 +69,8 @@ export default function ProfileScreen() {
                       borderBottomColor: theme.hairlines.light,
                     },
                   ]}
+                  accessibilityLabel={r.label + ('value' in r ? `, ${r.value}` : '')}
+                  accessibilityRole="button"
                 >
                   <Text
                     style={[
@@ -83,7 +87,9 @@ export default function ProfileScreen() {
           </View>
         ))}
 
-        <Text style={styles.footer}>ADOPT AI · v2.4.1 · BUILD 88241</Text>
+        <Text style={styles.footer}>
+          {`ADOPT AI · v${Constants.expoConfig?.extra?.version ?? '—'} · BUILD ${Constants.expoConfig?.extra?.buildNumber ?? '—'}`}
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -100,19 +106,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: '#fff8f0', fontFamily: 'Sora', fontSize: 28, fontWeight: '600' },
+  avatarText: { color: theme.colors.cream, fontFamily: 'Sora', fontSize: 28, fontWeight: '600' },
   name: { marginTop: 12, fontFamily: 'Sora', fontSize: 22, color: theme.colors.ink },
-  sub: { marginTop: 2, fontFamily: 'Inter', fontSize: 13, color: 'rgba(61,26,15,0.55)' },
+  sub: { marginTop: 2, fontFamily: 'Inter', fontSize: 13, color: withOpacity(theme.colors.ink, 0.55) },
   section: { marginTop: 18 },
   sectionTitle: {
     fontFamily: 'IBMPlexMono',
     fontSize: 11,
     letterSpacing: 1.8,
-    color: 'rgba(61,26,15,0.5)',
+    color: withOpacity(theme.colors.ink, 0.5),
     marginBottom: 8,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.paper,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: theme.hairlines.light,
@@ -125,13 +131,13 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   rowLabel: { fontFamily: 'Sora', fontSize: 15, color: theme.colors.ink },
-  rowValue: { fontFamily: 'IBMPlexMono', fontSize: 12, color: 'rgba(61,26,15,0.55)' },
+  rowValue: { fontFamily: 'IBMPlexMono', fontSize: 12, color: withOpacity(theme.colors.ink, 0.55) },
   footer: {
     marginTop: 30,
     textAlign: 'center',
     fontFamily: 'IBMPlexMono',
     fontSize: 10,
     letterSpacing: 1.6,
-    color: 'rgba(61,26,15,0.4)',
+    color: withOpacity(theme.colors.ink, 0.4),
   },
 });

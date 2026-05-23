@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { theme } from '@/lib/theme';
+import { theme, withOpacity } from '@/lib/theme';
 
 const WORKFLOWS = [
   {
@@ -40,9 +40,9 @@ const WORKFLOWS = [
 
 const STATUS_COLORS: Record<string, string> = {
   ACTIVE: theme.colors.success,
-  DRAFT: '#f59e0b',
-  PAUSED: 'rgba(61,26,15,0.3)',
-  ARCHIVED: 'rgba(61,26,15,0.2)',
+  DRAFT: theme.colors.warning,
+  PAUSED: withOpacity(theme.colors.ink, 0.3),
+  ARCHIVED: withOpacity(theme.colors.ink, 0.2),
 };
 
 export default function WorkflowsListScreen() {
@@ -59,6 +59,8 @@ export default function WorkflowsListScreen() {
             key={wf.id}
             style={styles.card}
             onPress={() => router.push(`/(portal)/workflows/${wf.id}`)}
+            accessibilityLabel={`${wf.name} — ${wf.status.toLowerCase()}, version ${wf.version}, ${wf.nodes} nodes`}
+            accessibilityRole="button"
           >
             <View style={styles.cardHeader}>
               <View style={styles.iconBadge}>
@@ -108,13 +110,13 @@ const styles = StyleSheet.create({
     fontFamily: 'IBMPlexMono',
     fontSize: 12,
     letterSpacing: 1.2,
-    color: 'rgba(61,26,15,0.5)',
+    color: withOpacity(theme.colors.ink, 0.5),
   },
   card: {
     padding: 16,
     marginBottom: 10,
     borderRadius: 16,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.paper,
     borderWidth: 1,
     borderColor: theme.hairlines.light,
   },
@@ -135,9 +137,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter',
     fontSize: 12,
     lineHeight: 16,
-    color: 'rgba(61,26,15,0.6)',
+    color: withOpacity(theme.colors.ink, 0.6),
   },
-  chevron: { fontSize: 24, color: 'rgba(61,26,15,0.4)', marginTop: 2 },
+  chevron: { fontSize: 24, color: withOpacity(theme.colors.ink, 0.4), marginTop: 2 },
   metricsRow: {
     flexDirection: 'row',
     gap: 16,
@@ -158,6 +160,6 @@ const styles = StyleSheet.create({
     fontFamily: 'IBMPlexMono',
     fontSize: 10,
     letterSpacing: 1.2,
-    color: 'rgba(61,26,15,0.45)',
+    color: withOpacity(theme.colors.ink, 0.45),
   },
 });

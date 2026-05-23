@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { theme } from '@/lib/theme';
+import { theme, withOpacity } from '@/lib/theme';
 
 interface Props {
   label: string;
@@ -57,11 +57,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   pillLight: {
-    backgroundColor: 'rgba(61,26,15,0.04)',
+    backgroundColor: withOpacity(theme.colors.ink, 0.04),
     borderColor: theme.hairlines.light,
   },
   pillDark: {
-    backgroundColor: 'rgba(248,244,238,0.06)',
+    backgroundColor: withOpacity(theme.colors.cream, 0.06),
     borderColor: theme.hairlines.dark,
   },
   dot: {

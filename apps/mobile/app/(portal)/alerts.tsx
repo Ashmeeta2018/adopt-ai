@@ -1,7 +1,9 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { theme } from '@/lib/theme';
+import { USER } from '@/lib/persona';
+
+import { theme, withOpacity } from '@/lib/theme';
 
 interface Alert {
   id: string;
@@ -33,7 +35,7 @@ const today: Alert[] = [
     id: '3',
     tag: 'TEAM',
     time: '1 hr ago',
-    title: 'Maya added a comment to last weekly report',
+    title: `${USER.firstName} added a comment to last weekly report`,
     body: '"Great week — let’s slot a 1:1 to look at invoice success rate."',
     severity: 'gold',
   },
@@ -59,7 +61,7 @@ export default function AlertsScreen() {
             <Text style={styles.eyebrow}>NOTIFICATIONS</Text>
             <Text style={styles.h1}>Alerts & updates</Text>
           </View>
-          <Pressable>
+          <Pressable accessibilityLabel="Clear all alerts" accessibilityRole="button">
             <Text style={styles.clear}>CLEAR</Text>
           </Pressable>
         </View>
@@ -99,7 +101,7 @@ const styles = StyleSheet.create({
     fontFamily: 'IBMPlexMono',
     fontSize: 11,
     letterSpacing: 2.2,
-    color: 'rgba(61,26,15,0.55)',
+    color: withOpacity(theme.colors.ink, 0.55),
   },
   h1: { marginTop: 6, fontFamily: 'Sora', fontSize: 26, color: theme.colors.ink },
   clear: { fontFamily: 'IBMPlexMono', letterSpacing: 1.8, color: theme.colors.accent },
@@ -109,13 +111,13 @@ const styles = StyleSheet.create({
     fontFamily: 'IBMPlexMono',
     fontSize: 11,
     letterSpacing: 1.8,
-    color: 'rgba(61,26,15,0.55)',
+    color: withOpacity(theme.colors.ink, 0.55),
   },
   card: {
     flexDirection: 'row',
     marginBottom: 10,
     padding: 14,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.paper,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: theme.hairlines.light,
@@ -126,11 +128,11 @@ const styles = StyleSheet.create({
     fontFamily: 'IBMPlexMono',
     fontSize: 10,
     letterSpacing: 1.8,
-    color: 'rgba(61,26,15,0.55)',
+    color: withOpacity(theme.colors.ink, 0.55),
   },
-  time: { fontFamily: 'IBMPlexMono', fontSize: 10, color: 'rgba(61,26,15,0.5)' },
+  time: { fontFamily: 'IBMPlexMono', fontSize: 10, color: withOpacity(theme.colors.ink, 0.5) },
   title: { marginTop: 6, fontFamily: 'Sora', fontSize: 15, color: theme.colors.ink },
-  body: { marginTop: 4, fontFamily: 'Inter', fontSize: 12.5, color: 'rgba(61,26,15,0.65)' },
+  body: { marginTop: 4, fontFamily: 'Inter', fontSize: 12.5, color: withOpacity(theme.colors.ink, 0.65) },
   simpleRow: {
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,

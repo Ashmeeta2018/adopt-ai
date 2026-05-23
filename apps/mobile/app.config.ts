@@ -24,7 +24,7 @@ const config: ExpoConfig = {
     package: 'com.adoptai.portal',
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
-      backgroundColor: '#0F0805',
+      backgroundColor: '#0F0805', // theme.colors.void — Expo config can't import ESM tokens
     },
   },
   plugins: [
@@ -41,6 +41,8 @@ const config: ExpoConfig = {
   },
   extra: {
     apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000/api',
+    version: process.env.EXPO_PUBLIC_APP_VERSION ?? '0.1.0',
+    buildNumber: process.env.EXPO_PUBLIC_BUILD_NUMBER ?? 'dev',
   },
 };
 

@@ -3,7 +3,7 @@ import { BlurView } from 'expo-blur';
 import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
 
-import { theme } from '@/lib/theme';
+import { theme, withOpacity } from '@/lib/theme';
 
 export default function PortalTabLayout() {
   return (
@@ -11,7 +11,7 @@ export default function PortalTabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: theme.colors.accent,
-        tabBarInactiveTintColor: 'rgba(61,26,15,0.55)',
+        tabBarInactiveTintColor: withOpacity(theme.colors.ink, 0.55),
         tabBarStyle: { position: 'absolute', borderTopWidth: StyleSheet.hairlineWidth },
         tabBarBackground: () => <BlurView tint="light" intensity={70} style={StyleSheet.absoluteFill} />,
         tabBarLabelStyle: { fontFamily: 'IBMPlexMono', fontSize: 10, letterSpacing: 1.2 },

@@ -2,7 +2,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { theme } from '@/lib/theme';
+import { theme, withOpacity } from '@/lib/theme';
+import { ORG } from '@/lib/persona';
 
 const pipelines = [
   { name: 'Inbound coordination', hours: 220, tasks: 14235, success: 99.4, color: theme.colors.accent },
@@ -16,7 +17,7 @@ export default function WeeklyReportScreen() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.eyebrow}>WEEKLY PERFORMANCE</Text>
         <Text style={styles.h1}>May 15 – May 22</Text>
-        <Text style={styles.sub}>Apex Regional Logistics</Text>
+        <Text style={styles.sub}>{ORG.name}</Text>
 
         <View style={styles.bigGrid}>
           <View style={styles.bigCard}>
@@ -53,10 +54,10 @@ export default function WeeklyReportScreen() {
         ))}
 
         <View style={styles.actions}>
-          <Pressable style={[styles.button, styles.buttonDark]}>
+          <Pressable style={[styles.button, styles.buttonDark]} accessibilityLabel="Export weekly report as PDF" accessibilityRole="button">
             <Text style={styles.buttonDarkText}>Export PDF</Text>
           </Pressable>
-          <Pressable style={[styles.button, styles.buttonGhost]}>
+          <Pressable style={[styles.button, styles.buttonGhost]} accessibilityLabel="Share weekly report" accessibilityRole="button">
             <Text style={styles.buttonGhostText}>Share</Text>
           </Pressable>
         </View>
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
     color: theme.colors.accent,
   },
   h1: { marginTop: 6, fontFamily: 'Sora', fontSize: 26, color: theme.colors.ink },
-  sub: { marginTop: 2, fontFamily: 'Inter', fontSize: 13, color: 'rgba(61,26,15,0.55)' },
+  sub: { marginTop: 2, fontFamily: 'Inter', fontSize: 13, color: withOpacity(theme.colors.ink, 0.55) },
   bigGrid: { flexDirection: 'row', gap: 10, marginTop: 22 },
   bigCard: {
     flex: 1,
@@ -83,13 +84,13 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     borderColor: theme.hairlines.light,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.paper,
   },
   bigCaption: {
     fontFamily: 'IBMPlexMono',
     fontSize: 10,
     letterSpacing: 1.8,
-    color: 'rgba(61,26,15,0.55)',
+    color: withOpacity(theme.colors.ink, 0.55),
   },
   bigNumber: {
     marginTop: 8,
@@ -104,12 +105,12 @@ const styles = StyleSheet.create({
   pipelineHeader: { flexDirection: 'row', justifyContent: 'space-between' },
   pipelineName: { fontFamily: 'Sora', fontSize: 16, color: theme.colors.ink },
   pipelineHours: { fontFamily: 'Sora', fontSize: 16, fontWeight: '500' },
-  pipelineMeta: { fontFamily: 'IBMPlexMono', fontSize: 11, color: 'rgba(61,26,15,0.55)' },
+  pipelineMeta: { fontFamily: 'IBMPlexMono', fontSize: 11, color: withOpacity(theme.colors.ink, 0.55) },
   barTrack: {
     marginTop: 8,
     height: 6,
     borderRadius: 99,
-    backgroundColor: 'rgba(61,26,15,0.08)',
+    backgroundColor: withOpacity(theme.colors.ink, 0.08),
     overflow: 'hidden',
   },
   barFill: { height: '100%', borderRadius: 99 },
