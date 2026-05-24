@@ -13,9 +13,22 @@ import { trpc } from '@/lib/trpc/client';
 
 type FormValues = z.infer<typeof requestMagicLinkInput>;
 
-export function PortalLoginCard() {
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  EmailSignin: 'Unable to send sign-in link. Please try again.',
+  Configuration: 'Sign-in is not configured. Please contact support.',
+  AccessDenied: 'Access denied. You may not have permission to sign in.',
+  Verification: 'The sign-in link has expired. Please request a new one.',
+};
+
+interface PortalLoginCardProps {
+  urlError?: string | null;
+}
+
+export function PortalLoginCard({ urlError }: PortalLoginCardProps) {
   const [sent, setSent] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(
+    urlError ? (AUTH_ERROR_MESSAGES[urlError] ?? 'Authentication error. Please try again.') : null,
+  );
 
   // Rate-limit guard — checked server-side before Auth.js sends the email.
   const rateLimitCheck = trpc.auth.requestMagicLink.useMutation();

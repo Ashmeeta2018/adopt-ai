@@ -1,4 +1,5 @@
 import { AmbientOrbs, AmbientRings, BrandMark, Eyebrow } from '@adopt-ai/ui-web';
+
 import type { Metadata } from 'next';
 
 import { PortalLoginCard } from '@/components/portal/PortalLoginCard';
@@ -8,9 +9,15 @@ export const metadata: Metadata = {
   description: 'Sign in to monitor your agents, runs, and weekly reports.',
 };
 
-export default function PortalLoginPage() {
+export default async function PortalLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+
   return (
-    <main className="relative min-h-screen overflow-hidden bg-void text-cream">
+    <main className="bg-void text-cream relative min-h-screen overflow-hidden">
       <AmbientOrbs intensity={1} dark />
       <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-85">
         <AmbientRings size={920} dark />
@@ -22,9 +29,9 @@ export default function PortalLoginPage() {
           <Eyebrow tone="glow">Client Portal</Eyebrow>
         </div>
 
-        <PortalLoginCard />
+        <PortalLoginCard urlError={error} />
 
-        <p className="mt-12 font-mono text-eyebrow uppercase tracking-[0.18em] text-cream/40">
+        <p className="text-eyebrow text-cream/40 mt-12 font-mono uppercase tracking-[0.18em]">
           SOC 2 Type II · ISO 27001 · HIPAA · © 2026 Adopt AI
         </p>
       </div>
