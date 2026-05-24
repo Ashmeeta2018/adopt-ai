@@ -15,7 +15,7 @@
     "migrate": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
     "studio": "prisma studio",
-    "seed": "tsx src/seed.ts",
+    "seed": "node --env-file=.env --import tsx src/seed.ts",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit"
   },
