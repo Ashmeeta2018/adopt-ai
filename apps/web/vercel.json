@@ -1,7 +1,7 @@
 {
   "framework": "nextjs",
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm --filter @adopt-ai/db run migrate:deploy && pnpm --filter @adopt-ai/web run build",
-  "outputDirectory": "apps/web/.next",
+  "buildCommand": "pnpm --filter @adopt-ai/db run migrate:deploy && pnpm run build",
+  "outputDirectory": ".next",
   "ignoreCommand": "git diff --quiet HEAD^ HEAD -- apps/web/ packages/"
 }
