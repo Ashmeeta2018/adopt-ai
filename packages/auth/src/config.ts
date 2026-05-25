@@ -1,10 +1,11 @@
-import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@adopt-ai/db';
-import type { NextAuthConfig } from 'next-auth';
+import { PrismaAdapter } from '@auth/prisma-adapter';
 import Okta from 'next-auth/providers/okta';
 import Resend from 'next-auth/providers/resend';
 
 import { authEnv } from './env';
+
+import type { NextAuthConfig } from 'next-auth';
 
 /**
  * Shared Auth.js v5 config. The web app imports this and adds runtime handlers.
@@ -21,6 +22,19 @@ export const authConfig: NextAuthConfig = {
   secret: authEnv.AUTH_SECRET,
   trustHost: authEnv.AUTH_TRUST_HOST,
   session: { strategy: 'jwt', maxAge: 60 * 60 * 24, updateAge: 60 * 60 },
+  logger: {
+    error(code, ...message) {
+      console.error('[auth:error]', code, ...message);
+    },
+    warn(code) {
+      console.warn('[auth:warn]', code);
+    },
+    debug(code, ...message) {
+      if (process.env.AUTH_DEBUG === 'true') {
+        console.error('[auth:debug]', code, ...message);
+      }
+    },
+  },
   pages: {
     signIn: '/portal',
     verifyRequest: '/portal/check-email',
@@ -74,13 +88,13 @@ export const authConfig: NextAuthConfig = {
       }
       return baseUrl;
     },
-    async session({ session, token }) {
+    session({ session, token }) {
       if (token.sub) {
         session.user = { ...session.user, id: token.sub };
       }
       return session;
     },
-    async jwt({ token, user }) {
+    jwt({ token, user }) {
       if (user) {
         token.sub = user.id;
       }
