@@ -108,7 +108,17 @@ export function PortalLoginCard({ urlError }: PortalLoginCardProps) {
         dark
         className="w-full"
         type="button"
-        onClick={() => void signIn('okta', { callbackUrl: '/portal/dashboard' })}
+        onClick={() => {
+          signIn('okta', { callbackUrl: '/portal/dashboard' })
+            .then((result) => {
+              if (result?.error) {
+                setAuthError('SSO sign-in failed. Please try again.');
+              }
+            })
+            .catch(() => {
+              setAuthError('SSO sign-in failed. Please try again.');
+            });
+        }}
       >
         Continue with SSO (Okta) ↗
       </Button>

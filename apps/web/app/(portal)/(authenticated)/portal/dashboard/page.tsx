@@ -1,8 +1,15 @@
 'use client';
 
 import { trpc } from '@/lib/trpc/client';
-import { AgentPill, Eyebrow, GlassCard, Metric } from '@adopt-ai/ui-web';
+import { Eyebrow, GlassCard, Metric } from '@adopt-ai/ui-web';
 import Link from 'next/link';
+
+const AGENT_COLORS: Record<string, string> = {
+  INBOX_TRIAGE: '#D9462C',
+  DOCUMENT_EXTRACTION: '#E67E22',
+  SUPPORT_ROUTING: '#D6912A',
+  CUSTOM: '#C68A1F',
+};
 
 function formatNumber(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
@@ -70,7 +77,12 @@ export default function PortalDashboard() {
             <Link key={agent.id} href={`/portal/agents/${agent.id}`}>
               <div className="group flex items-center justify-between rounded-xl border border-hairline-dark bg-cream/[0.04] px-5 py-4 transition-all hover:border-accent/30 hover:bg-cream/[0.06]">
                 <div className="flex items-center gap-4">
-                  <AgentPill status={agent.status} />
+                  <div
+                    className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl text-cream font-mono text-sm"
+                    style={{ background: `linear-gradient(140deg, ${AGENT_COLORS[agent.kind] ?? '#C68A1F'}, #E8E3DB)` }}
+                  >
+                    ◈
+                  </div>
                   <div>
                     <p className="font-display text-sm font-semibold text-cream group-hover:text-accent">{agent.name}</p>
                     <p className="font-body text-xs text-cream/50">{agent.description}</p>

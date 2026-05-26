@@ -1,8 +1,15 @@
 'use client';
 
 import { trpc } from '@/lib/trpc/client';
-import { AgentPill, Eyebrow } from '@adopt-ai/ui-web';
+import { Eyebrow } from '@adopt-ai/ui-web';
 import Link from 'next/link';
+
+const AGENT_COLORS: Record<string, string> = {
+  INBOX_TRIAGE: '#D9462C',
+  DOCUMENT_EXTRACTION: '#E67E22',
+  SUPPORT_ROUTING: '#D6912A',
+  CUSTOM: '#C68A1F',
+};
 
 export default function AgentsPage() {
   const { data, isLoading } = trpc.portal.getDashboard.useQuery();
@@ -29,8 +36,11 @@ export default function AgentsPage() {
           <Link key={agent.id} href={`/portal/agents/${agent.id}`}>
             <div className="group flex items-center justify-between rounded-xl border border-hairline-dark bg-cream/[0.04] px-6 py-5 transition-all hover:border-accent/30 hover:bg-cream/[0.06]">
               <div className="flex items-center gap-5">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-cream/10">
-                  <AgentPill status={agent.status} />
+                <div
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-cream font-mono text-base"
+                  style={{ background: `linear-gradient(140deg, ${AGENT_COLORS[agent.kind] ?? '#C68A1F'}, #E8E3DB)` }}
+                >
+                  ◈
                 </div>
                 <div>
                   <p className="font-display text-base font-semibold text-cream group-hover:text-accent">

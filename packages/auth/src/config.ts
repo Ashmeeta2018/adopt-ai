@@ -59,6 +59,28 @@ export const authConfig: NextAuthConfig = {
           Resend({
             from: authEnv.AUTH_EMAIL_FROM,
             apiKey: authEnv.AUTH_RESEND_KEY,
+            sendVerificationRequest: async ({ identifier: email, url, provider }) => {
+              if (process.env.NODE_ENV === 'development') {
+                console.log(`\n[auth] Magic link for ${email}: ${url}\n`);
+              }
+              const response = await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                  Authorization: `Bearer ${provider.apiKey}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  from: provider.from,
+                  to: [email],
+                  subject: 'Sign in to Adopt AI',
+                  html: `<p>Click <a href="${url}">here</a> to sign in to Adopt AI. This link expires in 10 minutes.</p>`,
+                }),
+              });
+              if (!response.ok) {
+                const body = await response.text();
+                throw new Error(`Resend API error ${response.status}: ${body}`);
+              }
+            },
           }),
         ]
       : []),

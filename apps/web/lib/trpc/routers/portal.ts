@@ -65,6 +65,7 @@ export const portalRouter = router({
           name: true,
           description: true,
           status: true,
+          kind: true,
           // Fetch up to 100 recent runs so we can compute success rate and
           // last-run timestamp without a separate query.
           runs: {
@@ -104,6 +105,7 @@ export const portalRouter = router({
           name: a.name,
           description: a.description,
           status: agentStatusMap[a.status],
+          kind: a.kind,
           tasks24h: a._count.runs,
           successRate: Math.round(successRate * 10000) / 10000,
           lastRunAt: lastRun?.ts?.toISOString() ?? null,

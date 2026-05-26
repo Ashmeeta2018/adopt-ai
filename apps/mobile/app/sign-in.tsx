@@ -5,11 +5,26 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BrandMarkNative } from '@/components/BrandMarkNative';
 import { unlockWithBiometrics } from '@/lib/biometric';
+import { useOktaAuth, useAuthStore } from '@/lib/auth';
 import { theme, withOpacity } from '@/lib/theme';
 import { ORG, USER } from '@/lib/persona';
+import { useEffect } from 'react';
 
 export default function SignInScreen() {
   const router = useRouter();
+  const { signIn: signInWithOkta } = useOktaAuth();
+  const authenticated = useAuthStore((s) => s.authenticated);
+  const hydrate = useAuthStore((s) => s.hydrate);
+
+  useEffect(() => {
+    void hydrate();
+  }, [hydrate]);
+
+  useEffect(() => {
+    if (authenticated) {
+      router.replace('/(portal)/dashboard');
+    }
+  }, [authenticated, router]);
 
   const handleBiometric = async () => {
     const ok = await unlockWithBiometrics();
@@ -41,6 +56,15 @@ export default function SignInScreen() {
           >
             <Text style={styles.faceText}>Use Face ID</Text>
             <Text style={styles.faceArrow}>→</Text>
+          </Pressable>
+
+          <Pressable
+            style={[styles.faceCard, { marginTop: 4 }]}
+            onPress={signInWithOkta}
+            accessibilityLabel="Continue with SSO (Okta)"
+            accessibilityRole="button"
+          >
+            <Text style={styles.faceText}>Continue with SSO (Okta) ↗</Text>
           </Pressable>
 
           <Text style={styles.footer}>SOC 2 · ISO 27001 · HIPAA · END-TO-END ENCRYPTED</Text>

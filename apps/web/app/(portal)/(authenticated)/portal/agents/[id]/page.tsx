@@ -1,6 +1,6 @@
 'use client';
 
-import { AgentPill, Eyebrow, GlassCard, Metric } from '@adopt-ai/ui-web';
+import { Eyebrow, GlassCard, Metric } from '@adopt-ai/ui-web';
 import Link from 'next/link';
 import { use, useEffect, useRef, useState } from 'react';
 
@@ -106,7 +106,13 @@ export default function AgentDetailPage({ params }: { params: Promise<{ id: stri
           </Link>
           <div className="mt-2 flex items-center gap-4">
             <h1 className="font-display text-3xl font-semibold text-cream">{data.agent.name}</h1>
-            <AgentPill status={data.agent.status} />
+            <span
+              className="inline-block h-2.5 w-2.5 rounded-full"
+              style={{
+                backgroundColor: data.agent.status === 'running' ? '#2BAE5C' : data.agent.status === 'error' ? '#D9462C' : '#888',
+                boxShadow: `0 0 0 3px ${data.agent.status === 'running' ? 'rgba(43,174,92,0.25)' : 'transparent'}`,
+              }}
+            />
           </div>
           <p className="mt-1 font-body text-sm text-cream/50">{data.agent.description}</p>
         </div>

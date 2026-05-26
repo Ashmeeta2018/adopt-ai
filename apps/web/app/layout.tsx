@@ -34,7 +34,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={fontVars}>
+    <html lang="en" className={fontVars} suppressHydrationWarning>
       <body>
         <Providers>{children}</Providers>
       </body>

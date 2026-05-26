@@ -43,6 +43,8 @@ const config: ExpoConfig = {
     apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000/api',
     version: process.env.EXPO_PUBLIC_APP_VERSION ?? '0.1.0',
     buildNumber: process.env.EXPO_PUBLIC_BUILD_NUMBER ?? 'dev',
+    oktaIssuer: process.env.EXPO_PUBLIC_OKTA_ISSUER ?? '',
+    oktaClientId: process.env.EXPO_PUBLIC_OKTA_CLIENT_ID ?? '',
   },
 };
 
