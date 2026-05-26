@@ -23,6 +23,8 @@
     "seed": "tsx src/seed.ts"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "@prisma/adapter-neon": "^6.2.1",
     "@prisma/client": "^6.2.1"
   },
   "devDependencies": {
