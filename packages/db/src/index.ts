@@ -1,12 +1,10 @@
-import { Pool } from '@neondatabase/serverless';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import { PrismaClient } from '@prisma/client';
 
 function makePrismaClient() {
-  // PrismaNeon + Pool uses Neon's WebSocket driver — no binary engine required.
-  // This is the correct approach for Prisma on Neon + Vercel serverless.
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  const adapter = new PrismaNeon(pool);
+  // PrismaNeon v6.x accepts a PoolConfig object, not a Pool instance.
+  // It manages the Neon WebSocket pool internally — no binary engine required.
+  const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL });
   return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
