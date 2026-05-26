@@ -5,6 +5,9 @@ import prettier from 'eslint-config-prettier';
 import globals from 'globals';
 
 export default [
+  {
+    ignores: ['**/node_modules/**', '**/dist/**', '**/.next/**', '**/.expo/**'],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
