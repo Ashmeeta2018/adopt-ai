@@ -32,7 +32,8 @@ test.describe('Home page (/)', () => {
 
   test('shows the primary CTA button', async ({ page }) => {
     await loadPage(page, '/');
-    const cta = page.getByRole('button', { name: /start a project/i })
+    const cta = page
+      .getByRole('button', { name: /start a project/i })
       .or(page.getByRole('link', { name: /start a project|book a call/i }))
       .first();
     await expect(cta).toBeVisible();
@@ -46,7 +47,9 @@ test.describe('Home page (/)', () => {
 
   test('shows the services bento section', async ({ page }) => {
     await loadPage(page, '/');
-    await expect(page.locator('text=What we build').or(page.locator('text=Five workflows'))).toBeVisible();
+    await expect(
+      page.locator('text=What we build').or(page.locator('text=Five workflows')),
+    ).toBeVisible();
   });
 
   test('shows the case study section', async ({ page }) => {
@@ -118,8 +121,17 @@ test.describe('Services page (/services)', () => {
 
   test('shows all five service rows', async ({ page }) => {
     await loadPage(page, '/services');
-    for (const label of ['Workflow Agents', 'Document & Invoice', 'Support Router', 'Fine-tuning', 'Operations']) {
-      await expect(page.locator(`text=${label}`).first(), `${label} should be visible`).toBeVisible();
+    for (const label of [
+      'Workflow Agents',
+      'Document & Invoice',
+      'Support Router',
+      'Fine-tuning',
+      'Operations',
+    ]) {
+      await expect(
+        page.locator(`text=${label}`).first(),
+        `${label} should be visible`,
+      ).toBeVisible();
     }
   });
 
@@ -129,7 +141,37 @@ test.describe('Services page (/services)', () => {
   });
 });
 
-// ── Case study ─────────────────────────────────────────────────
+// ── Work listing ───────────────────────────────────────────────
+test.describe('Work listing page (/work)', () => {
+  test('returns 200 with the work title', async ({ page }) => {
+    await loadPage(page, '/work');
+    await expect(page).toHaveTitle(/Work.*Adopt AI/i);
+  });
+
+  test('shows both case study cards', async ({ page }) => {
+    await loadPage(page, '/work');
+    await expect(page.locator('text=Apex Regional').first()).toBeVisible();
+    await expect(page.locator('text=Harlow').first()).toBeVisible();
+  });
+
+  test('links to each case study', async ({ page }) => {
+    await loadPage(page, '/work');
+    await expect(
+      page
+        .getByRole('link', { name: /apex-regional-logistics/i })
+        .or(page.locator('a[href*="apex-regional-logistics"]'))
+        .first(),
+    ).toBeAttached();
+    await expect(
+      page
+        .getByRole('link', { name: /harlow-reid-advisory/i })
+        .or(page.locator('a[href*="harlow-reid-advisory"]'))
+        .first(),
+    ).toBeAttached();
+  });
+});
+
+// ── Case study — Apex Regional ─────────────────────────────────
 test.describe('Case study (/work/apex-regional-logistics)', () => {
   test('returns 200', async ({ page }) => {
     await loadPage(page, '/work/apex-regional-logistics');
@@ -160,6 +202,31 @@ test.describe('Case study (/work/apex-regional-logistics)', () => {
   });
 });
 
+// ── Case study — Harlow & Reid Advisory ────────────────────────
+test.describe('Case study (/work/harlow-reid-advisory)', () => {
+  test('returns 200', async ({ page }) => {
+    await loadPage(page, '/work/harlow-reid-advisory');
+    await expect(page).toHaveTitle(/case study.*Adopt AI/i);
+  });
+
+  test('shows Harlow & Reid in the hero', async ({ page }) => {
+    await loadPage(page, '/work/harlow-reid-advisory');
+    await expect(page.locator('text=Harlow').first()).toBeVisible();
+  });
+
+  test('shows the pull quote', async ({ page }) => {
+    await loadPage(page, '/work/harlow-reid-advisory');
+    await expect(
+      page.locator('text=Monday morning').or(page.locator('blockquote')).first(),
+    ).toBeVisible();
+  });
+
+  test('shows the math table with net return', async ({ page }) => {
+    await loadPage(page, '/work/harlow-reid-advisory');
+    await expect(page.locator('text=$16,342').or(page.locator('text=+$16,342'))).toBeVisible();
+  });
+});
+
 // ── About ──────────────────────────────────────────────────────
 test.describe('About page (/about)', () => {
   test('returns 200', async ({ page }) => {
@@ -176,8 +243,12 @@ test.describe('About page (/about)', () => {
 
   test('shows the right-fit vs not-a-fit comparison', async ({ page }) => {
     await loadPage(page, '/about');
-    await expect(page.locator('text=Right fit').or(page.locator('text=When we say yes'))).toBeVisible();
-    await expect(page.locator('text=Not a fit').or(page.locator('text=When we tell you no'))).toBeVisible();
+    await expect(
+      page.locator('text=Right fit').or(page.locator('text=When we say yes')),
+    ).toBeVisible();
+    await expect(
+      page.locator('text=Not a fit').or(page.locator('text=When we tell you no')),
+    ).toBeVisible();
   });
 });
 
@@ -245,7 +316,9 @@ test.describe('404 page', () => {
 
   test('shows the branded 404 content', async ({ page }) => {
     await page.goto('/this-route-definitely-does-not-exist');
-    await expect(page.locator('text=Lost the trail').or(page.locator('text=not found'))).toBeVisible();
+    await expect(
+      page.locator('text=Lost the trail').or(page.locator('text=not found')),
+    ).toBeVisible();
   });
 
   test('shows a home link on the 404 page', async ({ page }) => {
