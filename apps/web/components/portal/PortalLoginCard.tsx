@@ -22,9 +22,10 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
 
 interface PortalLoginCardProps {
   urlError?: string | null;
+  showSso?: boolean;
 }
 
-export function PortalLoginCard({ urlError }: PortalLoginCardProps) {
+export function PortalLoginCard({ urlError, showSso = false }: PortalLoginCardProps) {
   const [sent, setSent] = useState(false);
   const [authError, setAuthError] = useState<string | null>(
     urlError ? (AUTH_ERROR_MESSAGES[urlError] ?? 'Authentication error. Please try again.') : null,
@@ -80,6 +81,7 @@ export function PortalLoginCard({ urlError }: PortalLoginCardProps) {
           className="mt-8 space-y-3"
           noValidate
         >
+          <input type="hidden" {...register('callbackPath')} />
           <input
             type="email"
             autoComplete="email"
@@ -97,31 +99,35 @@ export function PortalLoginCard({ urlError }: PortalLoginCardProps) {
         </form>
       )}
 
-      <div className="text-eyebrow text-cream/40 my-6 flex items-center gap-3 font-mono uppercase tracking-[0.18em]">
-        <span className="bg-hairline-dark h-px flex-1" />
-        OR
-        <span className="bg-hairline-dark h-px flex-1" />
-      </div>
+      {showSso && (
+        <>
+          <div className="text-eyebrow text-cream/40 my-6 flex items-center gap-3 font-mono uppercase tracking-[0.18em]">
+            <span className="bg-hairline-dark h-px flex-1" />
+            OR
+            <span className="bg-hairline-dark h-px flex-1" />
+          </div>
 
-      <Button
-        variant="ghost"
-        dark
-        className="w-full"
-        type="button"
-        onClick={() => {
-          signIn('okta', { callbackUrl: '/portal/dashboard' })
-            .then((result) => {
-              if (result?.error) {
-                setAuthError('SSO sign-in failed. Please try again.');
-              }
-            })
-            .catch(() => {
-              setAuthError('SSO sign-in failed. Please try again.');
-            });
-        }}
-      >
-        Continue with SSO (Okta) ↗
-      </Button>
+          <Button
+            variant="ghost"
+            dark
+            className="w-full"
+            type="button"
+            onClick={() => {
+              signIn('okta', { callbackUrl: '/portal/dashboard' })
+                .then((result) => {
+                  if (result?.error) {
+                    setAuthError('SSO sign-in failed. Please try again.');
+                  }
+                })
+                .catch(() => {
+                  setAuthError('SSO sign-in failed. Please try again.');
+                });
+            }}
+          >
+            Continue with SSO (Okta) ↗
+          </Button>
+        </>
+      )}
 
       <div className="text-eyebrow text-cream/45 mt-6 flex justify-between font-mono uppercase tracking-[0.18em]">
         <span>Forgot password?</span>
