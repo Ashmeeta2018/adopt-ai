@@ -1,4 +1,7 @@
-import { z } from 'zod';
+import { type z } from 'zod';
+
+import { validateDAG } from './dag';
+
 import type {
   WorkflowDefinition,
   WorkflowTrigger,
@@ -7,7 +10,6 @@ import type {
   NodeKind,
   EdgeKind,
 } from './types';
-import { validateDAG } from './dag';
 
 function nextNodeId(): string {
   return crypto.randomUUID();

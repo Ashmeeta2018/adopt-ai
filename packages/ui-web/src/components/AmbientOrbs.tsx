@@ -1,4 +1,5 @@
 import { colors } from '@adopt-ai/tokens';
+
 import type { CSSProperties } from 'react';
 
 interface AmbientOrbsProps {
@@ -15,7 +16,15 @@ interface AmbientOrbsProps {
 export function AmbientOrbs({ intensity = 1, dark = false, style }: AmbientOrbsProps) {
   const baseOpacity = dark ? 0.55 : 0.42;
   const orbs = [
-    { left: '-8%', top: '-12%', size: 620, c1: colors.burgundy, c2: colors.accent, o: 0.55, dur: '28s' },
+    {
+      left: '-8%',
+      top: '-12%',
+      size: 620,
+      c1: colors.burgundy,
+      c2: colors.accent,
+      o: 0.55,
+      dur: '28s',
+    },
     { left: '62%', top: '-18%', size: 720, c1: colors.glow, c2: colors.amber, o: 0.5, dur: '34s' },
     { left: '38%', top: '52%', size: 580, c1: colors.accent, c2: colors.gold, o: 0.4, dur: '40s' },
   ];

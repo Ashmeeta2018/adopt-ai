@@ -5,7 +5,7 @@ vi.mock('next/headers', () => ({
   headers: () => new Headers(),
   cookies: () => ({
     get: () => undefined,
-    set: () => {},
+    set: () => undefined,
   }),
 }));
 

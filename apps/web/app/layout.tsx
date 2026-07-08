@@ -1,8 +1,8 @@
+import { Providers } from './providers';
+
 import type { Metadata, Viewport } from 'next';
 
 import { fontVars } from '@/lib/fonts';
-
-import { Providers } from './providers';
 
 import './globals.css';
 

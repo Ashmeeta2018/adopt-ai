@@ -1,6 +1,7 @@
 import { AmbientOrbs, Button, EmberText, Eyebrow, SiteFooter, SiteNav } from '@adopt-ai/ui-web';
-import type { Metadata } from 'next';
 import Link from 'next/link';
+
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Pricing',
@@ -61,19 +62,19 @@ export default function PricingPage() {
               key={t.name}
               className={
                 t.dark
-                  ? 'relative rounded-3xl border border-hairline-dark bg-ink p-8 text-cream'
-                  : 'relative rounded-3xl border border-hairline bg-paper p-8'
+                  ? 'border-hairline-dark bg-ink text-cream relative rounded-3xl border p-8'
+                  : 'border-hairline bg-paper relative rounded-3xl border p-8'
               }
             >
               {t.flag && (
-                <div className="absolute -top-3 left-8 rounded-full bg-ember-cta px-3 py-1 font-mono text-eyebrow uppercase tracking-[0.18em] text-cream">
+                <div className="bg-ember-cta text-eyebrow text-cream absolute -top-3 left-8 rounded-full px-3 py-1 font-mono uppercase tracking-[0.18em]">
                   {t.flag}
                 </div>
               )}
               <h3 className="font-display text-[44px] font-medium tracking-tight">{t.name}</h3>
-              <div className="mt-6 font-display text-[28px] font-medium">{t.build}</div>
-              <div className={t.dark ? 'mt-1 text-cream/65' : 'mt-1 text-ink/65'}>{t.operate}</div>
-              <div className={t.dark ? 'mt-6 text-cream/65' : 'mt-6 text-ink/65'}>{t.sub}</div>
+              <div className="font-display mt-6 text-[28px] font-medium">{t.build}</div>
+              <div className={t.dark ? 'text-cream/65 mt-1' : 'text-ink/65 mt-1'}>{t.operate}</div>
+              <div className={t.dark ? 'text-cream/65 mt-6' : 'text-ink/65 mt-6'}>{t.sub}</div>
               <div className="mt-10">
                 <Link href="/book" className="block">
                   <Button variant={t.dark ? 'primary' : 'dark'} className="w-full">
@@ -86,13 +87,12 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="border-t border-hairline px-14 py-24">
+      <section className="border-hairline border-t px-14 py-24">
         <div className="mx-auto max-w-[1080px] text-center">
           <h2 className="font-display text-[48px] tracking-[-0.035em]">
-            The average Spark pays back in under{' '}
-            <EmberText>eight weeks</EmberText>.
+            The average Spark pays back in under <EmberText>eight weeks</EmberText>.
           </h2>
-          <div className="mt-10 flex flex-wrap justify-center gap-x-16 gap-y-6 font-mono text-eyebrow uppercase tracking-[0.18em] text-ink/60">
+          <div className="text-eyebrow text-ink/60 mt-10 flex flex-wrap justify-center gap-x-16 gap-y-6 font-mono uppercase tracking-[0.18em]">
             <span>15+ hrs/wk saved</span>
             <span>8 wks avg payback</span>
             <span>$0 per-seat fees</span>

@@ -1,6 +1,6 @@
-import type { CSSProperties, ReactNode } from 'react';
-
 import { cn } from '../utils/cn';
+
+import type { CSSProperties, ReactNode } from 'react';
 
 interface GlassCardProps {
   children: ReactNode;
@@ -24,9 +24,7 @@ export function GlassCard({
     <div
       className={cn(
         'relative rounded-xl border backdrop-blur-md',
-        isDark
-          ? 'border-hairline-dark shadow-card-dark'
-          : 'border-hairline shadow-card-light',
+        isDark ? 'border-hairline-dark shadow-card-dark' : 'border-hairline shadow-card-light',
         className,
       )}
       style={{

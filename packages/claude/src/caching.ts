@@ -1,5 +1,14 @@
+/**
+ * Anthropic prompt-caching helpers.
+ *
+ * Note: with the AI SDK provider, cache breakpoints are set via
+ * `providerOptions: { anthropic: { cacheControl: ... } }` on individual
+ * messages — the wire-shape helpers here (withCacheControl/withCachedTools)
+ * remain for callers that build raw Anthropic payloads. getCacheStats works
+ * with any TokenUsage.
+ */
+import type { ClaudeTool } from './tools';
 import type { TokenUsage } from '@adopt-ai/model-wrapper/types';
-import type { ClaudeTool } from './tools;
 
 export type CacheStrategy = 'none' | 'ephemeral' | 'persistent';
 

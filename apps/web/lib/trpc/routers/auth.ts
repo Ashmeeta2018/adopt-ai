@@ -1,10 +1,10 @@
 import { requestMagicLinkInput } from '@adopt-ai/api-contract';
 import { TRPCError } from '@trpc/server';
 
-import { authLimiter } from '@/lib/rate-limit';
-import { logger } from '@/lib/logger';
-
 import { publicProcedure, router } from '../trpc';
+
+import { logger } from '@/lib/logger';
+import { authLimiter } from '@/lib/rate-limit';
 
 export const authRouter = router({
   requestMagicLink: publicProcedure

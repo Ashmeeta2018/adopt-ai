@@ -20,13 +20,13 @@ function initials(name: string): string {
 
 const PLAN_DISPLAY: Record<string, { label: string; billing: string }> = {
   spark: { label: 'Spark', billing: '$149 / mo operate' },
-  lift:  { label: 'Lift',  billing: '$499 / mo operate' },
+  lift: { label: 'Lift', billing: '$499 / mo operate' },
   scale: { label: 'Scale', billing: 'from $799 / mo operate' },
 };
 
 const ROLE_DISPLAY: Record<string, string> = {
-  OWNER:  'Owner',
-  ADMIN:  'Admin',
+  OWNER: 'Owner',
+  ADMIN: 'Admin',
   MEMBER: 'Member',
 };
 
@@ -38,39 +38,42 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+        <div className="border-accent h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" />
       </div>
     );
   }
 
   if (!data) return null;
 
-  const plan     = PLAN_DISPLAY[data.organisation.plan] ?? { label: data.organisation.plan, billing: '—' };
+  const plan = PLAN_DISPLAY[data.organisation.plan] ?? {
+    label: data.organisation.plan,
+    billing: '—',
+  };
   const roleText = ROLE_DISPLAY[data.role] ?? data.role;
-  const avatar   = initials(data.user.name || data.user.email);
+  const avatar = initials(data.user.name || data.user.email);
 
   const sections = [
     {
       title: 'Account',
       items: [
         { label: 'Email', value: data.user.email },
-        { label: 'Name',  value: data.user.name || '—' },
-        { label: 'Role',  value: roleText },
+        { label: 'Name', value: data.user.name || '—' },
+        { label: 'Role', value: roleText },
       ],
     },
     {
       title: 'Workspace',
       items: [
         { label: 'Organisation', value: data.organisation.name },
-        { label: 'Plan',         value: plan.label },
-        { label: 'Billing',      value: plan.billing },
+        { label: 'Plan', value: plan.label },
+        { label: 'Billing', value: plan.billing },
       ],
     },
     {
       title: 'Support',
       items: [
-        { label: 'Help center',            value: 'help.adoptai.com' },
-        { label: 'Status page',            value: 'status.adoptai.com' },
+        { label: 'Help center', value: 'help.adoptai.com' },
+        { label: 'Status page', value: 'status.adoptai.com' },
         { label: 'Contact your architect', value: 'hello@adoptai.com' },
       ],
     },
@@ -80,16 +83,16 @@ export default function SettingsPage() {
     <div className="space-y-8">
       <div>
         <Eyebrow tone="cream">Workspace configuration</Eyebrow>
-        <h1 className="mt-2 font-display text-3xl font-semibold text-cream">Settings</h1>
+        <h1 className="font-display text-cream mt-2 text-3xl font-semibold">Settings</h1>
       </div>
 
       <div className="flex items-start gap-8">
         {/* Avatar — initials derived from the signed-in user's name */}
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-cream/10">
-            <span className="font-display text-2xl font-semibold text-cream">{avatar}</span>
+          <div className="bg-cream/10 flex h-20 w-20 items-center justify-center rounded-full">
+            <span className="font-display text-cream text-2xl font-semibold">{avatar}</span>
           </div>
-          <p className="font-mono text-[10px] uppercase tracking-wider text-cream/40">{roleText}</p>
+          <p className="text-cream/40 font-mono text-[10px] uppercase tracking-wider">{roleText}</p>
         </div>
 
         {/* Sections */}
@@ -102,10 +105,10 @@ export default function SettingsPage() {
                   {section.items.map((item) => (
                     <div
                       key={item.label}
-                      className="flex items-center justify-between border-b border-cream/[0.08] pb-3 last:border-0 last:pb-0"
+                      className="border-cream/8 flex items-center justify-between border-b pb-3 last:border-0 last:pb-0"
                     >
-                      <span className="font-body text-sm text-cream/60">{item.label}</span>
-                      <span className="font-mono text-sm text-cream">{item.value}</span>
+                      <span className="font-body text-cream/60 text-sm">{item.label}</span>
+                      <span className="text-cream font-mono text-sm">{item.value}</span>
                     </div>
                   ))}
                 </div>

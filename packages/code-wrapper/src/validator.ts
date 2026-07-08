@@ -1,5 +1,6 @@
-import type { CodeBlock, Language, ResourceLimits, ValidationRule } from './types.js';
-import { DEFAULT_RESOURCE_LIMITS } from './types.js';
+import { DEFAULT_RESOURCE_LIMITS, Language } from './types.js';
+
+import type { CodeBlock, ResourceLimits, ValidationRule } from './types.js';
 
 interface ValidationResult {
   valid: boolean;
@@ -112,7 +113,7 @@ export class CodeValidator {
     const errors: string[] = [];
     const warnings: string[] = [];
 
-    if (language === 'python' || language === 'sql') {
+    if (language === Language.Python || language === Language.SQL) {
       errors.push(`Language "${language}" is not yet supported for sandboxed execution`);
       return { valid: false, errors, warnings };
     }

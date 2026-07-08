@@ -3,11 +3,11 @@
  * Keeps every hex / size / timing inside packages/tokens.
  */
 
-import type { Config } from 'tailwindcss';
-
 import { colors, hairlines } from './colors';
 import { radii, shadows, spacing } from './spacing';
 import { typeScale } from './typography';
+
+import type { Config } from 'tailwindcss';
 
 const px = (n: number) => `${n}px`;
 
@@ -23,11 +23,7 @@ const fontSizeMap = Object.fromEntries(
       },
     ],
   ]),
-) as Config['theme'] extends infer T
-  ? T extends { fontSize?: infer F }
-    ? F
-    : never
-  : never;
+) as Config['theme'] extends infer T ? (T extends { fontSize?: infer F } ? F : never) : never;
 
 export const adoptAiPreset = {
   darkMode: 'class',

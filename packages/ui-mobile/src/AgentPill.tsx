@@ -1,7 +1,6 @@
+import { nativeTokens } from '@adopt-ai/tokens/native';
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
-
-import { nativeTokens } from '@adopt-ai/tokens/native';
 
 type Status = 'running' | 'queued' | 'error';
 
@@ -18,12 +17,7 @@ const statusColors: Record<Status, string> = {
   error: nativeTokens.colors.accent,
 };
 
-export function AgentPill({
-  label,
-  status = 'running',
-  count,
-  dark = false,
-}: AgentPillProps) {
+export function AgentPill({ label, status = 'running', count, dark = false }: AgentPillProps) {
   const pulseAnim = useRef(new Animated.Value(1));
   const color = statusColors[status];
 
@@ -46,16 +40,13 @@ export function AgentPill({
     );
 
     animation.start();
-    return () => { animation.stop(); };
+    return () => {
+      animation.stop();
+    };
   }, [status]);
 
   return (
-    <View
-      style={[
-        styles.container,
-        dark ? styles.containerDark : styles.containerLight,
-      ]}
-    >
+    <View style={[styles.container, dark ? styles.containerDark : styles.containerLight]}>
       <Animated.View
         style={[
           styles.dot,

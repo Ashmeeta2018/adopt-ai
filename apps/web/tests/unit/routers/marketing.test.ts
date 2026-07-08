@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { marketingRouter } from '@/lib/trpc/routers/marketing';
 import type { TrpcContext } from '@/lib/trpc/context';
+
+import { marketingRouter } from '@/lib/trpc/routers/marketing';
 
 // ── Mocks ──────────────────────────────────────────────────────
 vi.mock('@/lib/rate-limit', () => ({
@@ -66,8 +67,6 @@ describe('marketingRouter.contact.submit', () => {
       { success: false, remaining: 0 } as never,
     );
 
-    await expect(createCaller().contact.submit(validInput)).rejects.toThrow(
-      'Too many submissions',
-    );
+    await expect(createCaller().contact.submit(validInput)).rejects.toThrow('Too many submissions');
   });
 });

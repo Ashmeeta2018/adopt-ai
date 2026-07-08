@@ -8,7 +8,6 @@ const config: ExpoConfig = {
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
-  newArchEnabled: true,
   ios: {
     supportsTablet: false,
     bundleIdentifier: 'com.adoptai.portal',
@@ -31,10 +30,9 @@ const config: ExpoConfig = {
     'expo-router',
     'expo-font',
     'expo-secure-store',
-    [
-      'expo-local-authentication',
-      { faceIDPermission: 'Allow Adopt AI to use Face ID.' },
-    ],
+    'expo-splash-screen',
+    'expo-web-browser',
+    ['expo-local-authentication', { faceIDPermission: 'Allow Adopt AI to use Face ID.' }],
   ],
   experiments: {
     typedRoutes: true,

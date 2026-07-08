@@ -86,7 +86,7 @@ export function PortalLoginCard({ urlError, showSso = false }: PortalLoginCardPr
             type="email"
             autoComplete="email"
             placeholder="you@company.com"
-            className="border-hairline-dark text-cream placeholder:text-cream/40 focus:border-accent w-full rounded-xl border bg-[rgba(248,244,238,0.04)] px-4 py-3 text-[15px] outline-none"
+            className="border-hairline-dark text-cream placeholder:text-cream/40 focus:border-accent outline-hidden w-full rounded-xl border bg-[rgba(248,244,238,0.04)] px-4 py-3 text-[15px]"
             {...register('email')}
           />
           {errors.email?.message && (

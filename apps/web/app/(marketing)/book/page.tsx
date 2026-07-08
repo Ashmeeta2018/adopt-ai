@@ -1,6 +1,6 @@
-import type { Metadata } from 'next';
-
 import { AmbientOrbs, Eyebrow, SiteFooter, SiteNav } from '@adopt-ai/ui-web';
+
+import type { Metadata } from 'next';
 
 import { CalEmbed } from '@/components/book/CalEmbed';
 
@@ -21,25 +21,25 @@ export default function BookPage() {
         <div className="relative mx-auto max-w-[720px] text-center">
           <Eyebrow className="mb-4">30 minutes · No deck</Eyebrow>
           <h1
-            className="font-display font-medium text-ink"
+            className="font-display text-ink font-medium"
             style={{ fontSize: 64, letterSpacing: '-0.04em', lineHeight: 1.03 }}
           >
             Let&rsquo;s talk about your workflow.
           </h1>
-          <p className="mx-auto mt-6 max-w-[540px] text-[19px] leading-[1.55] text-ink/65">
-            We&rsquo;ll tell you whether what you&rsquo;re after is a fit, what it would cost,
-            and roughly how long it would take. One conversation, no follow-up unless you ask.
+          <p className="text-ink/65 mx-auto mt-6 max-w-[540px] text-[19px] leading-[1.55]">
+            We&rsquo;ll tell you whether what you&rsquo;re after is a fit, what it would cost, and
+            roughly how long it would take. One conversation, no follow-up unless you ask.
           </p>
 
           {/* Three trust chips */}
-          <div className="mt-8 flex flex-wrap justify-center gap-3 font-mono text-eyebrow uppercase tracking-[0.18em] text-ink/45">
-            <span className="rounded-full border border-hairline bg-paper px-4 py-1.5">
+          <div className="text-eyebrow text-ink/45 mt-8 flex flex-wrap justify-center gap-3 font-mono uppercase tracking-[0.18em]">
+            <span className="border-hairline bg-paper rounded-full border px-4 py-1.5">
               Fixed price · no surprises
             </span>
-            <span className="rounded-full border border-hairline bg-paper px-4 py-1.5">
+            <span className="border-hairline bg-paper rounded-full border px-4 py-1.5">
               8 wk avg payback
             </span>
-            <span className="rounded-full border border-hairline bg-paper px-4 py-1.5">
+            <span className="border-hairline bg-paper rounded-full border px-4 py-1.5">
               $0 per-seat fees
             </span>
           </div>
@@ -51,15 +51,15 @@ export default function BookPage() {
         <div className="mx-auto max-w-[1080px]">
           {/* Container height keeps the widget fully visible without scrolling. */}
           <div
-            className="overflow-hidden rounded-3xl border border-hairline bg-paper shadow-card-light"
+            className="border-hairline bg-paper shadow-card-light overflow-hidden rounded-3xl border"
             style={{ minHeight: 700 }}
           >
             <CalEmbed />
           </div>
 
-          <p className="mt-6 text-center font-mono text-eyebrow uppercase tracking-[0.18em] text-ink/35">
+          <p className="text-eyebrow text-ink/35 mt-6 text-center font-mono uppercase tracking-[0.18em]">
             Prefer async? &nbsp;
-            <a href="/contact" className="underline decoration-dotted hover:text-accent">
+            <a href="/contact" className="hover:text-accent underline decoration-dotted">
               Send a message instead
             </a>
           </p>

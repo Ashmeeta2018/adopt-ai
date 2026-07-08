@@ -5,62 +5,59 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AgentPillNative } from '@/components/AgentPillNative';
 import { theme, withOpacity } from '@/lib/theme';
-import { USER } from '@/lib/persona';
-
-const agents = [
-  {
-    id: 'intake-agent-v4',
-    name: 'intake-agent-v4',
-    description: 'Inbound coordination',
-    tasks: '14,235/day',
-    success: '99.43%',
-  },
-  {
-    id: 'invoice-agent-v2',
-    name: 'invoice-agent-v2',
-    description: 'Invoice extraction',
-    tasks: '2,122/day',
-    success: '98.7%',
-  },
-  {
-    id: 'support-router-v1',
-    name: 'support-router-v1',
-    description: 'Customer support triage',
-    tasks: '1,430/day',
-    success: '97.2%',
-  },
-] as const;
+import { trpc } from '@/lib/trpc';
 
 function formatDayHeader(d: Date): string {
   const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-  const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const months = [
+    'JAN',
+    'FEB',
+    'MAR',
+    'APR',
+    'MAY',
+    'JUN',
+    'JUL',
+    'AUG',
+    'SEP',
+    'OCT',
+    'NOV',
+    'DEC',
+  ];
   return `${days[d.getDay()]} · ${months[d.getMonth()]} ${d.getDate()}`;
-}
-
-function greetingFor(): string {
-  const h = new Date().getHours();
-  if (h < 12) return 'Good morning,';
-  if (h < 17) return 'Good afternoon,';
-  return 'Good evening,';
 }
 
 export default function DashboardScreen() {
   const router = useRouter();
+  const { data, isLoading } = trpc.portal.getDashboard.useQuery();
+
+  if (isLoading || !data) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.spinnerWrap}>
+          <Text style={styles.spinnerText}>Loading…</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
           <Text style={styles.date}>{formatDayHeader(new Date())}</Text>
-          <Text style={styles.greeting}>{greetingFor()} {USER.firstName}.</Text>
+          <Text style={styles.greeting}>{data.greeting}</Text>
           <View style={styles.pillRow}>
-            <AgentPillNative label="3 LIVE" />
-            <AgentPillNative label="0 ALERTS" status="queue" />
+            <AgentPillNative label={`${data.liveAgents} LIVE`} />
+            <AgentPillNative
+              label={`${data.openAlerts} ALERTS`}
+              status={data.openAlerts > 0 ? 'queue' : undefined}
+            />
           </View>
         </View>
 
         <Pressable
           onPress={() => router.push('/(portal)/reports')}
-          accessibilityLabel="Weekly report — 22 hours reallocated, up 12%"
+          accessibilityLabel={`Weekly report — ${data.hoursReallocated} hours reallocated`}
           accessibilityRole="button"
         >
           <View style={styles.heroCard}>
@@ -70,19 +67,24 @@ export default function DashboardScreen() {
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
             />
-            <Text style={styles.heroEyebrow}>THIS WEEK · MAY 15–22</Text>
-            <Text style={styles.heroNumber}>22h</Text>
-            <Text style={styles.heroSub}>Human-hours reallocated · ↑ 12% vs last week</Text>
+            <Text style={styles.heroEyebrow}>
+              THIS WEEK · {data.weekRange.start}–{data.weekRange.end}
+            </Text>
+            <Text style={styles.heroNumber}>{data.hoursReallocated}h</Text>
+            <Text style={styles.heroSub}>
+              Human-hours reallocated · {data.hoursTrendPct >= 0 ? '↑' : '↓'}
+              {Math.abs(data.hoursTrendPct)}% vs last week
+            </Text>
           </View>
         </Pressable>
 
         <Text style={styles.sectionTitle}>Your agents</Text>
-        {agents.map((a) => (
+        {data.agents.map((agent) => (
           <Pressable
-            key={a.id}
+            key={agent.id}
             style={styles.agentCard}
-            onPress={() => router.push(`/(portal)/agents/${a.id}`)}
-            accessibilityLabel={`${a.name} — ${a.description}, ${a.tasks}, ${a.success} success`}
+            onPress={() => router.push(`/(portal)/agents/${agent.id}`)}
+            accessibilityLabel={`${agent.name} — ${agent.description}, ${agent.tasks24h} tasks, ${Math.round(agent.successRate * 100)}% success`}
             accessibilityRole="button"
           >
             <LinearGradient
@@ -93,12 +95,13 @@ export default function DashboardScreen() {
             />
             <View style={{ flex: 1 }}>
               <View style={styles.agentNameRow}>
-                <Text style={styles.agentName}>{a.name}</Text>
+                <Text style={styles.agentName}>{agent.name}</Text>
                 <View style={[styles.dot, { backgroundColor: theme.colors.success }]} />
               </View>
-              <Text style={styles.agentDescription}>{a.description}</Text>
+              <Text style={styles.agentDescription}>{agent.description}</Text>
               <Text style={styles.agentMetrics}>
-                {a.tasks} · {a.success}
+                {agent.tasks24h.toLocaleString()} tasks/24h · {Math.round(agent.successRate * 100)}%
+                success
               </Text>
             </View>
             <Text style={styles.chevron}>›</Text>
@@ -112,6 +115,12 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: theme.colors.cream },
   scroll: { padding: 18, paddingBottom: 120 },
+  spinnerWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  spinnerText: {
+    fontFamily: 'IBMPlexMono',
+    fontSize: 12,
+    color: withOpacity(theme.colors.ink, 0.4),
+  },
   header: { marginBottom: 18 },
   date: {
     fontFamily: 'IBMPlexMono',
@@ -162,7 +171,11 @@ const styles = StyleSheet.create({
   agentGlyph: { width: 42, height: 42, borderRadius: 12 },
   agentNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   agentName: { fontFamily: 'IBMPlexMono', fontSize: 14, color: theme.colors.ink },
-  agentDescription: { fontFamily: 'Inter', fontSize: 12, color: withOpacity(theme.colors.ink, 0.65) },
+  agentDescription: {
+    fontFamily: 'Inter',
+    fontSize: 12,
+    color: withOpacity(theme.colors.ink, 0.65),
+  },
   agentMetrics: {
     marginTop: 4,
     fontFamily: 'IBMPlexMono',

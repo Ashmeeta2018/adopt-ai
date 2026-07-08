@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { estimateTokens, truncateToTokenLimit, countMessagesTokens } from './tokenizer';
 
 describe('estimateTokens', () => {
@@ -45,9 +46,12 @@ describe('countMessagesTokens', () => {
 
     // Each message adds role overhead (4) + content tokens
     const expected =
-      4 + Math.ceil('You are helpful.'.length / 4) +
-      4 + Math.ceil('Hello there'.length / 4) +
-      4 + Math.ceil('Hi! How can I help?'.length / 4) +
+      4 +
+      Math.ceil('You are helpful.'.length / 4) +
+      4 +
+      Math.ceil('Hello there'.length / 4) +
+      4 +
+      Math.ceil('Hi! How can I help?'.length / 4) +
       2; // base overhead
     expect(total).toBe(expected);
   });
@@ -70,9 +74,7 @@ describe('countMessagesTokens', () => {
       {
         role: 'assistant' as const,
         content: undefined,
-        toolCalls: [
-          { id: 'tc1', name: 'search', arguments: { query: 'test' } },
-        ],
+        toolCalls: [{ id: 'tc1', name: 'search', arguments: { query: 'test' } }],
       },
     ];
 

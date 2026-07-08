@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 import {
   AgentPill,
   AmbientOrbs,
@@ -9,6 +7,7 @@ import {
   Eyebrow,
   FloatingChip,
 } from '@adopt-ai/ui-web';
+import Link from 'next/link';
 
 export function HeroCinematic() {
   return (
@@ -22,7 +21,7 @@ export function HeroCinematic() {
 
       {/* Secondary reverse-spinning ring */}
       <div
-        className="pointer-events-none absolute left-1/2 top-[52%] -translate-x-1/2 -translate-y-1/2 animate-ring-spin-reverse"
+        className="animate-ring-spin-reverse pointer-events-none absolute left-1/2 top-[52%] -translate-x-1/2 -translate-y-1/2"
         style={{ width: 640, height: 640 }}
       >
         <svg viewBox="0 0 200 200" width={640} height={640}>
@@ -57,16 +56,16 @@ export function HeroCinematic() {
         </Eyebrow>
 
         <h1
-          className="font-display font-semibold text-cream"
+          className="font-display text-cream font-semibold"
           style={{ fontSize: 124, letterSpacing: '-0.055em', lineHeight: 0.92 }}
         >
           <div>Real automation.</div>
           <EmberText as="div">Real SMB budgets.</EmberText>
         </h1>
 
-        <p className="mx-auto mt-9 max-w-[620px] text-[21px] leading-[1.5] text-cream/70">
-          We design, ship, and run AI agents for small and mid-sized businesses. Fixed price.
-          No per-seat fees. Most projects pay back in under 8 weeks.
+        <p className="text-cream/70 mx-auto mt-9 max-w-[620px] text-[21px] leading-normal">
+          We design, ship, and run AI agents for small and mid-sized businesses. Fixed price. No
+          per-seat fees. Most projects pay back in under 8 weeks.
         </p>
 
         <div className="mt-11 flex flex-wrap justify-center gap-3.5">
@@ -75,12 +74,7 @@ export function HeroCinematic() {
               Start a project
             </Button>
           </Link>
-          <Button
-            variant="ghost"
-            dark
-            size="lg"
-            trailingIcon={<span className="ml-1.5">↓</span>}
-          >
+          <Button variant="ghost" dark size="lg" trailingIcon={<span className="ml-1.5">↓</span>}>
             Watch the reel
           </Button>
         </div>

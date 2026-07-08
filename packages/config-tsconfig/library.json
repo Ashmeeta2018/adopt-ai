@@ -8,8 +8,8 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "outDir": "dist",
-    "rootDir": "src"
+    "outDir": "${configDir}/dist",
+    "rootDir": "${configDir}/src"
   },
-  "include": ["src/**/*"]
+  "include": ["${configDir}/src/**/*"]
 }

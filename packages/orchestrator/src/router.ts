@@ -1,5 +1,6 @@
-import type { AgentConfig, AgentKind, HealthGrade, IncomingTask } from './types;
-import { AgentNotFoundError, AgentUnavailableError } from './errors;
+import { AgentNotFoundError, AgentUnavailableError } from './errors';
+
+import type { AgentConfig, AgentKind, HealthGrade, IncomingTask } from './types';
 
 interface RoutingEntry {
   agent: AgentConfig;
@@ -85,6 +86,13 @@ export class TaskRouter {
     const index = counter % pool.length;
     this.kindCounters.set(key, counter + 1);
 
-    return pool[index].agent.id;
+    const selected = pool[index];
+    if (!selected) {
+      throw new AgentUnavailableError(
+        'none',
+        `no healthy ${kind} agent found for organisation ${organisationId}`,
+      );
+    }
+    return selected.agent.id;
   }
 }

@@ -1,8 +1,9 @@
-import { describe, expect, it, vi } from 'vitest';
 import { TRPCError } from '@trpc/server';
+import { describe, expect, it, vi } from 'vitest';
+
+import type { TrpcContext } from '@/lib/trpc/context';
 
 import { portalRouter } from '@/lib/trpc/routers/portal';
-import type { TrpcContext } from '@/lib/trpc/context';
 
 // ── Stable UUIDs for test data ────────────────────────────────
 // tRPC input schemas use z.string().cuid2().or(z.string().uuid())
@@ -83,6 +84,9 @@ function mockPrisma() {
     weeklyReport: {
       findFirst: vi.fn().mockResolvedValue(null),
     },
+    agentRun: {
+      count: vi.fn().mockResolvedValue(30),
+    },
   };
 }
 
@@ -115,10 +119,7 @@ function unauthCaller() {
 }
 
 /** Helper: assert a tRPC procedure throws a specific error code. */
-async function expectTRPCError(
-  call: Promise<unknown>,
-  code: TRPCError['code'],
-) {
+async function expectTRPCError(call: Promise<unknown>, code: TRPCError['code']) {
   try {
     await call;
     throw new Error('Expected a TRPCError but the call resolved.');

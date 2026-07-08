@@ -1,63 +1,89 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { theme, withOpacity } from '@/lib/theme';
-import { ORG } from '@/lib/persona';
-
-const pipelines = [
-  { name: 'Inbound coordination', hours: 220, tasks: 14235, success: 99.4, color: theme.colors.accent },
-  { name: 'Invoice extraction', hours: 150, tasks: 2122, success: 98.7, color: theme.colors.glow },
-  { name: 'Support triage', hours: 75.5, tasks: 1430, success: 97.2, color: theme.colors.amber },
-] as const;
+import { trpc } from '@/lib/trpc';
 
 export default function WeeklyReportScreen() {
+  const { data, isLoading } = trpc.portal.getWeeklyReport.useQuery({});
+
+  if (isLoading || !data) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.loader}>
+          <ActivityIndicator size="large" color={theme.colors.accent} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const trendArrow = (pct: number) => (pct >= 0 ? '↑' : '↓');
+  const trendColor = (pct: number) => (pct >= 0 ? theme.colors.accent : theme.colors.amber);
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.eyebrow}>WEEKLY PERFORMANCE</Text>
-        <Text style={styles.h1}>May 15 – May 22</Text>
-        <Text style={styles.sub}>{ORG.name}</Text>
+        <Text style={styles.h1}>
+          {data.range.start} – {data.range.end}
+        </Text>
 
         <View style={styles.bigGrid}>
           <View style={styles.bigCard}>
             <Text style={styles.bigCaption}>HOURS SAVED</Text>
-            <Text style={[styles.bigNumber, { color: theme.colors.accent }]}>445.5</Text>
-            <Text style={styles.bigTrend}>↑ 12% vs last wk</Text>
+            <Text style={[styles.bigNumber, { color: theme.colors.accent }]}>
+              {data.hoursSaved}
+            </Text>
+            <Text style={[styles.bigTrend, { color: trendColor(data.hoursSavedTrendPct) }]}>
+              {trendArrow(data.hoursSavedTrendPct)} {Math.abs(data.hoursSavedTrendPct)}% vs last wk
+            </Text>
           </View>
           <View style={styles.bigCard}>
             <Text style={styles.bigCaption}>COST REDUCED</Text>
-            <Text style={styles.bigNumber}>$17.8k</Text>
-            <Text style={styles.bigTrend}>↑ 8%</Text>
+            <Text style={styles.bigNumber}>${(data.costReducedUsd / 1000).toFixed(1)}k</Text>
+            <Text style={[styles.bigTrend, { color: trendColor(data.costReducedTrendPct) }]}>
+              {trendArrow(data.costReducedTrendPct)} {Math.abs(data.costReducedTrendPct)}%
+            </Text>
           </View>
         </View>
 
         <Text style={styles.section}>Pipeline breakdown</Text>
-        {pipelines.map((p) => (
+        {data.pipelines.map((p) => (
           <View key={p.name} style={styles.pipelineRow}>
             <View style={styles.pipelineHeader}>
               <Text style={styles.pipelineName}>{p.name}</Text>
-              <Text style={[styles.pipelineHours, { color: p.color }]}>{p.hours}h</Text>
+              <Text style={[styles.pipelineHours, { color: theme.colors[p.accent] }]}>
+                {p.hoursSaved}h
+              </Text>
             </View>
             <Text style={styles.pipelineMeta}>
-              {p.tasks.toLocaleString()} tasks · {p.success}% success
+              {p.tasks.toLocaleString()} tasks · {(p.successRate * 100).toFixed(1)}% success
             </Text>
             <View style={styles.barTrack}>
               <LinearGradient
-                colors={[p.color, theme.colors.glow]}
+                colors={[theme.colors[p.accent], theme.colors.glow]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                style={[styles.barFill, { width: `${Math.min(95, p.hours / 3)}%` }]}
+                style={[styles.barFill, { width: `${Math.min(95, p.hoursSaved / 3)}%` }]}
               />
             </View>
           </View>
         ))}
 
         <View style={styles.actions}>
-          <Pressable style={[styles.button, styles.buttonDark]} accessibilityLabel="Export weekly report as PDF" accessibilityRole="button">
+          <Pressable
+            style={[styles.button, styles.buttonDark]}
+            accessibilityLabel="Export weekly report as PDF"
+            accessibilityRole="button"
+          >
             <Text style={styles.buttonDarkText}>Export PDF</Text>
           </Pressable>
-          <Pressable style={[styles.button, styles.buttonGhost]} accessibilityLabel="Share weekly report" accessibilityRole="button">
+          <Pressable
+            style={[styles.button, styles.buttonGhost]}
+            accessibilityLabel="Share weekly report"
+            accessibilityRole="button"
+          >
             <Text style={styles.buttonGhostText}>Share</Text>
           </Pressable>
         </View>
@@ -68,6 +94,7 @@ export default function WeeklyReportScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: theme.colors.cream },
+  loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   scroll: { padding: 18, paddingBottom: 120 },
   eyebrow: {
     fontFamily: 'IBMPlexMono',
@@ -76,7 +103,12 @@ const styles = StyleSheet.create({
     color: theme.colors.accent,
   },
   h1: { marginTop: 6, fontFamily: 'Sora', fontSize: 26, color: theme.colors.ink },
-  sub: { marginTop: 2, fontFamily: 'Inter', fontSize: 13, color: withOpacity(theme.colors.ink, 0.55) },
+  sub: {
+    marginTop: 2,
+    fontFamily: 'Inter',
+    fontSize: 13,
+    color: withOpacity(theme.colors.ink, 0.55),
+  },
   bigGrid: { flexDirection: 'row', gap: 10, marginTop: 22 },
   bigCard: {
     flex: 1,
@@ -105,7 +137,11 @@ const styles = StyleSheet.create({
   pipelineHeader: { flexDirection: 'row', justifyContent: 'space-between' },
   pipelineName: { fontFamily: 'Sora', fontSize: 16, color: theme.colors.ink },
   pipelineHours: { fontFamily: 'Sora', fontSize: 16, fontWeight: '500' },
-  pipelineMeta: { fontFamily: 'IBMPlexMono', fontSize: 11, color: withOpacity(theme.colors.ink, 0.55) },
+  pipelineMeta: {
+    fontFamily: 'IBMPlexMono',
+    fontSize: 11,
+    color: withOpacity(theme.colors.ink, 0.55),
+  },
   barTrack: {
     marginTop: 8,
     height: 6,

@@ -1,6 +1,6 @@
-import type { CSSProperties, ReactNode } from 'react';
-
 import { cn } from '../utils/cn';
+
+import type { CSSProperties, ReactNode } from 'react';
 
 interface EyebrowProps {
   children: ReactNode;
@@ -22,7 +22,7 @@ export function Eyebrow({ children, tone = 'accent', className, style }: Eyebrow
   return (
     <div
       className={cn(
-        'font-mono text-eyebrow uppercase tracking-[0.22em]',
+        'text-eyebrow font-mono uppercase tracking-[0.22em]',
         toneClasses[tone],
         className,
       )}

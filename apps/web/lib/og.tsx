@@ -40,21 +40,18 @@ async function fetchDisplayFont(): Promise<ArrayBuffer | null> {
       {
         headers: {
           // Desktop UA → Google returns WOFF2, which Satori (next/og) supports.
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         },
         next: { revalidate: 86400 }, // Next.js data cache: refresh once per day
       },
     ).then((r) => r.text());
 
     // Step 2: extract the font binary URL from the CSS response.
-    const match = css.match(/url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/);
+    const match = /url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/.exec(css);
     if (!match?.[1]) throw new Error('Font URL not found in Google Fonts CSS');
 
     // Step 3: download the font data.
-    return await fetch(match[1], { next: { revalidate: 86400 } }).then((r) =>
-      r.arrayBuffer(),
-    );
+    return await fetch(match[1], { next: { revalidate: 86400 } }).then((r) => r.arrayBuffer());
   } catch (err) {
     // Non-fatal: OG images fall back to system-ui.
     console.warn('[og] Sora font unavailable, falling back to system-ui:', err);
@@ -150,8 +147,7 @@ export function OGShell({
           width: 560,
           height: 560,
           borderRadius: '50%',
-          background:
-            'radial-gradient(circle, rgba(230,126,34,0.30) 0%, transparent 68%)',
+          background: 'radial-gradient(circle, rgba(230,126,34,0.30) 0%, transparent 68%)',
           pointerEvents: 'none',
         }}
       />
@@ -164,16 +160,13 @@ export function OGShell({
           width: 480,
           height: 480,
           borderRadius: '50%',
-          background:
-            'radial-gradient(circle, rgba(217,70,44,0.22) 0%, transparent 68%)',
+          background: 'radial-gradient(circle, rgba(217,70,44,0.22) 0%, transparent 68%)',
           pointerEvents: 'none',
         }}
       />
 
       {/* ── Brand mark ──────────────────────────────────────── */}
-      <div
-        style={{ display: 'flex', alignItems: 'center', gap: 12, zIndex: 1 }}
-      >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, zIndex: 1 }}>
         {/* Ember square mark */}
         <div
           style={{

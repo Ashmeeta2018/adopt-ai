@@ -22,7 +22,10 @@ export const WorkflowNode = z.object({
   id: workflowId.describe('Unique node identifier'),
   kind: NodeKind.describe('Discriminator for node behaviour'),
   label: z.string().min(1).describe('Human-readable node name'),
-  config: z.record(z.unknown()).default({}).describe('Node-type-specific configuration'),
+  config: z
+    .record(z.string(), z.unknown())
+    .default({})
+    .describe('Node-type-specific configuration'),
   position: z
     .object({
       x: z.number(),
@@ -53,11 +56,11 @@ export const WorkflowDefinition = z.object({
   nodes: z.array(WorkflowNode).min(1).describe('All nodes in the DAG'),
   edges: z.array(WorkflowEdge).describe('Directed edges connecting nodes'),
   inputSchema: z
-    .record(z.unknown())
+    .record(z.string(), z.unknown())
     .optional()
     .describe('JSON Schema for workflow input validation'),
   outputSchema: z
-    .record(z.unknown())
+    .record(z.string(), z.unknown())
     .optional()
     .describe('JSON Schema for workflow output shape'),
 });
@@ -74,13 +77,7 @@ export const ExecutionStatus = z.enum([
 ]);
 export type ExecutionStatus = z.infer<typeof ExecutionStatus>;
 
-export const NodeExecutionStatus = z.enum([
-  'pending',
-  'running',
-  'success',
-  'failed',
-  'skipped',
-]);
+export const NodeExecutionStatus = z.enum(['pending', 'running', 'success', 'failed', 'skipped']);
 export type NodeExecutionStatus = z.infer<typeof NodeExecutionStatus>;
 
 export const NodeExecution = z.object({
@@ -116,7 +113,12 @@ export class ExecutionContext {
   private readonly nodeOutputs = new Map<string, unknown>();
   private abortController: AbortController | null = null;
 
-  constructor(workflowId: string, executionId: string, abortSignal: AbortSignal, abortController: AbortController | null = null) {
+  constructor(
+    workflowId: string,
+    executionId: string,
+    abortSignal: AbortSignal,
+    abortController: AbortController | null = null,
+  ) {
     this.workflowId = workflowId;
     this.executionId = executionId;
     this.abortSignal = abortSignal;
@@ -144,10 +146,8 @@ export class ExecutionContext {
   }
 }
 
-export interface NodeExecutor {
-  (
-    node: WorkflowNode,
-    input: unknown,
-    context: ExecutionContext,
-  ): Promise<unknown>;
-}
+export type NodeExecutor = (
+  node: WorkflowNode,
+  input: unknown,
+  context: ExecutionContext,
+) => Promise<unknown>;

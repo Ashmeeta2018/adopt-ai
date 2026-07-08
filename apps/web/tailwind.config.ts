@@ -1,9 +1,10 @@
 import { adoptAiPreset } from '@adopt-ai/tokens/tailwind-preset';
 import typography from '@tailwindcss/typography';
+
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
-  presets: [adoptAiPreset as Config],
+  presets: [adoptAiPreset],
   content: [
     './app/**/*.{ts,tsx,mdx}',
     './components/**/*.{ts,tsx}',

@@ -7,15 +7,10 @@
 
 import { ImageResponse } from 'next/og';
 
-import {
-  OGShell,
-  OG_WIDTH,
-  OG_HEIGHT,
-  buildFontOptions,
-  loadDisplayFont,
-} from '@/lib/og';
-import { getAllResourceSummaries, getResource } from '@/lib/resources';
 import type { ResourceType } from '@/lib/resources';
+
+import { OGShell, OG_WIDTH, OG_HEIGHT, buildFontOptions, loadDisplayFont } from '@/lib/og';
+import { getAllResourceSummaries, getResource } from '@/lib/resources';
 
 export const size = { width: OG_WIDTH, height: OG_HEIGHT };
 export const contentType = 'image/png';
@@ -31,18 +26,14 @@ export function generateStaticParams() {
  */
 const TYPE_ACCENT: Record<ResourceType, string> = {
   Whitepaper: '#D9462C', // accent
-  Playbook:   '#E67E22', // glow
-  Template:   '#D6912A', // amber
-  Talk:       '#2BAE5C', // success
-  Code:       '#D9462C', // accent
-  Guide:      '#A82A28', // burgundy
+  Playbook: '#E67E22', // glow
+  Template: '#D6912A', // amber
+  Talk: '#2BAE5C', // success
+  Code: '#D9462C', // accent
+  Guide: '#A82A28', // burgundy
 };
 
-export default async function ResourceOGImage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function ResourceOGImage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const resource = getResource(slug);
 

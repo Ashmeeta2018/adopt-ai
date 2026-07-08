@@ -5,16 +5,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AgentPillNative } from '@/components/AgentPillNative';
 import { theme, withOpacity } from '@/lib/theme';
-import { ORG, USER } from '@/lib/persona';
+import { trpc } from '@/lib/trpc';
 
 const sections = [
   {
     title: 'ACCOUNT',
-    rows: [
-      { label: 'Profile' },
-      { label: 'Notifications' },
-      { label: 'Security & 2FA' },
-    ],
+    rows: [{ label: 'Profile' }, { label: 'Notifications' }, { label: 'Security & 2FA' }],
   },
   {
     title: 'WORKSPACE',
@@ -36,24 +32,45 @@ const sections = [
 ] as const;
 
 export default function ProfileScreen() {
+  const { data, isLoading } = trpc.portal.getSettings.useQuery();
+
+  const initials = data
+    ? data.user.name
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((w) => w[0])
+        .filter((_, i, arr) => i === 0 || i === arr.length - 1)
+        .join('')
+        .toUpperCase()
+    : '';
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.header}>
-          <LinearGradient
-            colors={[theme.colors.burgundy, theme.colors.accent, theme.colors.glow]}
-            style={styles.avatar}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Text style={styles.avatarText}>{USER.initials}</Text>
-          </LinearGradient>
-          <Text style={styles.name}>{USER.fullName}</Text>
-          <Text style={styles.sub}>{`${USER.role} · ${ORG.shortName}`}</Text>
-          <View style={{ marginTop: 14 }}>
-            <AgentPillNative label="STUDIO PLAN" status="queue" />
+        {isLoading ? (
+          <View style={styles.loading}>
+            <Text style={styles.loadingText}>Loading...</Text>
           </View>
-        </View>
+        ) : (
+          <View style={styles.header}>
+            <LinearGradient
+              colors={[theme.colors.burgundy, theme.colors.accent, theme.colors.glow]}
+              style={styles.avatar}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.avatarText}>{initials}</Text>
+            </LinearGradient>
+            <Text style={styles.name}>{data?.user.name}</Text>
+            <Text style={styles.sub}>{data ? `${data.role} · ${data.organisation.name}` : ''}</Text>
+            <View style={{ marginTop: 14 }}>
+              <AgentPillNative
+                label={data ? `${data.organisation.plan.toUpperCase()} PLAN` : ''}
+                status="queue"
+              />
+            </View>
+          </View>
+        )}
 
         {sections.map((s) => (
           <View key={s.title} style={styles.section}>
@@ -108,7 +125,12 @@ const styles = StyleSheet.create({
   },
   avatarText: { color: theme.colors.cream, fontFamily: 'Sora', fontSize: 28, fontWeight: '600' },
   name: { marginTop: 12, fontFamily: 'Sora', fontSize: 22, color: theme.colors.ink },
-  sub: { marginTop: 2, fontFamily: 'Inter', fontSize: 13, color: withOpacity(theme.colors.ink, 0.55) },
+  sub: {
+    marginTop: 2,
+    fontFamily: 'Inter',
+    fontSize: 13,
+    color: withOpacity(theme.colors.ink, 0.55),
+  },
   section: { marginTop: 18 },
   sectionTitle: {
     fontFamily: 'IBMPlexMono',
@@ -132,6 +154,8 @@ const styles = StyleSheet.create({
   },
   rowLabel: { fontFamily: 'Sora', fontSize: 15, color: theme.colors.ink },
   rowValue: { fontFamily: 'IBMPlexMono', fontSize: 12, color: withOpacity(theme.colors.ink, 0.55) },
+  loading: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
+  loadingText: { fontFamily: 'Inter', fontSize: 14, color: withOpacity(theme.colors.ink, 0.5) },
   footer: {
     marginTop: 30,
     textAlign: 'center',

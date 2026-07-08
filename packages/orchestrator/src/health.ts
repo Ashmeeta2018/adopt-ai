@@ -1,8 +1,8 @@
-import type { AgentRunRecord, HealthGrade, HealthStatus } from './types;
+import type { AgentRunRecord, HealthGrade, HealthStatus } from './types';
 
 const WINDOW_SIZE = 100;
 const HEALTHY_SUCCESS_THRESHOLD = 0.95;
-const DEGRADED_SUCCESS_THRESHOLD = 0.80;
+const DEGRADED_SUCCESS_THRESHOLD = 0.8;
 const HEALTHY_LATENCY_MS = 5_000;
 const DEGRADED_LATENCY_MS = 15_000;
 const CONSECUTIVE_FAILURE_UNHEALTHY = 3;
@@ -12,7 +12,7 @@ interface HealthEntry {
   lastRunAt?: string;
   lastSuccessAt?: string;
   consecutiveFailures: number;
-  recentRuns: Array<{ success: boolean; latencyMs: number }>;
+  recentRuns: { success: boolean; latencyMs: number }[];
 }
 
 type UnhealthyCallback = (agentId: string, status: HealthStatus) => void;
@@ -25,8 +25,7 @@ function computeGrade(entry: HealthEntry): HealthGrade {
   }
 
   const successRate = recentRuns.filter((r) => r.success).length / recentRuns.length;
-  const avgLatencyMs =
-    recentRuns.reduce((sum, r) => sum + r.latencyMs, 0) / recentRuns.length;
+  const avgLatencyMs = recentRuns.reduce((sum, r) => sum + r.latencyMs, 0) / recentRuns.length;
 
   if (
     successRate < DEGRADED_SUCCESS_THRESHOLD ||
@@ -36,10 +35,7 @@ function computeGrade(entry: HealthEntry): HealthGrade {
     return 'unhealthy';
   }
 
-  if (
-    successRate < HEALTHY_SUCCESS_THRESHOLD ||
-    avgLatencyMs > HEALTHY_LATENCY_MS
-  ) {
+  if (successRate < HEALTHY_SUCCESS_THRESHOLD || avgLatencyMs > HEALTHY_LATENCY_MS) {
     return 'degraded';
   }
 

@@ -42,23 +42,19 @@
   "pnpm": {
     "overrides": {
       "@types/react": "^19.0.7",
-      "@types/react-dom": "^19.0.3"
+      "@types/react-dom": "^19.0.3",
+      "react": "19.2.7",
+      "react-dom": "19.2.7",
+      "react-test-renderer": "19.2.7"
+    },
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "next-auth>next": ">=15"
+      }
     },
     "publicHoistPattern": [
       "@types/react",
       "@types/react-dom"
     ]
-  },
-  "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "prettier --write",
-      "eslint --fix"
-    ],
-    "*.{json,md,yml,yaml}": [
-      "prettier --write"
-    ]
-  },
-  "dependencies": {
-    "framer-motion": "^12.40.0"
   }
 }

@@ -1,6 +1,5 @@
-import { StyleSheet, View } from 'react-native';
-
 import { nativeTokens } from '@adopt-ai/tokens/native';
+import { StyleSheet, View } from 'react-native';
 
 type Status = 'running' | 'queued' | 'error' | 'paused';
 

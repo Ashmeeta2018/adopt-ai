@@ -11,7 +11,12 @@ import { z } from 'zod';
 
 import { protectedProcedure, router } from '../trpc';
 
-const agentStatusMap = { RUNNING: 'running', QUEUED: 'queued', ERROR: 'error', PAUSED: 'paused' } as const;
+const agentStatusMap = {
+  RUNNING: 'running',
+  QUEUED: 'queued',
+  ERROR: 'error',
+  PAUSED: 'paused',
+} as const;
 
 const alertSeverityMap = { OPS: 'ops', DRIFT: 'drift', TEAM: 'team' } as const;
 
@@ -80,7 +85,11 @@ export const portalRouter = router({
       }),
       ctx.prisma.alert.count({ where: { organisationId: orgId, read: false } }),
       ctx.prisma.agentRun.count({
-        where: { organisationId: orgId, ts: { gte: cutoff48h, lt: cutoff24h }, agent: { deletedAt: null } },
+        where: {
+          organisationId: orgId,
+          ts: { gte: cutoff48h, lt: cutoff24h },
+          agent: { deletedAt: null },
+        },
       }),
     ]);
 
@@ -133,9 +142,11 @@ export const portalRouter = router({
 
     const runs24h = agent.runs.length;
     const successCount = agent.runs.filter((r) => r.status === 'success').length;
-    const p95LatencyMs = runs24h > 0
-      ? [...agent.runs].sort((a, b) => a.latencyMs - b.latencyMs)[Math.ceil(runs24h * 0.95) - 1]!.latencyMs
-      : 0;
+    const p95LatencyMs =
+      runs24h > 0
+        ? [...agent.runs].sort((a, b) => a.latencyMs - b.latencyMs)[Math.ceil(runs24h * 0.95) - 1]!
+            .latencyMs
+        : 0;
 
     const throughput = agent.runs
       .reverse()
@@ -157,7 +168,11 @@ export const portalRouter = router({
         tasks24h: runs24h,
         successRate: runs24h > 0 ? Math.round((successCount / runs24h) * 10000) / 10000 : 1,
       },
-      metrics: { tasks24h: runs24h, successRate: runs24h > 0 ? successCount / runs24h : 1, p95LatencyMs },
+      metrics: {
+        tasks24h: runs24h,
+        successRate: runs24h > 0 ? successCount / runs24h : 1,
+        p95LatencyMs,
+      },
       throughput,
     };
   }),
@@ -196,13 +211,13 @@ export const portalRouter = router({
 
           for (const run of runs) {
             const feedStatus =
-              run.status === 'success' ? 'ok' :
-              run.status === 'failed' || run.status === 'timed_out' ? 'error' :
-              'warn';
+              run.status === 'success'
+                ? 'ok'
+                : run.status === 'failed' || run.status === 'timed_out'
+                  ? 'error'
+                  : 'warn';
 
-            const detail = run.error
-              ? run.error
-              : `${run.latencyMs}ms via ${run.trigger}`;
+            const detail = run.error ?? `${run.latencyMs}ms via ${run.trigger}`;
 
             emit.next({
               id: run.id,
@@ -222,7 +237,7 @@ export const portalRouter = router({
 
       // Initial fetch to catch up on recent runs.
       void poll();
-      const interval = setInterval(poll, 3000);
+      const interval = setInterval(() => void poll(), 3000);
       return () => clearInterval(interval);
     });
   }),
@@ -232,7 +247,9 @@ export const portalRouter = router({
     if (!membership) throw new TRPCError({ code: 'FORBIDDEN' });
 
     const orgId = membership.organisationId;
-    const weekStart = input.weekStart ? new Date(input.weekStart) : new Date(Date.now() - 7 * 86400000);
+    const weekStart = input.weekStart
+      ? new Date(input.weekStart)
+      : new Date(Date.now() - 7 * 86400000);
 
     const report = await ctx.prisma.weeklyReport.findFirst({
       where: { organisationId: orgId, weekStart: { lte: weekStart } },
@@ -245,22 +262,29 @@ export const portalRouter = router({
         orderBy: { weekStart: 'desc' },
       });
 
-      const hoursTrend = prevReport ? pctChange(Number(report.hoursSaved), Number(prevReport.hoursSaved)) : 0;
-      const costTrend = prevReport ? pctChange(Number(report.costReducedUsd), Number(prevReport.costReducedUsd)) : 0;
+      const hoursTrend = prevReport
+        ? pctChange(Number(report.hoursSaved), Number(prevReport.hoursSaved))
+        : 0;
+      const costTrend = prevReport
+        ? pctChange(Number(report.costReducedUsd), Number(prevReport.costReducedUsd))
+        : 0;
 
       return {
-        range: { start: report.weekStart.toISOString().slice(0, 10), end: report.weekEnd.toISOString().slice(0, 10) },
+        range: {
+          start: report.weekStart.toISOString().slice(0, 10),
+          end: report.weekEnd.toISOString().slice(0, 10),
+        },
         hoursSaved: Number(report.hoursSaved),
         hoursSavedTrendPct: hoursTrend,
         costReducedUsd: Number(report.costReducedUsd),
         costReducedTrendPct: costTrend,
-        pipelines: (report.pipelinesJson as Array<Record<string, unknown>>) as Array<{
+        pipelines: report.pipelinesJson as Record<string, unknown>[] as {
           name: string;
           hoursSaved: number;
           tasks: number;
           successRate: number;
           accent: 'accent' | 'glow' | 'amber';
-        }>,
+        }[],
       };
     }
 
@@ -273,7 +297,11 @@ export const portalRouter = router({
         include: { runs: { where: { ts: { gte: weekStart } } } },
       }),
       ctx.prisma.agentRun.count({
-        where: { organisationId: orgId, ts: { gte: prevWeekStart, lt: weekStart }, agent: { deletedAt: null } },
+        where: {
+          organisationId: orgId,
+          ts: { gte: prevWeekStart, lt: weekStart },
+          agent: { deletedAt: null },
+        },
       }),
     ]);
 
@@ -281,7 +309,7 @@ export const portalRouter = router({
       const successCount = agent.runs.filter((r) => r.status === 'success').length;
       return {
         name: agent.name,
-        hoursSaved: Math.round((agent.runs.length * 2.5 / 60) * 10) / 10,
+        hoursSaved: Math.round(((agent.runs.length * 2.5) / 60) * 10) / 10,
         tasks: agent.runs.length,
         successRate: agent.runs.length > 0 ? successCount / agent.runs.length : 1,
         accent: (['accent', 'glow', 'amber'] as const)[i % 3],
@@ -290,7 +318,7 @@ export const portalRouter = router({
 
     const totalHours = pipelines.reduce((s, p) => s + p.hoursSaved, 0);
     const totalCost = totalHours * 40;
-    const prevHours = Math.round((prevRunsCount * 2.5) / 60 * 10) / 10;
+    const prevHours = Math.round(((prevRunsCount * 2.5) / 60) * 10) / 10;
     const prevCost = prevHours * 40;
 
     return {
@@ -310,7 +338,14 @@ export const portalRouter = router({
     const orgId = membership.organisationId;
     const { cursor, limit = 20 } = input;
 
-    const mapAlert = (a: { id: string; ts: Date; severity: string; title: string; body: string; read: boolean }) => ({
+    const mapAlert = (a: {
+      id: string;
+      ts: Date;
+      severity: string;
+      title: string;
+      body: string;
+      read: boolean;
+    }) => ({
       id: a.id,
       ts: a.ts.toISOString(),
       severity: toAlertSeverity(a.severity),
@@ -347,7 +382,8 @@ export const portalRouter = router({
       }),
     ]);
 
-    const nextCursor = earlierAlerts.length === limit ? earlierAlerts[earlierAlerts.length - 1]!.id : null;
+    const nextCursor =
+      earlierAlerts.length === limit ? earlierAlerts[earlierAlerts.length - 1]!.id : null;
     return { today: todayAlerts.map(mapAlert), earlier: earlierAlerts.map(mapAlert), nextCursor };
   }),
 
@@ -366,7 +402,8 @@ export const portalRouter = router({
 
   getSettings: protectedProcedure.query(async ({ ctx }) => {
     const membership = ctx.session.user.memberships?.[0];
-    if (!membership) throw new TRPCError({ code: 'FORBIDDEN', message: 'No workspace membership.' });
+    if (!membership)
+      throw new TRPCError({ code: 'FORBIDDEN', message: 'No workspace membership.' });
 
     const org = await ctx.prisma.organisation.findUnique({
       where: { id: membership.organisationId },
@@ -377,9 +414,9 @@ export const portalRouter = router({
     return {
       user: {
         email: ctx.session.user.email ?? '',
-        name:  ctx.session.user.name  ?? '',
+        name: ctx.session.user.name ?? '',
       },
-      role:         membership.role,           // OWNER | ADMIN | MEMBER
+      role: membership.role, // OWNER | ADMIN | MEMBER
       organisation: { name: org.name, plan: org.plan },
     };
   }),

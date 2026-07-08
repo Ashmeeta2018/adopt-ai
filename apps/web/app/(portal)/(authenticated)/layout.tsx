@@ -1,8 +1,9 @@
-import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
-import { auth } from '@/lib/auth';
+import type { Metadata } from 'next';
+
 import { PortalShell } from '@/components/portal/PortalShell';
+import { auth } from '@/lib/auth';
 
 export const metadata: Metadata = {
   title: 'Portal — Adopt AI',

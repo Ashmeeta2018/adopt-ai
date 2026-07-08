@@ -1,6 +1,6 @@
-import type { CSSProperties } from 'react';
-
 import { hairlines } from '@adopt-ai/tokens';
+
+import type { CSSProperties } from 'react';
 
 interface HairlineProps {
   dark?: boolean;

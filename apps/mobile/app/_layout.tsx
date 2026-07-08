@@ -1,16 +1,21 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Component, type ErrorInfo, type ReactNode, useState } from 'react';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Component, type ErrorInfo, type ReactNode, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAuthStore } from '@/lib/auth';
 import { theme, withOpacity } from '@/lib/theme';
 import { trpc, trpcClient } from '@/lib/trpc';
 
-interface ErrorBoundaryProps { children: ReactNode }
-interface ErrorBoundaryState { error: Error | null }
+interface ErrorBoundaryProps {
+  children: ReactNode;
+}
+interface ErrorBoundaryState {
+  error: Error | null;
+}
 
 class AppErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   override state: ErrorBoundaryState = { error: null };
@@ -55,6 +60,11 @@ export default function RootLayout() {
       }),
   );
 
+  const hydrate = useAuthStore((s) => s.hydrate);
+  useEffect(() => {
+    void hydrate();
+  }, [hydrate]);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -80,7 +90,13 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: theme.colors.cream },
   container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
   emoji: { fontSize: 48, marginBottom: 16 },
-  title: { fontFamily: 'Sora', fontSize: 22, color: theme.colors.ink, fontWeight: '600', marginBottom: 8 },
+  title: {
+    fontFamily: 'Sora',
+    fontSize: 22,
+    color: theme.colors.ink,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
   message: {
     fontFamily: 'Inter',
     fontSize: 14,

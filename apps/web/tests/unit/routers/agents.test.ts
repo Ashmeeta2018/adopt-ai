@@ -1,9 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
 import { TRPCError } from '@trpc/server';
+import { describe, expect, it, vi } from 'vitest';
 
-import { agentsRouter, workflowsRouter } from '@/lib/trpc/routers/agents';
 import type { TrpcContext } from '@/lib/trpc/context';
-
 // Contract output types — used as explicit annotations on selected test results
 // so TypeScript verifies the router's return shape matches the published types.
 // If a contract type changes and the router or mock drifts, these catch it.
@@ -15,6 +13,8 @@ import type {
   WorkflowGetOutput,
   WorkflowListItem,
 } from '@adopt-ai/api-contract';
+
+import { agentsRouter, workflowsRouter } from '@/lib/trpc/routers/agents';
 
 // ── Stable UUIDs (pass cuid2().or(uuid()) validation) ─────────
 const AGENT_ID = '11111111-0000-4000-8000-000000000001';
@@ -61,9 +61,7 @@ const sampleWorkflow = {
   updatedAt: now,
   _count: { agents: 1, executions: 12 },
   agents: [{ id: AGENT_ID, name: 'intake-agent-v4', status: 'RUNNING' }],
-  executions: [
-    { id: EXEC_ID, startedAt: now, completedAt: now, status: 'COMPLETED', error: null },
-  ],
+  executions: [{ id: EXEC_ID, startedAt: now, completedAt: now, status: 'COMPLETED', error: null }],
 };
 
 function makePrisma(overrides: Record<string, unknown> = {}) {
@@ -137,7 +135,10 @@ async function expectTRPCError(call: Promise<unknown>, code: TRPCError['code']) 
   }
 }
 
-function agentsCaller(sessionOverride?: Session | null, prismaOverrides: Record<string, unknown> = {}) {
+function agentsCaller(
+  sessionOverride?: Session | null,
+  prismaOverrides: Record<string, unknown> = {},
+) {
   return agentsRouter.createCaller({
     session: sessionOverride === undefined ? ownerSession() : sessionOverride,
     prisma: makePrisma(prismaOverrides) as never,
@@ -145,7 +146,10 @@ function agentsCaller(sessionOverride?: Session | null, prismaOverrides: Record<
   });
 }
 
-function workflowsCaller(sessionOverride?: Session | null, prismaOverrides: Record<string, unknown> = {}) {
+function workflowsCaller(
+  sessionOverride?: Session | null,
+  prismaOverrides: Record<string, unknown> = {},
+) {
   return workflowsRouter.createCaller({
     session: sessionOverride === undefined ? ownerSession() : sessionOverride,
     prisma: makePrisma(prismaOverrides) as never,
@@ -157,7 +161,7 @@ function workflowsCaller(sessionOverride?: Session | null, prismaOverrides: Reco
 describe('agentsRouter.list', () => {
   it('returns agents for authenticated owner', async () => {
     // Type annotation verifies the router return shape matches the contract.
-    const result: AgentListItem[] = (await agentsCaller().list()) as AgentListItem[];
+    const result: AgentListItem[] = await agentsCaller().list();
     expect(result).toHaveLength(1);
     expect(result[0]?.id).toBe(AGENT_ID);
   });
@@ -174,7 +178,7 @@ describe('agentsRouter.list', () => {
   it('queries only non-deleted agents for the org', async () => {
     const prisma = makePrisma();
     await agentsCaller(undefined, prisma).list();
-    expect(vi.mocked((prisma as ReturnType<typeof makePrisma>).agent.findMany)).toHaveBeenCalledWith(
+    expect(vi.mocked(prisma.agent.findMany)).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ organisationId: ORG_ID, deletedAt: null }),
       }),
@@ -185,7 +189,9 @@ describe('agentsRouter.list', () => {
 // ── agentsRouter.get ──────────────────────────────────────────
 describe('agentsRouter.get', () => {
   it('returns a single agent with its workflow', async () => {
-    const result: AgentGetOutput | null = (await agentsCaller().get({ agentId: AGENT_ID })) as AgentGetOutput | null;
+    const result: AgentGetOutput | null = (await agentsCaller().get({
+      agentId: AGENT_ID,
+    })) as AgentGetOutput | null;
     expect(result?.id).toBe(AGENT_ID);
     expect(result?.workflow?.id).toBe(WF_ID);
   });
@@ -207,7 +213,10 @@ describe('agentsRouter.runs', () => {
   it('returns runs with pagination — nextCursor is null for small sets', async () => {
     // Double-cast needed: Prisma's Decimal for costUsd is structurally incompatible
     // with the contract's `string | number` union until the router serialises it.
-    const result = (await agentsCaller().runs({ agentId: AGENT_ID, limit: 50 })) as unknown as PaginatedRunsOutput;
+    const result = (await agentsCaller().runs({
+      agentId: AGENT_ID,
+      limit: 50,
+    })) as unknown as PaginatedRunsOutput;
     expect(Array.isArray(result.items)).toBe(true);
     expect(result.nextCursor).toBeNull(); // 2 items < limit 50
   });
@@ -228,7 +237,10 @@ describe('agentsRouter.runs', () => {
   });
 
   it('throws UNAUTHORIZED when unauthenticated', async () => {
-    await expectTRPCError(agentsCaller(null).runs({ agentId: AGENT_ID, limit: 10 }), 'UNAUTHORIZED');
+    await expectTRPCError(
+      agentsCaller(null).runs({ agentId: AGENT_ID, limit: 10 }),
+      'UNAUTHORIZED',
+    );
   });
 });
 
@@ -237,7 +249,7 @@ describe('agentsRouter.togglePause', () => {
   it('allows OWNER to pause an agent', async () => {
     const prisma = makePrisma();
     await agentsCaller(undefined, prisma).togglePause({ agentId: AGENT_ID, paused: true });
-    expect(vi.mocked((prisma as ReturnType<typeof makePrisma>).agent.update)).toHaveBeenCalledWith(
+    expect(vi.mocked(prisma.agent.update)).toHaveBeenCalledWith(
       expect.objectContaining({ data: { status: 'PAUSED' } }),
     );
   });
@@ -245,7 +257,7 @@ describe('agentsRouter.togglePause', () => {
   it('allows ADMIN to unpause an agent', async () => {
     const prisma = makePrisma();
     await agentsCaller(adminSession(), prisma).togglePause({ agentId: AGENT_ID, paused: false });
-    expect(vi.mocked((prisma as ReturnType<typeof makePrisma>).agent.update)).toHaveBeenCalledWith(
+    expect(vi.mocked(prisma.agent.update)).toHaveBeenCalledWith(
       expect.objectContaining({ data: { status: 'RUNNING' } }),
     );
   });
@@ -268,7 +280,7 @@ describe('agentsRouter.togglePause', () => {
 // ── workflowsRouter.list ──────────────────────────────────────
 describe('workflowsRouter.list', () => {
   it('returns workflows for authenticated user', async () => {
-    const result: WorkflowListItem[] = (await workflowsCaller().list()) as WorkflowListItem[];
+    const result: WorkflowListItem[] = await workflowsCaller().list();
     expect(result).toHaveLength(1);
     expect(result[0]?.id).toBe(WF_ID);
   });
@@ -286,7 +298,9 @@ describe('workflowsRouter.list', () => {
 // ── workflowsRouter.get ───────────────────────────────────────
 describe('workflowsRouter.get', () => {
   it('returns a workflow with agents and executions', async () => {
-    const result: WorkflowGetOutput | null = (await workflowsCaller().get({ workflowId: WF_ID })) as WorkflowGetOutput | null;
+    const result: WorkflowGetOutput | null = (await workflowsCaller().get({
+      workflowId: WF_ID,
+    })) as WorkflowGetOutput | null;
     expect(result?.id).toBe(WF_ID);
     expect(result?.agents).toHaveLength(1);
     expect(result?.executions).toHaveLength(1);
@@ -307,7 +321,10 @@ describe('workflowsRouter.get', () => {
 // ── workflowsRouter.executions ────────────────────────────────
 describe('workflowsRouter.executions', () => {
   it('returns executions with pagination — nextCursor null for small set', async () => {
-    const result: PaginatedExecutionsOutput = (await workflowsCaller().executions({ workflowId: WF_ID, limit: 10 })) as PaginatedExecutionsOutput;
+    const result: PaginatedExecutionsOutput = await workflowsCaller().executions({
+      workflowId: WF_ID,
+      limit: 10,
+    });
     expect(Array.isArray(result.items)).toBe(true);
     expect(result.nextCursor).toBeNull();
   });

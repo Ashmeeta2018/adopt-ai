@@ -1,6 +1,6 @@
-import type { CSSProperties } from 'react';
-
 import { cn } from '../utils/cn';
+
+import type { CSSProperties } from 'react';
 
 interface BrandMarkProps {
   size?: number;
@@ -43,11 +43,7 @@ export function BrandMark({
 
   return (
     <div
-      className={cn(
-        'inline-flex',
-        stacked ? 'flex-col items-center' : 'items-center',
-        className,
-      )}
+      className={cn('inline-flex', stacked ? 'flex-col items-center' : 'items-center', className)}
       style={{ gap: resolvedGap, ...style }}
     >
       <img
@@ -62,7 +58,7 @@ export function BrandMark({
         <div className="flex flex-col" style={{ lineHeight: 1 }}>
           <div
             className={cn(
-              'inline-flex font-display font-bold uppercase tracking-[0.18em]',
+              'font-display inline-flex font-bold uppercase tracking-[0.18em]',
               dark ? 'text-cream' : 'text-ink',
             )}
             style={{ fontSize: wordmarkFontSize, gap: wordmarkFontSize * 0.43 }}

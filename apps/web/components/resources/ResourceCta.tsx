@@ -1,13 +1,12 @@
+import { Button } from '@adopt-ai/ui-web';
 import Link from 'next/link';
 
 import type { ResourceFrontmatter } from '@/lib/resources';
-import { Button } from '@adopt-ai/ui-web';
 
-interface ResourceCtaProps
-  extends Pick<
-    ResourceFrontmatter,
-    'type' | 'downloadLabel' | 'downloadUrl' | 'externalLabel' | 'externalUrl'
-  > {
+interface ResourceCtaProps extends Pick<
+  ResourceFrontmatter,
+  'type' | 'downloadLabel' | 'downloadUrl' | 'externalLabel' | 'externalUrl'
+> {
   /** When true, renders in a vertical stack layout (sidebar). Default: horizontal. */
   stack?: boolean;
 }
@@ -31,9 +30,7 @@ export function ResourceCta({
   const hasDownload = !!(downloadLabel && downloadUrl);
   const hasExternal = !!(externalLabel && externalUrl);
 
-  const wrapperClass = stack
-    ? 'flex flex-col gap-3'
-    : 'flex flex-wrap items-center gap-3';
+  const wrapperClass = stack ? 'flex flex-col gap-3' : 'flex flex-wrap items-center gap-3';
 
   if (!hasDownload && !hasExternal) {
     // Pure prose resource — no special CTA, just start reading
@@ -55,9 +52,7 @@ export function ResourceCta({
       )}
       {hasExternal && (
         <a href={externalUrl} target="_blank" rel="noopener noreferrer">
-          <Button variant={hasDownload ? 'ghost' : 'primary'}>
-            {externalLabel} ↗
-          </Button>
+          <Button variant={hasDownload ? 'ghost' : 'primary'}>{externalLabel} ↗</Button>
         </a>
       )}
       {/* Always offer a contact fallback for non-download types */}

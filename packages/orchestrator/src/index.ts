@@ -1,10 +1,21 @@
-import type { AgentConfig, DateRange, HealthStatus, IncomingTask, OrchestratorConfig, AgentMetrics, CostBreakdown, AgentRunRecord, PaginatedResult } from './types;
-import { AgentNotFoundError } from './errors;
-import { Scheduler } from './scheduler;
-import { AgentExecutor } from './executor;
-import { TaskRouter } from './router;
-import { HealthMonitor } from './health;
-import { RunHistory } from './history;
+import { AgentNotFoundError } from './errors';
+import { AgentExecutor } from './executor';
+import { HealthMonitor } from './health';
+import { RunHistory } from './history';
+import { TaskRouter } from './router';
+import { Scheduler } from './scheduler';
+
+import type {
+  AgentConfig,
+  DateRange,
+  HealthStatus,
+  IncomingTask,
+  OrchestratorConfig,
+  AgentMetrics,
+  CostBreakdown,
+  AgentRunRecord,
+  PaginatedResult,
+} from './types';
 
 export class Orchestrator {
   private readonly scheduler: Scheduler;
@@ -59,7 +70,11 @@ export class Orchestrator {
     }
   }
 
-  async runAgent(agentId: string, input: unknown, trigger: 'manual' | 'schedule' | 'webhook' | 'event' = 'manual'): Promise<AgentRunRecord> {
+  async runAgent(
+    agentId: string,
+    input: unknown,
+    trigger: 'manual' | 'schedule' | 'webhook' | 'event' = 'manual',
+  ): Promise<AgentRunRecord> {
     const agent = this.agents.get(agentId);
     if (!agent) {
       throw new AgentNotFoundError(agentId);
@@ -82,7 +97,11 @@ export class Orchestrator {
     return this.health.getStatus(agentId);
   }
 
-  getAgentHistory(agentId: string, limit?: number, cursor?: string): PaginatedResult<AgentRunRecord> {
+  getAgentHistory(
+    agentId: string,
+    limit?: number,
+    cursor?: string,
+  ): PaginatedResult<AgentRunRecord> {
     return this.history.getByAgent(agentId, limit, cursor);
   }
 
@@ -116,10 +135,8 @@ export class Orchestrator {
       };
     }
 
-    const successRate =
-      perAgent.reduce((s, m) => s + m.successRate * m.totalRuns, 0) / totalRuns;
-    const avgLatencyMs =
-      perAgent.reduce((s, m) => s + m.avgLatencyMs * m.totalRuns, 0) / totalRuns;
+    const successRate = perAgent.reduce((s, m) => s + m.successRate * m.totalRuns, 0) / totalRuns;
+    const avgLatencyMs = perAgent.reduce((s, m) => s + m.avgLatencyMs * m.totalRuns, 0) / totalRuns;
     const totalTokens = perAgent.reduce((s, m) => s + m.totalTokens, 0);
     const totalCostUsd = perAgent.reduce((s, m) => s + m.totalCostUsd, 0);
 
@@ -171,11 +188,13 @@ export class Orchestrator {
       const due = this.scheduler.tick();
       for (const item of due) {
         const agent = this.agents.get(item.agentId);
-        if (!agent || agent.status !== 'active') continue;
+        if (agent?.status !== 'active') continue;
 
-        this.executor.executeWithTimeout(agent, null, this.defaultTimeoutMs, 'schedule').catch(() => {
-          // Errors are already recorded inside executeWithTimeout.
-        });
+        this.executor
+          .executeWithTimeout(agent, null, this.defaultTimeoutMs, 'schedule')
+          .catch(() => {
+            // Errors are already recorded inside executeWithTimeout.
+          });
       }
     }, this.tickIntervalMs);
   }
@@ -193,21 +212,33 @@ export function createOrchestrator(config: OrchestratorConfig): Orchestrator {
 }
 
 // Re-export all public types and modules
-export type { OrchestratorConfig } from './types;
-export type { AgentConfig, AgentKind, AgentRunRecord, AgentRunStatus, AgentStatus } from './types;
-export type { ScheduleConfig, HealthGrade, HealthStatus } from './types;
-export type { IncomingTask, RunTrigger } from './types;
-export type { DateRange, AgentMetrics, CostBreakdown, PaginatedResult } from './types;
-export type { ModelClient, ModelConfig, ModelResponse, WorkflowEngine } from './types;
-export type { TokenUsage, ToolDefinition, ToolCall, ToolResult } from './types;
+export type { OrchestratorConfig } from './types';
+export type { AgentConfig, AgentRunRecord } from './types';
+export type { HealthStatus } from './types';
+export type { IncomingTask } from './types';
+export type { DateRange, AgentMetrics, CostBreakdown, PaginatedResult } from './types';
+export type { ModelClient, ModelConfig, ModelResponse, WorkflowEngine } from './types';
+export type { TokenUsage, ToolDefinition, ToolCall, ToolResult } from './types';
 
-export { AgentKind, AgentRunStatus, AgentStatus, HealthGrade, RunTrigger, ScheduleConfig } from './types;
+export {
+  AgentKind,
+  AgentRunStatus,
+  AgentStatus,
+  HealthGrade,
+  RunTrigger,
+  ScheduleConfig,
+} from './types';
 
-export { AgentNotFoundError, AgentUnavailableError, ExecutionTimeoutError, WorkflowExecutionError } from './errors;
+export {
+  AgentNotFoundError,
+  AgentUnavailableError,
+  ExecutionTimeoutError,
+  WorkflowExecutionError,
+} from './errors';
 
-export { Scheduler } from './scheduler;
-export { AgentExecutor } from './executor;
-export { TaskRouter } from './router;
-export { HealthMonitor } from './health;
-export { RunHistory } from './history;
-export type { RunStore } from './history;
+export { Scheduler } from './scheduler';
+export { AgentExecutor } from './executor';
+export { TaskRouter } from './router';
+export { HealthMonitor } from './health';
+export { RunHistory } from './history';
+export type { RunStore } from './history';

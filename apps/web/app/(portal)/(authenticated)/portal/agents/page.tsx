@@ -1,8 +1,9 @@
 'use client';
 
-import { trpc } from '@/lib/trpc/client';
 import { Eyebrow } from '@adopt-ai/ui-web';
 import Link from 'next/link';
+
+import { trpc } from '@/lib/trpc/client';
 
 const AGENT_COLORS: Record<string, string> = {
   INBOX_TRIAGE: '#D9462C',
@@ -17,7 +18,7 @@ export default function AgentsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+        <div className="border-accent h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" />
       </div>
     );
   }
@@ -28,48 +29,58 @@ export default function AgentsPage() {
     <div className="space-y-8">
       <div>
         <Eyebrow tone="cream">{data.agents.length} agents</Eyebrow>
-        <h1 className="mt-2 font-display text-3xl font-semibold text-cream">Agents</h1>
+        <h1 className="font-display text-cream mt-2 text-3xl font-semibold">Agents</h1>
       </div>
 
       <div className="space-y-3">
         {data.agents.map((agent) => (
           <Link key={agent.id} href={`/portal/agents/${agent.id}`}>
-            <div className="group flex items-center justify-between rounded-xl border border-hairline-dark bg-cream/[0.04] px-6 py-5 transition-all hover:border-accent/30 hover:bg-cream/[0.06]">
+            <div className="border-hairline-dark bg-cream/4 hover:border-accent/30 hover:bg-cream/6 group flex items-center justify-between rounded-xl border px-6 py-5 transition-all">
               <div className="flex items-center gap-5">
                 <div
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-cream font-mono text-base"
-                  style={{ background: `linear-gradient(140deg, ${AGENT_COLORS[agent.kind] ?? '#C68A1F'}, #E8E3DB)` }}
+                  className="text-cream flex h-12 w-12 shrink-0 items-center justify-center rounded-lg font-mono text-base"
+                  style={{
+                    background: `linear-gradient(140deg, ${AGENT_COLORS[agent.kind] ?? '#C68A1F'}, #E8E3DB)`,
+                  }}
                 >
                   ◈
                 </div>
                 <div>
-                  <p className="font-display text-base font-semibold text-cream group-hover:text-accent">
+                  <p className="font-display text-cream group-hover:text-accent text-base font-semibold">
                     {agent.name}
                   </p>
-                  <p className="mt-0.5 font-body text-sm text-cream/50">{agent.description}</p>
+                  <p className="font-body text-cream/50 mt-0.5 text-sm">{agent.description}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-10">
                 <div className="grid grid-cols-3 gap-8 text-right">
                   <div>
-                    <p className="font-mono text-lg font-medium text-cream">
+                    <p className="text-cream font-mono text-lg font-medium">
                       {agent.tasks24h.toLocaleString()}
                     </p>
-                    <p className="font-mono text-[10px] uppercase tracking-wider text-cream/40">tasks/24h</p>
+                    <p className="text-cream/40 font-mono text-[10px] uppercase tracking-wider">
+                      tasks/24h
+                    </p>
                   </div>
                   <div>
-                    <p className="font-mono text-lg font-medium text-cream">
+                    <p className="text-cream font-mono text-lg font-medium">
                       {(agent.successRate * 100).toFixed(2)}%
                     </p>
-                    <p className="font-mono text-[10px] uppercase tracking-wider text-cream/40">success rate</p>
+                    <p className="text-cream/40 font-mono text-[10px] uppercase tracking-wider">
+                      success rate
+                    </p>
                   </div>
                   <div>
-                    <p className="font-mono text-lg font-medium capitalize text-cream">{agent.status}</p>
-                    <p className="font-mono text-[10px] uppercase tracking-wider text-cream/40">status</p>
+                    <p className="text-cream font-mono text-lg font-medium capitalize">
+                      {agent.status}
+                    </p>
+                    <p className="text-cream/40 font-mono text-[10px] uppercase tracking-wider">
+                      status
+                    </p>
                   </div>
                 </div>
-                <span className="ml-4 text-lg text-cream/30 group-hover:text-accent">→</span>
+                <span className="text-cream/30 group-hover:text-accent ml-4 text-lg">→</span>
               </div>
             </div>
           </Link>

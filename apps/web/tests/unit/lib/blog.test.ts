@@ -7,13 +7,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import {
-  formatDate,
-  getAllPostSummaries,
-  getAllPosts,
-  getPost,
-  getRelatedPosts,
-} from '@/lib/blog';
+import { formatDate, getAllPostSummaries, getAllPosts, getPost, getRelatedPosts } from '@/lib/blog';
 
 // ── getAllPosts ────────────────────────────────────────────────
 describe('getAllPosts', () => {
@@ -62,8 +56,7 @@ describe('getAllPostSummaries', () => {
 
   it('does not include the raw MDX content field', () => {
     for (const summary of getAllPostSummaries()) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((summary as any).content).toBeUndefined();
+      expect(Object.keys(summary)).not.toContain('content');
     }
   });
 });

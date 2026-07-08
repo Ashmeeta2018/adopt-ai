@@ -1,87 +1,66 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { theme, withOpacity } from '@/lib/theme';
-
-interface WorkflowNode {
-  id: string;
-  kind: string;
-  label: string;
-}
-
-const WORKFLOW_DATA: Record<string, {
-  name: string;
-  description: string;
-  status: string;
-  version: number;
-  trigger: string;
-  agents: number;
-  lastExecution: string;
-  nodes: WorkflowNode[];
-}> = {
-  'wf-intake-coordination': {
-    name: 'Inbound Carrier Coordination',
-    description: 'Reads carrier emails, classifies intent, extracts shipment data, and routes to TMS.',
-    status: 'ACTIVE',
-    version: 4,
-    trigger: 'Event',
-    agents: 1,
-    lastExecution: 'Completed · 12 min ago',
-    nodes: [
-      { id: 'n1', kind: 'trigger', label: 'New email' },
-      { id: 'n2', kind: 'agent', label: 'Classify' },
-      { id: 'n3', kind: 'condition', label: 'Actionable?' },
-      { id: 'n4', kind: 'agent', label: 'Extract data' },
-      { id: 'n5', kind: 'output', label: 'Push to TMS' },
-      { id: 'n6', kind: 'output', label: 'Archive' },
-    ],
-  },
-  'wf-invoice-extraction': {
-    name: 'Invoice Data Extraction',
-    description: 'Extracts structured data from PDF invoices and posts to QuickBooks.',
-    status: 'ACTIVE',
-    version: 2,
-    trigger: 'Event',
-    agents: 1,
-    lastExecution: 'Completed · 28 min ago',
-    nodes: [
-      { id: 'n1', kind: 'trigger', label: 'PDF received' },
-      { id: 'n2', kind: 'agent', label: 'Extract fields' },
-      { id: 'n3', kind: 'transform', label: 'Map to QB' },
-      { id: 'n4', kind: 'output', label: 'Post to QB' },
-    ],
-  },
-  'wf-support-triage': {
-    name: 'Support Ticket Triage',
-    description: 'Classifies support requests by severity and routes to the correct team.',
-    status: 'ACTIVE',
-    version: 1,
-    trigger: 'Event',
-    agents: 1,
-    lastExecution: 'Completed · 5 min ago',
-    nodes: [
-      { id: 'n1', kind: 'trigger', label: 'Request' },
-      { id: 'n2', kind: 'agent', label: 'Classify' },
-      { id: 'n3', kind: 'agent', label: 'Suggest reply' },
-      { id: 'n4', kind: 'output', label: 'Zendesk' },
-    ],
-  },
-};
+import { trpc } from '@/lib/trpc';
 
 const NODE_KIND_COLORS: Record<string, { bg: string; text: string }> = {
   trigger: { bg: withOpacity(theme.colors.success, 0.12), text: theme.colors.success },
-  agent: { bg: withOpacity(theme.colors.accent, 0.10), text: theme.colors.accent },
+  agent: { bg: withOpacity(theme.colors.accent, 0.1), text: theme.colors.accent },
   condition: { bg: withOpacity(theme.colors.warning, 0.12), text: theme.colors.warning },
-  transform: { bg: withOpacity(theme.colors.glow, 0.10), text: theme.colors.glow },
+  transform: { bg: withOpacity(theme.colors.glow, 0.1), text: theme.colors.glow },
   output: { bg: withOpacity(theme.colors.ink, 0.06), text: withOpacity(theme.colors.ink, 0.5) },
+};
+
+const STATUS_DOT: Record<string, string> = {
+  ACTIVE: theme.colors.success,
+  DRAFT: theme.colors.warning,
+  PAUSED: withOpacity(theme.colors.ink, 0.3),
+  ARCHIVED: withOpacity(theme.colors.ink, 0.2),
 };
 
 export default function WorkflowDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const wf = WORKFLOW_DATA[id ?? ''] ?? WORKFLOW_DATA['wf-intake-coordination']!;
+  const { data: wf, isLoading } = trpc.workflows.get.useQuery({ workflowId: id ?? '' });
+
+  if (isLoading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: theme.colors.void,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <ActivityIndicator size="large" color={theme.colors.accent} />
+      </View>
+    );
+  }
+
+  if (!wf) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: theme.colors.void,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <Text
+          style={{ fontFamily: 'Inter', fontSize: 16, color: withOpacity(theme.colors.cream, 0.6) }}
+        >
+          Workflow not found
+        </Text>
+      </View>
+    );
+  }
+
+  const lastExec = wf.executions[0];
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.void }}>
@@ -92,30 +71,37 @@ export default function WorkflowDetailScreen() {
           <Text style={styles.eyebrow}>WORKFLOW</Text>
           <View style={styles.titleRow}>
             <Text style={styles.title}>{wf.name}</Text>
-            <View style={[styles.statusDot, { backgroundColor: theme.colors.success }]} />
+            <View
+              style={[
+                styles.statusDot,
+                { backgroundColor: STATUS_DOT[wf.status] ?? theme.colors.success },
+              ]}
+            />
           </View>
-          <Text style={styles.description}>{wf.description}</Text>
+          {wf.description ? <Text style={styles.description}>{wf.description}</Text> : null}
 
           <View style={styles.metricsGrid}>
             <Stat label="Version" value={`v${wf.version}`} />
             <Stat label="Trigger" value={wf.trigger} />
-            <Stat label="Agents" value={String(wf.agents)} />
+            <Stat label="Agents" value={String(wf.agents.length)} />
           </View>
 
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Pipeline</Text>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pipelineScroll}>
-            {wf.nodes.map((node, i) => {
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.pipelineScroll}
+          >
+            {wf.nodesJson.map((node: { id: string; kind: string; label: string }, i: number) => {
               const colors = NODE_KIND_COLORS[node.kind] ?? NODE_KIND_COLORS.output!;
               return (
                 <View key={node.id} style={styles.pipelineItem}>
                   <View style={[styles.nodePill, { backgroundColor: colors.bg }]}>
                     <Text style={[styles.nodeLabel, { color: colors.text }]}>{node.label}</Text>
                   </View>
-                  {i < wf.nodes.length - 1 && (
-                    <Text style={styles.arrow}>→</Text>
-                  )}
+                  {i < wf.nodesJson.length - 1 && <Text style={styles.arrow}>→</Text>}
                 </View>
               );
             })}
@@ -124,10 +110,24 @@ export default function WorkflowDetailScreen() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Last run</Text>
           </View>
-          <View style={styles.executionCard}>
-            <Ionicons name="checkmark-circle" size={18} color={theme.colors.success} />
-            <Text style={styles.executionText}>{wf.lastExecution}</Text>
-          </View>
+          {lastExec ? (
+            <View style={styles.executionCard}>
+              <Ionicons
+                name={lastExec.status === 'COMPLETED' ? 'checkmark-circle' : 'alert-circle'}
+                size={18}
+                color={
+                  lastExec.status === 'COMPLETED' ? theme.colors.success : theme.colors.warning
+                }
+              />
+              <Text style={styles.executionText}>
+                {lastExec.status} · {Math.round(lastExec.durationMs / 60000)} min ago
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.executionCard}>
+              <Text style={styles.executionText}>No executions yet</Text>
+            </View>
+          )}
         </ScrollView>
       </SafeAreaView>
     </View>
@@ -136,7 +136,12 @@ export default function WorkflowDetailScreen() {
 
 function PressableBack({ onPress }: { onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} style={styles.backButton} accessibilityLabel="Go back" accessibilityRole="button">
+    <Pressable
+      onPress={onPress}
+      style={styles.backButton}
+      accessibilityLabel="Go back"
+      accessibilityRole="button"
+    >
       <Ionicons name="chevron-back" size={20} color={withOpacity(theme.colors.cream, 0.6)} />
       <Text style={styles.backText}>Workflows</Text>
     </Pressable>

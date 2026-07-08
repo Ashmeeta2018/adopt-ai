@@ -1,4 +1,5 @@
 import { Language } from './types.js';
+
 import type { CodeBlock } from './types.js';
 
 interface FieldMapping {
@@ -15,7 +16,9 @@ interface MetricSpec {
 }
 
 export function extractJsonFromText(code?: string): CodeBlock {
-  const defaultCode = code ?? `
+  const defaultCode =
+    code ??
+    `
     const text = typeof input === 'string' ? input : String(input);
     const jsonBlockRegex = /\`\`\`json\\n?([\\s\\S]*?)\\n?\`\`\`/g;
     const matches = [];

@@ -1,8 +1,21 @@
-import Anthropic from '@anthropic-ai/sdk';
-import type {
-  ModelProvider,
-  ModelInfo,
-} from '@adopt-ai/model-wrapper/provider';
+import { ModelError, RateLimitError, TokenLimitError } from '@adopt-ai/model-wrapper/errors';
+import {
+  APICallError,
+  generateText,
+  jsonSchema,
+  streamText,
+  tool,
+  type JSONSchema7,
+  type LanguageModel,
+  type LanguageModelUsage,
+  type ModelMessage,
+  type ToolSet,
+} from 'ai';
+import { z } from 'zod';
+
+import { getClaudeEnv, type ClaudeEnv } from './env';
+
+import type { ModelProvider, ModelInfo } from '@adopt-ai/model-wrapper/provider';
 import type {
   ChatMessage,
   CompletionResponse,
@@ -11,39 +24,44 @@ import type {
   TokenUsage,
   ToolCall,
 } from '@adopt-ai/model-wrapper/types';
-import {
-  ModelError,
-  RateLimitError,
-  TokenLimitError,
-} from '@adopt-ai/model-wrapper/errors';
-import { getClaudeEnv, type ClaudeEnv } from './env;
 
+// Model ids are Vercel AI Gateway ids ("provider/model").
 const MODEL_INFO: Record<string, ModelInfo> = {
-  'claude-sonnet-4-6-20250514': {
-    name: 'claude-sonnet-4-6-20250514',
+  'anthropic/claude-sonnet-5': {
+    name: 'anthropic/claude-sonnet-5',
     provider: 'anthropic',
-    contextWindow: 200_000,
-    maxOutput: 16_384,
+    contextWindow: 1_000_000,
+    maxOutput: 128_000,
     supportsToolUse: true,
     supportsVision: true,
     supportsStreaming: true,
     supportsCaching: true,
   },
-  'claude-haiku-4-5-20250514': {
-    name: 'claude-haiku-4-5-20250514',
+  'anthropic/claude-sonnet-4.6': {
+    name: 'anthropic/claude-sonnet-4.6',
     provider: 'anthropic',
-    contextWindow: 200_000,
-    maxOutput: 8_192,
+    contextWindow: 1_000_000,
+    maxOutput: 128_000,
     supportsToolUse: true,
     supportsVision: true,
     supportsStreaming: true,
     supportsCaching: true,
   },
-  'claude-opus-4-20250514': {
-    name: 'claude-opus-4-20250514',
+  'anthropic/claude-haiku-4.5': {
+    name: 'anthropic/claude-haiku-4.5',
     provider: 'anthropic',
     contextWindow: 200_000,
-    maxOutput: 16_384,
+    maxOutput: 64_000,
+    supportsToolUse: true,
+    supportsVision: true,
+    supportsStreaming: true,
+    supportsCaching: true,
+  },
+  'anthropic/claude-opus-4.8': {
+    name: 'anthropic/claude-opus-4.8',
+    provider: 'anthropic',
+    contextWindow: 1_000_000,
+    maxOutput: 128_000,
     supportsToolUse: true,
     supportsVision: true,
     supportsStreaming: true,
@@ -51,63 +69,129 @@ const MODEL_INFO: Record<string, ModelInfo> = {
   },
 };
 
-const PRICING_PER_MILLION: Record<string, { input: number; output: number; cacheRead: number; cacheWrite: number }> = {
-  'claude-sonnet-4-6-20250514': { input: 3, output: 15, cacheRead: 0.30, cacheWrite: 3.75 },
-  'claude-haiku-4-5-20250514': { input: 0.80, output: 4, cacheRead: 0.08, cacheWrite: 1 },
-  'claude-opus-4-20250514': { input: 15, output: 75, cacheRead: 1.50, cacheWrite: 18.75 },
+const PRICING_PER_MILLION: Record<
+  string,
+  { input: number; output: number; cacheRead: number; cacheWrite: number }
+> = {
+  'anthropic/claude-sonnet-5': { input: 3, output: 15, cacheRead: 0.3, cacheWrite: 3.75 },
+  'anthropic/claude-sonnet-4.6': { input: 3, output: 15, cacheRead: 0.3, cacheWrite: 3.75 },
+  'anthropic/claude-haiku-4.5': { input: 1, output: 5, cacheRead: 0.1, cacheWrite: 1.25 },
+  'anthropic/claude-opus-4.8': { input: 5, output: 25, cacheRead: 0.5, cacheWrite: 6.25 },
 };
 
-const DEFAULT_MODEL = 'claude-sonnet-4-6-20250514';
+const DEFAULT_MODEL = 'anthropic/claude-sonnet-5';
 
-function convertMessage(msg: ChatMessage): Anthropic.MessageParam {
-  switch (msg.role) {
-    case 'system':
-      return { role: 'user', content: msg.content };
-    case 'user': {
-      if (msg.images && msg.images.length > 0) {
-        const parts: Anthropic.TextBlockParam[] = [{ type: 'text', text: msg.content }];
-        const imageParts: Anthropic.ImageBlockParam[] = msg.images.map((img) => ({
-          type: 'image' as const,
-          source: {
-            type: 'url' as const,
-            url: img.url,
-          },
-        }));
-        return { role: 'user', content: [...parts, ...imageParts] };
+const toolArgsSchema = z.record(z.string(), z.unknown());
+
+function toJsonSchema7(schema: Record<string, unknown>): JSONSchema7 {
+  // ClaudeTool.input_schema is already a JSON Schema object at runtime;
+  // JSONSchema7's fields are all optional, so widening is safe.
+  const result: JSONSchema7 = {};
+  Object.assign(result, schema);
+  return result;
+}
+
+/** Tools are declared without `execute` — the caller's loop runs them. */
+function buildToolSet(tools: ModelConfig['tools']): ToolSet | undefined {
+  if (!tools || tools.length === 0) return undefined;
+  const set: ToolSet = {};
+  for (const t of tools) {
+    set[t.name] = tool({
+      description: t.description,
+      inputSchema: jsonSchema(toJsonSchema7(t.inputSchema)),
+    });
+  }
+  return set;
+}
+
+function mapToolCall(tc: { toolCallId: string; toolName: string; input: unknown }): ToolCall {
+  const parsed = toolArgsSchema.safeParse(tc.input);
+  return {
+    id: tc.toolCallId,
+    name: tc.toolName,
+    arguments: parsed.success ? parsed.data : {},
+  };
+}
+
+function mapUsage(usage: LanguageModelUsage): TokenUsage {
+  return {
+    inputTokens: usage.inputTokens ?? 0,
+    outputTokens: usage.outputTokens ?? 0,
+    cacheReadTokens: usage.inputTokenDetails.cacheReadTokens,
+    cacheCreationTokens: usage.inputTokenDetails.cacheWriteTokens,
+  };
+}
+
+function convertMessages(messages: ChatMessage[]): ModelMessage[] {
+  const result: ModelMessage[] = [];
+  // Tool-result parts need the tool's name; recover it from earlier tool calls.
+  const toolNameById = new Map<string, string>();
+
+  for (const msg of messages) {
+    switch (msg.role) {
+      case 'system':
+        result.push({ role: 'system', content: msg.content });
+        break;
+
+      case 'user': {
+        if (msg.images && msg.images.length > 0) {
+          result.push({
+            role: 'user',
+            content: [
+              { type: 'text', text: msg.content },
+              ...msg.images.map((img) => ({
+                type: 'image' as const,
+                image: new URL(img.url),
+                mediaType: img.mediaType,
+              })),
+            ],
+          });
+        } else {
+          result.push({ role: 'user', content: msg.content });
+        }
+        break;
       }
-      return { role: 'user', content: msg.content };
-    }
-    case 'assistant': {
-      const content: Anthropic.ContentBlockParam[] = [];
-      if (msg.content) {
-        content.push({ type: 'text', text: msg.content });
-      }
-      if (msg.toolCalls) {
-        for (const tc of msg.toolCalls) {
+
+      case 'assistant': {
+        const content: Exclude<Extract<ModelMessage, { role: 'assistant' }>['content'], string> =
+          [];
+        if (msg.content) {
+          content.push({ type: 'text', text: msg.content });
+        }
+        for (const tc of msg.toolCalls ?? []) {
+          toolNameById.set(tc.id, tc.name);
           content.push({
-            type: 'tool_use',
-            id: tc.id,
-            name: tc.name,
+            type: 'tool-call',
+            toolCallId: tc.id,
+            toolName: tc.name,
             input: tc.arguments,
           });
         }
+        result.push({ role: 'assistant', content });
+        break;
       }
-      return { role: 'assistant', content };
-    }
-    case 'tool': {
-      return {
-        role: 'user',
-        content: [
-          {
-            type: 'tool_result',
-            tool_use_id: msg.toolCallId,
-            content: msg.content,
-            is_error: msg.isError ?? false,
-          },
-        ],
-      };
+
+      case 'tool': {
+        const toolName = toolNameById.get(msg.toolCallId) ?? 'unknown';
+        result.push({
+          role: 'tool',
+          content: [
+            {
+              type: 'tool-result',
+              toolCallId: msg.toolCallId,
+              toolName,
+              output: msg.isError
+                ? { type: 'error-text', value: msg.content }
+                : { type: 'text', value: msg.content },
+            },
+          ],
+        });
+        break;
+      }
     }
   }
+
+  return result;
 }
 
 function extractSystemPrompt(messages: ChatMessage[]): {
@@ -123,14 +207,14 @@ function extractSystemPrompt(messages: ChatMessage[]): {
   };
 }
 
-function mapAnthropicError(error: unknown, model: string): never {
-  if (error instanceof Anthropic.RateLimitError) {
-    const retryMs = error.retryAfter ? error.retryAfter * 1000 : 60_000;
-    throw new RateLimitError('anthropic', model, retryMs);
-  }
-
-  if (error instanceof Anthropic.APIError) {
-    if (error.status === 400 && error.message.includes('token')) {
+function mapProviderError(error: unknown, model: string): never {
+  if (APICallError.isInstance(error)) {
+    if (error.statusCode === 429) {
+      const retryAfterSec = Number(error.responseHeaders?.['retry-after']);
+      const retryMs = Number.isFinite(retryAfterSec) ? retryAfterSec * 1000 : 60_000;
+      throw new RateLimitError('anthropic', model, retryMs);
+    }
+    if (error.statusCode === 400 && error.message.toLowerCase().includes('token')) {
       throw new TokenLimitError('anthropic', model, 0, 0);
     }
     throw new ModelError('anthropic', model, error.message, error);
@@ -144,51 +228,55 @@ function mapAnthropicError(error: unknown, model: string): never {
   );
 }
 
+/**
+ * Claude via the Vercel AI SDK, routed through the AI Gateway.
+ *
+ * Credentials come from the gateway provider itself (AI_GATEWAY_API_KEY
+ * locally, OIDC on Vercel) — nothing is passed here.
+ */
 export class ClaudeProvider implements ModelProvider {
-  private readonly client: Anthropic;
   private readonly modelName: string;
   private readonly defaultMaxTokens: number;
-  private readonly defaultTemperature: number;
+  private readonly defaultTemperature: number | undefined;
+  /** Test seam — lets unit tests inject a MockLanguageModelV4. */
+  private readonly modelOverride: LanguageModel | undefined;
 
-  constructor(client?: Anthropic, env?: ClaudeEnv) {
+  constructor(env?: ClaudeEnv, modelOverride?: LanguageModel) {
     const resolvedEnv = env ?? getClaudeEnv();
-    this.client = client ?? new Anthropic({ apiKey: resolvedEnv.ANTHROPIC_API_KEY });
     this.modelName = resolvedEnv.CLAUDE_MODEL;
     this.defaultMaxTokens = resolvedEnv.CLAUDE_MAX_TOKENS;
     this.defaultTemperature = resolvedEnv.CLAUDE_TEMPERATURE;
+    this.modelOverride = modelOverride;
   }
 
   async complete(messages: ChatMessage[], config: ModelConfig): Promise<CompletionResponse> {
     const model = config.model || this.modelName;
     const { systemPrompt, nonSystemMessages } = extractSystemPrompt(messages);
     const resolvedSystem = config.systemPrompt ?? systemPrompt;
-
-    const anthropicMessages = nonSystemMessages.map(convertMessage);
-
-    const params: Anthropic.MessageCreateParams = {
-      model,
-      max_tokens: config.maxTokens || this.defaultMaxTokens,
-      temperature: config.temperature ?? this.defaultTemperature,
-      messages: anthropicMessages,
-    };
-
-    if (resolvedSystem) {
-      params.system = resolvedSystem;
-    }
-
-    if (config.topP !== undefined) {
-      params.top_p = config.topP;
-    }
-
-    if (config.stopSequences && config.stopSequences.length > 0) {
-      params.stop_sequences = config.stopSequences;
-    }
+    const tools = buildToolSet(config.tools);
 
     try {
-      const response = await this.client.messages.create(params);
-      return this.mapResponse(response, model);
+      const result = await generateText({
+        model: this.modelOverride ?? model,
+        messages: convertMessages(nonSystemMessages),
+        instructions: resolvedSystem,
+        maxOutputTokens: config.maxTokens || this.defaultMaxTokens,
+        temperature: config.temperature ?? this.defaultTemperature,
+        topP: config.topP,
+        stopSequences: config.stopSequences,
+        tools,
+      });
+
+      return {
+        content: result.text,
+        toolCalls: result.toolCalls.map(mapToolCall),
+        usage: mapUsage(result.usage),
+        model,
+        stopReason: result.finishReason,
+        id: result.finalStep.response.id,
+      };
     } catch (error) {
-      mapAnthropicError(error, model);
+      mapProviderError(error, model);
     }
   }
 
@@ -196,142 +284,86 @@ export class ClaudeProvider implements ModelProvider {
     const model = config.model || this.modelName;
     const { systemPrompt, nonSystemMessages } = extractSystemPrompt(messages);
     const resolvedSystem = config.systemPrompt ?? systemPrompt;
+    const tools = buildToolSet(config.tools);
 
-    const anthropicMessages = nonSystemMessages.map(convertMessage);
-
-    const params: Anthropic.MessageCreateParams = {
-      model,
-      max_tokens: config.maxTokens || this.defaultMaxTokens,
+    const result = streamText({
+      model: this.modelOverride ?? model,
+      messages: convertMessages(nonSystemMessages),
+      instructions: resolvedSystem,
+      maxOutputTokens: config.maxTokens || this.defaultMaxTokens,
       temperature: config.temperature ?? this.defaultTemperature,
-      messages: anthropicMessages,
-      stream: true,
-    };
+      topP: config.topP,
+      stopSequences: config.stopSequences,
+      tools,
+    });
 
-    if (resolvedSystem) {
-      params.system = resolvedSystem;
-    }
-
-    let stream: Anthropic.MessageStream;
-    try {
-      stream = this.client.messages.stream(params);
-    } catch (error) {
-      mapAnthropicError(error, model);
-      return;
-    }
-
-    const toolCallBuffers = new Map<number, { id: string; name: string; inputJson: string }>();
-    let accumulatedUsage: TokenUsage = { inputTokens: 0, outputTokens: 0 };
+    let content = '';
+    const toolCalls: ToolCall[] = [];
 
     try {
-      for await (const event of stream) {
-        switch (event.type) {
-          case 'content_block_delta': {
-            if (event.delta.type === 'text_delta') {
-              yield { type: 'content_delta', delta: event.delta.text };
-            } else if (event.delta.type === 'input_json_delta') {
-              const existing = toolCallBuffers.get(event.index);
-              if (existing) {
-                existing.inputJson += event.delta.partial_json;
-              }
-            }
+      for await (const part of result.fullStream) {
+        switch (part.type) {
+          case 'text-delta': {
+            content += part.text;
+            yield { type: 'content_delta', delta: part.text };
             break;
           }
 
-          case 'content_block_start': {
-            if (event.content_block.type === 'tool_use') {
-              toolCallBuffers.set(event.index, {
-                id: event.content_block.id,
-                name: event.content_block.name,
-                inputJson: '',
-              });
-            }
+          case 'tool-call': {
+            const toolCall = mapToolCall(part);
+            toolCalls.push(toolCall);
+            yield { type: 'tool_call', toolCall };
             break;
           }
 
-          case 'content_block_stop': {
-            const toolBuffer = toolCallBuffers.get(event.index);
-            if (toolBuffer) {
-              let parsedArgs: Record<string, unknown>;
-              try {
-                parsedArgs = JSON.parse(toolBuffer.inputJson || '{}');
-              } catch {
-                parsedArgs = {};
-              }
-              const toolCall: ToolCall = {
-                id: toolBuffer.id,
-                name: toolBuffer.name,
-                arguments: parsedArgs,
-              };
-              yield { type: 'tool_call', toolCall };
-              toolCallBuffers.delete(event.index);
-            }
+          case 'error':
+            mapProviderError(part.error, model);
             break;
-          }
 
-          case 'message_delta': {
-            if (event.usage) {
-              accumulatedUsage = {
-                ...accumulatedUsage,
-                outputTokens: event.usage.output_tokens,
-              };
-            }
-            break;
-          }
-
-          case 'message_start': {
-            if (event.message.usage) {
-              accumulatedUsage = {
-                inputTokens: event.message.usage.input_tokens,
-                outputTokens: event.message.usage.output_tokens,
-                cacheReadTokens: event.message.usage.cache_read_input_tokens ?? undefined,
-                cacheCreationTokens: event.message.usage.cache_creation_input_tokens ?? undefined,
-              };
-            }
-            break;
-          }
-
-          case 'message_stop': {
-            const finalResponse: CompletionResponse = {
-              content: '',
-              toolCalls: [],
-              usage: accumulatedUsage,
-              model,
-              stopReason: 'end_turn',
-              id: '',
+          case 'finish': {
+            const usage = mapUsage(part.totalUsage);
+            yield { type: 'usage', usage };
+            yield {
+              type: 'done',
+              response: {
+                content,
+                toolCalls,
+                usage,
+                model,
+                stopReason: part.finishReason,
+                id: '',
+              },
             };
-            yield { type: 'done', response: finalResponse };
             break;
           }
+
+          default:
+            break;
         }
       }
     } catch (error) {
-      mapAnthropicError(error, model);
+      mapProviderError(error, model);
     }
   }
 
   async countTokens(text: string): Promise<number> {
-    try {
-      const response = await this.client.messages.countTokens({
-        model: this.modelName,
-        messages: [{ role: 'user', content: text }],
-      });
-      return response.input_tokens;
-    } catch {
-      return Math.ceil(text.length / 4);
-    }
+    // The gateway has no token-counting endpoint; use the shared estimate.
+    return Promise.resolve(Math.ceil(text.length / 4));
   }
 
   getModelInfo(): ModelInfo {
-    return MODEL_INFO[this.modelName] ?? {
-      name: this.modelName,
-      provider: 'anthropic',
-      contextWindow: 200_000,
-      maxOutput: 8_192,
-      supportsToolUse: true,
-      supportsVision: true,
-      supportsStreaming: true,
-      supportsCaching: true,
-    };
+    return (
+      MODEL_INFO[this.modelName] ?? {
+        name: this.modelName,
+        provider: 'anthropic',
+        contextWindow: 200_000,
+        maxOutput: 64_000,
+        supportsToolUse: true,
+        supportsVision: true,
+        supportsStreaming: true,
+        supportsCaching: true,
+      }
+    );
   }
 
   estimateCost(usage: TokenUsage, model: string): number {
@@ -345,36 +377,5 @@ export class ClaudeProvider implements ModelProvider {
       ? (usage.cacheCreationTokens / 1_000_000) * pricing.cacheWrite
       : 0;
     return inputCost + outputCost + cacheReadCost + cacheWriteCost;
-  }
-
-  private mapResponse(response: Anthropic.Message, model: string): CompletionResponse {
-    const toolCalls: ToolCall[] = [];
-    let textContent = '';
-
-    for (const block of response.content) {
-      if (block.type === 'text') {
-        textContent += block.text;
-      } else if (block.type === 'tool_use') {
-        toolCalls.push({
-          id: block.id,
-          name: block.name,
-          arguments: block.input as Record<string, unknown>,
-        });
-      }
-    }
-
-    return {
-      content: textContent,
-      toolCalls,
-      usage: {
-        inputTokens: response.usage.input_tokens,
-        outputTokens: response.usage.output_tokens,
-        cacheReadTokens: response.usage.cache_read_input_tokens ?? undefined,
-        cacheCreationTokens: response.usage.cache_creation_input_tokens ?? undefined,
-      },
-      model,
-      stopReason: response.stop_reason,
-      id: response.id,
-    };
   }
 }

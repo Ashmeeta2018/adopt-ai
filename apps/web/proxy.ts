@@ -13,7 +13,7 @@ import { type NextRequest, NextResponse } from 'next/server';
  * entries for app.cal.com are scoped to that route only so we don't open the
  * rest of the site to third-party frames.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const nonce = crypto.randomUUID().replace(/-/g, '');
   const isDev = process.env.NODE_ENV !== 'production';
   const isBookPage = request.nextUrl.pathname.startsWith('/book');

@@ -4,12 +4,16 @@ import type {
   CostBreakdown,
   DateRange,
   PaginatedResult,
-} from './types;
+} from './types';
 
 export interface RunStore {
   save(run: AgentRunRecord): void;
   findByAgent(agentId: string, limit: number, cursor?: string): PaginatedResult<AgentRunRecord>;
-  findByOrg(organisationId: string, limit: number, cursor?: string): PaginatedResult<AgentRunRecord>;
+  findByOrg(
+    organisationId: string,
+    limit: number,
+    cursor?: string,
+  ): PaginatedResult<AgentRunRecord>;
   findByAgentInRange(agentId: string, range: DateRange): AgentRunRecord[];
   findByOrgInRange(organisationId: string, range?: DateRange): AgentRunRecord[];
 }
@@ -29,7 +33,11 @@ class InMemoryRunStore implements RunStore {
     return this.paginate(filtered, limit, cursor);
   }
 
-  findByOrg(organisationId: string, limit: number, cursor?: string): PaginatedResult<AgentRunRecord> {
+  findByOrg(
+    organisationId: string,
+    limit: number,
+    cursor?: string,
+  ): PaginatedResult<AgentRunRecord> {
     const filtered = this.runs
       .filter((r) => r.organisationId === organisationId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -73,7 +81,7 @@ class InMemoryRunStore implements RunStore {
 
     return {
       items: page,
-      nextCursor: hasMore && page.length > 0 ? page[page.length - 1].id : undefined,
+      nextCursor: hasMore ? page.at(-1)?.id : undefined,
     };
   }
 }

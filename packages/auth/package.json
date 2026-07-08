@@ -18,7 +18,7 @@
     "@adopt-ai/db": "workspace:*",
     "@auth/prisma-adapter": "^2.7.4",
     "next-auth": "5.0.0-beta.25",
-    "zod": "^3.24.1"
+    "zod": "^4.1.0"
   },
   "devDependencies": {
     "@adopt-ai/config-eslint": "workspace:*",
@@ -26,6 +26,6 @@
     "typescript": "^5.7.3"
   },
   "peerDependencies": {
-    "next": "^15"
+    "next": "^15 || ^16"
   }
 }

@@ -1,4 +1,4 @@
-import type { ScheduleConfig } from './types;
+import type { ScheduleConfig } from './types';
 
 interface RegisteredSchedule {
   agentId: string;
@@ -39,7 +39,9 @@ function parseCronField(field: string, minValue: number, maxValue: number): numb
 function matchesCron(cron: string, date: Date): boolean {
   const raw = cron.trim().split(/\s+/);
   if (raw.length !== 5) {
-    throw new Error(`Invalid cron expression: "${cron}". Expected 5 fields (minute hour day month weekday).`);
+    throw new Error(
+      `Invalid cron expression: "${cron}". Expected 5 fields (minute hour day month weekday).`,
+    );
   }
 
   const minuteField = raw[0];
@@ -103,14 +105,14 @@ export class Scheduler {
 
   getPending(agentId: string): Date | null {
     const entry = this.schedules.get(agentId);
-    if (!entry || !entry.schedule.enabled) {
+    if (!entry?.schedule.enabled) {
       return null;
     }
     const after = entry.lastRunAt ? new Date(entry.lastRunAt) : new Date();
     return nextCronOccurrence(entry.schedule.cron, after);
   }
 
-  getAllSchedules(): Array<{ agentId: string; schedule: ScheduleConfig; nextDueAt: Date | null }> {
+  getAllSchedules(): { agentId: string; schedule: ScheduleConfig; nextDueAt: Date | null }[] {
     return Array.from(this.schedules.values()).map((entry) => ({
       agentId: entry.agentId,
       schedule: entry.schedule,
@@ -118,9 +120,9 @@ export class Scheduler {
     }));
   }
 
-  tick(): Array<{ agentId: string; dueAt: Date }> {
+  tick(): { agentId: string; dueAt: Date }[] {
     const now = new Date();
-    const due: Array<{ agentId: string; dueAt: Date }> = [];
+    const due: { agentId: string; dueAt: Date }[] = [];
 
     for (const entry of this.schedules.values()) {
       if (!entry.schedule.enabled) continue;

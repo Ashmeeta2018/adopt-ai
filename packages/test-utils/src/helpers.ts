@@ -1,5 +1,7 @@
 export function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => { setTimeout(resolve, ms); });
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 export interface MockFetchResponse {
@@ -14,11 +16,11 @@ export function mockFetch(responses: MockFetchResponse[]): () => void {
   let callIndex = 0;
   const originalFetch = globalThis.fetch;
 
-  globalThis.fetch = (() => {
+  globalThis.fetch = () => {
     const response = responses[callIndex] ?? responses[responses.length - 1];
     callIndex += 1;
     return Promise.resolve(response as unknown as Response);
-  }) as typeof fetch;
+  };
 
   return () => {
     globalThis.fetch = originalFetch;
@@ -32,7 +34,7 @@ export function mockConsole(methods: ConsoleMethod[] = ['log', 'warn', 'error'])
 
   for (const method of methods) {
     original[method] = console[method];
-    console[method] = () => {};
+    console[method] = () => undefined;
   }
 
   return () => {
@@ -57,9 +59,7 @@ export function createMockRequest(overrides: MockRequestInit = {}): Request {
   const url = overrides.url ?? 'http://localhost:3000/api/test';
   const headers = new Headers(overrides.headers ?? { 'content-type': 'application/json' });
 
-  const body = overrides.body
-    ? JSON.stringify(overrides.body)
-    : undefined;
+  const body = overrides.body ? JSON.stringify(overrides.body) : undefined;
 
   return new Request(url, {
     method: overrides.method ?? 'GET',
@@ -81,9 +81,7 @@ export interface MockTrpcContext {
   ip: string;
 }
 
-export function createMockContext(
-  overrides: Partial<MockTrpcContext> = {},
-): MockTrpcContext {
+export function createMockContext(overrides: Partial<MockTrpcContext> = {}): MockTrpcContext {
   return {
     session: overrides.session ?? {
       user: {

@@ -1,7 +1,8 @@
 import Link from 'next/link';
 
-import { BrandMark } from './BrandMark';
 import { cn } from '../utils/cn';
+
+import { BrandMark } from './BrandMark';
 
 const columns = [
   {
@@ -47,7 +48,7 @@ export function SiteFooter({ dark = true }: SiteFooterProps) {
   return (
     <footer
       className={cn(
-        'border-t px-14 pb-9 pt-20 font-body',
+        'font-body border-t px-14 pb-9 pt-20',
         dark ? 'bg-void text-cream' : 'bg-cream text-ink',
         line,
       )}
@@ -56,31 +57,16 @@ export function SiteFooter({ dark = true }: SiteFooterProps) {
         <div>
           <BrandMark size={144} stacked dark={dark} />
           <p className={cn('mt-5 max-w-[320px] text-[14px] leading-[1.55]', soft)}>
-            Turn AI into your competitive advantage. We design, ship, and run
-            production-grade automation systems for enterprise teams.
+            Turn AI into your competitive advantage. We design, ship, and run production-grade
+            automation systems for enterprise teams.
           </p>
-          <p
-            className={cn(
-              'mt-7 font-mono text-eyebrow uppercase tracking-[0.12em]',
-              faint,
-            )}
-          >
+          <p className={cn('text-eyebrow mt-7 font-mono uppercase tracking-[0.12em]', faint)}>
             416 Morgan Ridge Road · Holly Springs, NC 27540
           </p>
-          <p
-            className={cn(
-              'mt-1.5 font-mono text-eyebrow uppercase tracking-[0.12em]',
-              faint,
-            )}
-          >
+          <p className={cn('text-eyebrow mt-1.5 font-mono uppercase tracking-[0.12em]', faint)}>
             contact@adopt-ai.net
           </p>
-          <p
-            className={cn(
-              'mt-1 font-mono text-eyebrow uppercase tracking-[0.12em]',
-              faint,
-            )}
-          >
+          <p className={cn('text-eyebrow mt-1 font-mono uppercase tracking-[0.12em]', faint)}>
             +1 703-477-4592
           </p>
         </div>
@@ -88,7 +74,7 @@ export function SiteFooter({ dark = true }: SiteFooterProps) {
           <div key={col.title}>
             <div
               className={cn(
-                'mb-3 font-mono text-eyebrow uppercase tracking-[0.18em]',
+                'text-eyebrow mb-3 font-mono uppercase tracking-[0.18em]',
                 dark ? 'text-cream' : 'text-ink',
               )}
             >
@@ -108,7 +94,7 @@ export function SiteFooter({ dark = true }: SiteFooterProps) {
       </div>
       <div
         className={cn(
-          'mt-16 flex flex-wrap justify-between gap-4 border-t pt-6 font-mono text-eyebrow uppercase tracking-[0.12em]',
+          'text-eyebrow mt-16 flex flex-wrap justify-between gap-4 border-t pt-6 font-mono uppercase tracking-[0.12em]',
           faint,
           line,
         )}

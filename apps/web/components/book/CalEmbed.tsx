@@ -12,7 +12,7 @@ const CAL_LINK = process.env.NEXT_PUBLIC_CAL_LINK ?? 'demo/30min';
 
 export function CalEmbed() {
   useEffect(() => {
-    (async () => {
+    void (async () => {
       const cal = await getCalApi({ namespace: 'book' });
       cal('ui', {
         hideEventTypeDetails: false,

@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
-
 import { cn } from '../utils/cn';
+
+import type { ReactNode } from 'react';
 
 interface FloatingChipProps {
   children: ReactNode;
@@ -12,15 +12,22 @@ interface FloatingChipProps {
 }
 
 /** Glassy floating "data" chip used inside the cinematic hero. */
-export function FloatingChip({ children, x, y, rot = 0, delay = 0, dark = false }: FloatingChipProps) {
+export function FloatingChip({
+  children,
+  x,
+  y,
+  rot = 0,
+  delay = 0,
+  dark = false,
+}: FloatingChipProps) {
   return (
     <div
       className={cn(
-        'absolute rounded-xl px-3.5 py-2.5 font-body text-[12px] whitespace-nowrap',
+        'font-body absolute whitespace-nowrap rounded-xl px-3.5 py-2.5 text-[12px]',
         'backdrop-blur-md',
         dark
-          ? 'bg-[rgba(36,21,16,0.7)] border border-hairline-dark text-cream'
-          : 'bg-white/70 border border-hairline text-ink',
+          ? 'border-hairline-dark text-cream border bg-[rgba(36,21,16,0.7)]'
+          : 'border-hairline text-ink border bg-white/70',
       )}
       style={{
         left: x,

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits", ":dependencyDashboard"],
+  "rangeStrategy": "bump",
+  "schedule": ["before 6am on monday"],
+  "packageRules": [
+    {
+      "groupName": "trpc",
+      "matchPackageNames": ["@trpc/**"]
+    },
+    {
+      "groupName": "prisma",
+      "matchPackageNames": ["prisma", "@prisma/**", "@neondatabase/**"]
+    },
+    {
+      "groupName": "expo",
+      "matchPackageNames": [
+        "expo",
+        "expo-**",
+        "@expo/**",
+        "react-native",
+        "react-native-**",
+        "jest-expo"
+      ]
+    },
+    {
+      "groupName": "non-major dev tooling",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"]
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    }
+  ]
+}

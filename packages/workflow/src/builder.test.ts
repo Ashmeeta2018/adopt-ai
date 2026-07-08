@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
+
 import { createWorkflow } from './builder';
 
 describe('WorkflowBuilder', () => {
   it('builds a minimal valid workflow', () => {
-    const builder = createWorkflow('wf-1', 'Test Workflow')
-      .description('A test')
-      .trigger('manual');
+    const builder = createWorkflow('wf-1', 'Test Workflow').description('A test').trigger('manual');
     builder.addNode('trigger', 'Start');
     const wf = builder.build();
 
@@ -51,15 +50,11 @@ describe('WorkflowBuilder', () => {
   });
 
   it('throws on build() when workflow is invalid', () => {
-    expect(() => createWorkflow('wf-5', 'Bad').build()).toThrow(
-      'Cannot build invalid workflow',
-    );
+    expect(() => createWorkflow('wf-5', 'Bad').build()).toThrow('Cannot build invalid workflow');
   });
 
   it('sets version and trigger', () => {
-    const builder = createWorkflow('wf-6', 'V2')
-      .version(3)
-      .trigger('webhook');
+    const builder = createWorkflow('wf-6', 'V2').version(3).trigger('webhook');
     builder.addNode('trigger', 'Start');
     const wf = builder.build();
 
@@ -75,6 +70,6 @@ describe('WorkflowBuilder', () => {
     builder.addEdge(start.id, end.id);
 
     const wf = builder.build();
-    expect(wf.nodes[0].position).toEqual({ x: 100, y: 200 });
+    expect(wf.nodes[0]?.position).toEqual({ x: 100, y: 200 });
   });
 });
