@@ -294,7 +294,7 @@ model ContactSubmission {
   name           String
   email          String
   company        String
-  engagement     String   // spark | lift | scale | not-sure
+  engagement     String   // spark | lift | scale | local-business | not-sure
   workflow       String   @db.Text
   ticketId       String   @unique
   organisationId String?

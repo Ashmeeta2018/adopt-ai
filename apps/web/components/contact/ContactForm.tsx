@@ -12,6 +12,7 @@ const engagementLabels: Record<ContactSubmitInput['engagement'], string> = {
   spark: 'Spark · $2,400',
   lift: 'Lift · $5,800',
   scale: 'Scale · from $12k',
+  'local-business': 'Local business · from $399/mo',
   'not-sure': 'Not sure yet',
 };
 

@@ -15,7 +15,9 @@ test.describe('Contact page', () => {
     await page.goto(CONTACT_PATH);
     await expect(page).toHaveTitle(/Contact.*Adopt AI/i);
     // No error boundaries should be showing
-    await expect(page.locator('text=Application error').or(page.locator('text=Something went wrong'))).not.toBeVisible();
+    await expect(
+      page.locator('text=Application error').or(page.locator('text=Something went wrong')),
+    ).not.toBeVisible();
   });
 
   test('shows both the copy block and the form card', async ({ page }) => {
@@ -47,9 +49,9 @@ test.describe('Contact form — validation', () => {
     await page.getByRole('textbox', { name: /company/i }).fill('Acme');
     await page.getByRole('button', { name: /request a working session/i }).click();
 
-    await expect(
-      page.locator('[role="alert"]').filter({ hasText: /email|valid/i }),
-    ).toBeVisible({ timeout: 3_000 });
+    await expect(page.locator('[role="alert"]').filter({ hasText: /email|valid/i })).toBeVisible({
+      timeout: 3_000,
+    });
   });
 
   test('shows error when workflow textarea is too short', async ({ page }) => {
@@ -70,7 +72,7 @@ test.describe('Contact form — engagement tier pills', () => {
   test('can select each engagement tier', async ({ page }) => {
     await page.goto(CONTACT_PATH);
 
-    for (const tier of ['Spark', 'Lift', 'Scale', 'Not sure']) {
+    for (const tier of ['Spark', 'Lift', 'Scale', 'Local business', 'Not sure']) {
       const pill = page.getByRole('button', { name: new RegExp(tier, 'i') }).first();
       if (await pill.isVisible()) {
         await pill.click();
@@ -96,16 +98,19 @@ test.describe('Contact form — happy path', () => {
       await liftPill.click();
     }
 
-    await page.getByRole('textbox', { name: /workflow/i }).fill(
-      'I want to automate our inbound carrier email triage. We get around 1,000 emails per week and it takes three full-time coordinators to process them.',
-    );
+    await page
+      .getByRole('textbox', { name: /workflow/i })
+      .fill(
+        'I want to automate our inbound carrier email triage. We get around 1,000 emails per week and it takes three full-time coordinators to process them.',
+      );
 
     await page.getByRole('button', { name: /request a working session/i }).click();
 
     await expect(
-      page.locator("text=Got it").or(page.locator("text=we'll be in touch")).or(
-        page.locator("text=Thank you"),
-      ),
+      page
+        .locator('text=Got it')
+        .or(page.locator("text=we'll be in touch"))
+        .or(page.locator('text=Thank you')),
     ).toBeVisible({ timeout: 10_000 });
   });
 });
