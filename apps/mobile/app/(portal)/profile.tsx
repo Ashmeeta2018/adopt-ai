@@ -7,32 +7,42 @@ import { AgentPillNative } from '@/components/AgentPillNative';
 import { theme, withOpacity } from '@/lib/theme';
 import { trpc } from '@/lib/trpc';
 
-const sections = [
-  {
-    title: 'ACCOUNT',
-    rows: [{ label: 'Profile' }, { label: 'Notifications' }, { label: 'Security & 2FA' }],
-  },
-  {
-    title: 'WORKSPACE',
-    rows: [
-      { label: 'Team members', value: '8 active' },
-      { label: 'API keys', value: '4 keys' },
-      { label: 'Billing', value: 'Lift · $5,800 · annual' },
-      { label: 'Audit log', value: '14 days' },
-    ],
-  },
-  {
-    title: 'SUPPORT',
-    rows: [
-      { label: 'Contact your architect', value: 'Tomás Costa →', accent: true },
-      { label: 'Open ticket' },
-      { label: 'Documentation' },
-    ],
-  },
-] as const;
+const PLAN_BILLING: Record<string, string> = {
+  spark: 'Spark · $149 / mo',
+  lift: 'Lift · $499 / mo',
+  scale: 'Scale · from $799 / mo',
+};
+
+function buildSections(billing: string) {
+  return [
+    {
+      title: 'ACCOUNT',
+      rows: [{ label: 'Profile' }, { label: 'Notifications' }, { label: 'Security & 2FA' }],
+    },
+    {
+      title: 'WORKSPACE',
+      rows: [
+        { label: 'Team members', value: '8 active' },
+        { label: 'API keys', value: '4 keys' },
+        { label: 'Billing', value: billing },
+        { label: 'Audit log', value: '14 days' },
+      ],
+    },
+    {
+      title: 'SUPPORT',
+      rows: [
+        { label: 'Contact your architect', value: 'Tomás Costa →', accent: true },
+        { label: 'Open ticket' },
+        { label: 'Documentation' },
+      ],
+    },
+  ] as const;
+}
 
 export default function ProfileScreen() {
   const { data, isLoading } = trpc.portal.getSettings.useQuery();
+  const plan = data?.organisation.plan;
+  const sections = buildSections(plan ? (PLAN_BILLING[plan] ?? plan) : '—');
 
   const initials = data
     ? data.user.name

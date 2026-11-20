@@ -71,6 +71,35 @@ test('renders plan pill from settings', () => {
   expect(screen.getByText('SPARK PLAN')).toBeTruthy();
 });
 
+test('shows the billing line for the organisation plan', () => {
+  mockUseQuery.mockReturnValue({
+    data: {
+      user: { email: 'maya@apex.example', name: 'Maya Lindqvist' },
+      role: 'OWNER',
+      organisation: { name: 'Apex Regional Logistics', plan: 'lift' },
+    },
+    isLoading: false,
+  });
+  render(<ProfileScreen />);
+
+  expect(screen.getByText('Lift · $499 / mo')).toBeTruthy();
+  expect(screen.getByLabelText('Billing, Lift · $499 / mo')).toBeTruthy();
+});
+
+test('falls back to the raw plan name for unknown plans', () => {
+  mockUseQuery.mockReturnValue({
+    data: {
+      user: { email: 'test@example.com', name: 'Test User' },
+      role: 'OWNER',
+      organisation: { name: 'Test Org', plan: 'pilot' },
+    },
+    isLoading: false,
+  });
+  render(<ProfileScreen />);
+
+  expect(screen.getByLabelText('Billing, pilot')).toBeTruthy();
+});
+
 test('renders all sections', () => {
   mockUseQuery.mockReturnValue({
     data: {
