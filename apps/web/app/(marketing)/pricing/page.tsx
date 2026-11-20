@@ -38,6 +38,33 @@ const tiers = [
   },
 ];
 
+const localPackages = [
+  {
+    name: 'Local Presence',
+    price: '$1,500',
+    monthly: '+ $499 / mo',
+    sub: 'Website, three short videos a month, social posts and Google Business Profile',
+  },
+  {
+    name: 'AI Receptionist',
+    price: '$2,500',
+    monthly: '+ $599 / mo',
+    sub: 'Answers questions, books appointments and follows up on every lead',
+  },
+  {
+    name: 'Content Engine',
+    price: '$750–1,500',
+    monthly: 'per month · by volume',
+    sub: 'Short videos, posts and articles every month, in your voice',
+  },
+  {
+    name: 'AI Visibility',
+    price: '$399–799',
+    monthly: 'per month',
+    sub: 'Reviews, listings, and what AI answers say about your business',
+  },
+];
+
 export default function PricingPage() {
   return (
     <main className="bg-cream text-ink">
@@ -96,6 +123,39 @@ export default function PricingPage() {
             <span>15+ hrs/wk saved</span>
             <span>8 wks avg payback</span>
             <span>$0 per-seat fees</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="local-business" className="border-hairline scroll-mt-24 border-t px-14 py-24">
+        <div className="mx-auto max-w-[1280px]">
+          <div className="text-center">
+            <Eyebrow className="mb-5">Local Business Growth · Monthly packages</Eyebrow>
+            <h2 className="font-display text-[48px] tracking-[-0.035em]">
+              Run a local business? <EmberText>Start from $399 a month.</EmberText>
+            </h2>
+            <p className="text-ink/65 mx-auto mt-6 max-w-[640px] text-[19px] leading-[1.55]">
+              Four packages for owner-run businesses. Start with one or combine them. You keep
+              ownership of every account we set up.
+            </p>
+          </div>
+          <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+            {localPackages.map((p) => (
+              <article key={p.name} className="border-hairline bg-paper rounded-3xl border p-7">
+                <h3 className="font-display text-[28px] font-medium tracking-tight">{p.name}</h3>
+                <div className="font-display mt-5 text-[24px] font-medium">{p.price}</div>
+                <div className="text-ink/65 mt-1">{p.monthly}</div>
+                <p className="text-ink/65 mt-5 text-[15.5px] leading-[1.55]">{p.sub}</p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <Link href="/services#local-business">
+              <Button variant="ghost">What each package includes</Button>
+            </Link>
+            <Link href="/book">
+              <Button variant="dark">Talk about your business</Button>
+            </Link>
           </div>
         </div>
       </section>
