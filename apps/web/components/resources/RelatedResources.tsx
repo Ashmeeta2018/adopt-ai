@@ -1,7 +1,8 @@
 import { Eyebrow, Hairline } from '@adopt-ai/ui-web';
 
-import type { ResourceSummary } from '@/lib/resources';
 import { ResourceCard } from './ResourceCard';
+
+import type { ResourceSummary } from '@/lib/resources';
 
 interface RelatedResourcesProps {
   resources: ResourceSummary[];
@@ -12,7 +13,7 @@ export function RelatedResources({ resources }: RelatedResourcesProps) {
   return (
     <aside>
       <Eyebrow className="mb-6">More resources</Eyebrow>
-      <div className="flex flex-col divide-y divide-hairline">
+      <div className="divide-hairline flex flex-col divide-y">
         {resources.map((r, i) => (
           <div key={r.slug}>
             <ResourceCard resource={r} variant="compact" />

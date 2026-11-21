@@ -27,17 +27,17 @@ function formatDateTime(iso: string): string {
 }
 
 const STATUS_DOT: Record<string, string> = {
-  ACTIVE:   'bg-success',
-  DRAFT:    'bg-amber',
-  PAUSED:   'bg-cream/30',
+  ACTIVE: 'bg-success',
+  DRAFT: 'bg-amber',
+  PAUSED: 'bg-cream/30',
   ARCHIVED: 'bg-cream/20',
 };
 
 const EXEC_STATUS_CLASS: Record<string, { dot: string; text: string }> = {
-  completed: { dot: 'bg-success',                       text: 'text-success' },
-  running:   { dot: 'bg-accent animate-agent-pulse',    text: 'text-accent' },
-  failed:    { dot: 'bg-error',                         text: 'text-error' },
-  cancelled: { dot: 'bg-cream/30',                      text: 'text-cream/40' },
+  completed: { dot: 'bg-success', text: 'text-success' },
+  running: { dot: 'bg-accent animate-agent-pulse', text: 'text-accent' },
+  failed: { dot: 'bg-error', text: 'text-error' },
+  cancelled: { dot: 'bg-cream/30', text: 'text-cream/40' },
 };
 
 /** Render nodes from nodesJson if it's a [{type|kind|label}] array; fall back to a generic flow. */
@@ -46,7 +46,10 @@ function parseNodes(raw: unknown): string[] {
     const labels = raw.map((n) => {
       if (typeof n === 'object' && n !== null) {
         const node = n as Record<string, unknown>;
-        return String(node.type ?? node.kind ?? node.label ?? 'node');
+        const label = [node.type, node.kind, node.label].find(
+          (v): v is string => typeof v === 'string',
+        );
+        return label ?? 'node';
       }
       return 'node';
     });
@@ -57,67 +60,60 @@ function parseNodes(raw: unknown): string[] {
 
 function nodeClass(label: string): string {
   const l = label.toLowerCase();
-  if (l === 'agent')     return 'bg-accent/10 text-accent';
-  if (l === 'trigger')   return 'bg-success/10 text-success';
+  if (l === 'agent') return 'bg-accent/10 text-accent';
+  if (l === 'trigger') return 'bg-success/10 text-success';
   if (l === 'condition') return 'bg-amber/10 text-amber';
   return 'bg-cream/5 text-cream/40';
 }
 
 // ── Page ──────────────────────────────────────────────────────
 
-export default function WorkflowDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function WorkflowDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: workflowId } = use(params);
   const { data: wf, isLoading } = trpc.workflows.get.useQuery({ workflowId });
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-32">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+        <div className="border-accent h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" />
       </div>
     );
   }
 
   if (!wf) {
-    return (
-      <p className="py-20 text-center font-body text-cream/50">Workflow not found.</p>
-    );
+    return <p className="font-body text-cream/50 py-20 text-center">Workflow not found.</p>;
   }
 
-  const nodes    = parseNodes(wf.nodesJson);
+  const nodes = parseNodes(wf.nodesJson);
   const dotClass = STATUS_DOT[wf.status] ?? 'bg-cream/20';
 
   return (
     <div className="space-y-8">
-
       {/* ── Header ─────────────────────────────────────────── */}
       <div>
         <Link
           href="/portal/workflows"
-          className="font-mono text-xs uppercase tracking-wider text-cream/40 hover:text-accent"
+          className="text-cream/40 hover:text-accent font-mono text-xs uppercase tracking-wider"
         >
           ← Workflows
         </Link>
 
         <div className="mt-3 flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-cream/10">
-            <span className="font-mono text-base text-cream">⑂</span>
+          <div className="bg-cream/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+            <span className="text-cream font-mono text-base">⑂</span>
           </div>
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="font-display text-3xl font-semibold text-cream">{wf.name}</h1>
+              <h1 className="font-display text-cream text-3xl font-semibold">{wf.name}</h1>
               <div className="flex items-center gap-1.5">
                 <div className={`h-2 w-2 rounded-full ${dotClass}`} />
-                <span className="font-mono text-[10px] uppercase tracking-wider text-cream/50">
+                <span className="text-cream/50 font-mono text-[10px] uppercase tracking-wider">
                   {wf.status.toLowerCase()}
                 </span>
               </div>
             </div>
             {wf.description && (
-              <p className="mt-1 font-body text-sm text-cream/55">{wf.description}</p>
+              <p className="font-body text-cream/55 mt-1 text-sm">{wf.description}</p>
             )}
           </div>
         </div>
@@ -126,16 +122,18 @@ export default function WorkflowDetailPage({
         <div className="mt-5 flex flex-wrap gap-6">
           {(
             [
-              { label: 'version',    value: `v${wf.version}` },
-              { label: 'trigger',    value: wf.trigger.toLowerCase() },
-              { label: 'nodes',      value: String(nodes.length) },
-              { label: 'agents',     value: String(wf.agents.length) },
+              { label: 'version', value: `v${wf.version}` },
+              { label: 'trigger', value: wf.trigger.toLowerCase() },
+              { label: 'nodes', value: String(nodes.length) },
+              { label: 'agents', value: String(wf.agents.length) },
               { label: 'executions', value: String(wf.executions.length) },
             ] as const
           ).map(({ label, value }) => (
             <div key={label}>
-              <p className="font-mono text-sm font-medium text-cream">{value}</p>
-              <p className="font-mono text-[10px] uppercase tracking-wider text-cream/40">{label}</p>
+              <p className="text-cream font-mono text-sm font-medium">{value}</p>
+              <p className="text-cream/40 font-mono text-[10px] uppercase tracking-wider">
+                {label}
+              </p>
             </div>
           ))}
         </div>
@@ -150,15 +148,17 @@ export default function WorkflowDetailPage({
               {wf.agents.map((agent) => (
                 <div
                   key={agent.id}
-                  className="flex items-center justify-between border-b border-cream/[0.08] pb-3 last:border-0 last:pb-0"
+                  className="border-cream/8 flex items-center justify-between border-b pb-3 last:border-0 last:pb-0"
                 >
                   <Link
                     href={`/portal/agents/${agent.id}`}
-                    className="font-body text-sm text-cream hover:text-accent"
+                    className="font-body text-cream hover:text-accent text-sm"
                   >
                     {agent.name}
                   </Link>
-                  <AgentPill status={agent.status.toLowerCase() as Parameters<typeof AgentPill>[0]['status']} />
+                  <AgentPill
+                    status={agent.status.toLowerCase() as Parameters<typeof AgentPill>[0]['status']}
+                  />
                 </div>
               ))}
             </div>
@@ -178,9 +178,7 @@ export default function WorkflowDetailPage({
                 >
                   {label}
                 </div>
-                {i < nodes.length - 1 && (
-                  <span className="font-mono text-xs text-cream/20">→</span>
-                )}
+                {i < nodes.length - 1 && <span className="text-cream/20 font-mono text-xs">→</span>}
               </div>
             ))}
           </div>
@@ -193,18 +191,18 @@ export default function WorkflowDetailPage({
           <Eyebrow tone="cream">Recent executions</Eyebrow>
 
           {wf.executions.length === 0 ? (
-            <p className="mt-4 font-body text-sm text-cream/45">
+            <p className="font-body text-cream/45 mt-4 text-sm">
               No executions yet. This workflow has not been triggered.
             </p>
           ) : (
             <div className="mt-4 overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-hairline-dark">
+                  <tr className="border-hairline-dark border-b">
                     {['Status', 'Trigger', 'Duration', 'Started', 'Error'].map((h) => (
                       <th
                         key={h}
-                        className="pb-3 pr-6 font-mono text-[10px] uppercase tracking-wider text-cream/40 last:pr-0"
+                        className="text-cream/40 pb-3 pr-6 font-mono text-[10px] uppercase tracking-wider last:pr-0"
                       >
                         {h}
                       </th>
@@ -213,9 +211,9 @@ export default function WorkflowDetailPage({
                 </thead>
                 <tbody>
                   {wf.executions.map((exec) => {
-                    const s = EXEC_STATUS_CLASS[exec.status] ?? EXEC_STATUS_CLASS['cancelled']!;
+                    const s = EXEC_STATUS_CLASS[exec.status] ?? EXEC_STATUS_CLASS.cancelled!;
                     return (
-                      <tr key={exec.id} className="border-b border-cream/[0.06] last:border-0">
+                      <tr key={exec.id} className="border-cream/6 border-b last:border-0">
                         <td className="py-3 pr-6">
                           <div className="flex items-center gap-2">
                             <div className={`h-2 w-2 shrink-0 rounded-full ${s.dot}`} />
@@ -224,16 +222,16 @@ export default function WorkflowDetailPage({
                             </span>
                           </div>
                         </td>
-                        <td className="py-3 pr-6 font-mono text-xs capitalize text-cream/60">
+                        <td className="text-cream/60 py-3 pr-6 font-mono text-xs capitalize">
                           {exec.trigger}
                         </td>
-                        <td className="py-3 pr-6 font-mono text-xs text-cream/60">
+                        <td className="text-cream/60 py-3 pr-6 font-mono text-xs">
                           {formatDuration(exec.durationMs)}
                         </td>
-                        <td className="py-3 pr-6 font-mono text-xs text-cream/50">
+                        <td className="text-cream/50 py-3 pr-6 font-mono text-xs">
                           {formatDateTime(exec.startedAt.toISOString())}
                         </td>
-                        <td className="py-3 font-mono text-xs text-error/80">
+                        <td className="text-error/80 py-3 font-mono text-xs">
                           {exec.error ? (
                             <span title={exec.error}>
                               {exec.error.length > 48 ? exec.error.slice(0, 48) + '…' : exec.error}
@@ -251,7 +249,6 @@ export default function WorkflowDetailPage({
           )}
         </div>
       </GlassCard>
-
     </div>
   );
 }

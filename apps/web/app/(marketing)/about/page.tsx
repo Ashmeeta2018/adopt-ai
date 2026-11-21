@@ -1,4 +1,13 @@
-import { AmbientOrbs, AmbientRings, BrandMark, EmberText, Eyebrow, SiteFooter, SiteNav } from '@adopt-ai/ui-web';
+import {
+  AmbientOrbs,
+  AmbientRings,
+  BrandMark,
+  EmberText,
+  Eyebrow,
+  SiteFooter,
+  SiteNav,
+} from '@adopt-ai/ui-web';
+
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -59,7 +68,7 @@ export default function AboutPage() {
           </div>
           <Eyebrow className="mt-12">About</Eyebrow>
           <h1
-            className="mt-3 font-display"
+            className="font-display mt-3"
             style={{ fontSize: 48, letterSpacing: '-0.035em', lineHeight: 1.05 }}
           >
             <EmberText>A small studio</EmberText> that ships agents.
@@ -74,14 +83,13 @@ export default function AboutPage() {
             className="font-editorial italic"
             style={{ fontSize: 44, lineHeight: 1.2, letterSpacing: '-0.015em' }}
           >
-            &ldquo;Most AI work in 2025 stops at the demo. We were tired of decks that
-            didn&rsquo;t survive contact with production — so we started shipping
-            instead.&rdquo;
+            &ldquo;Most AI work in 2025 stops at the demo. We were tired of decks that didn&rsquo;t
+            survive contact with production — so we started shipping instead.&rdquo;
           </blockquote>
         </div>
       </section>
 
-      <section className="border-t border-hairline bg-paper px-14 py-24">
+      <section className="border-hairline bg-paper border-t px-14 py-24">
         <div className="mx-auto max-w-[1280px]">
           <Eyebrow className="mb-5">Five principles</Eyebrow>
           <h2 className="font-display text-[56px] tracking-[-0.035em]">How we work</h2>
@@ -89,7 +97,7 @@ export default function AboutPage() {
             {principles.map((p) => (
               <div key={p.title}>
                 <h3 className="font-display text-[22px]">{p.title}</h3>
-                <p className="mt-3 text-[14.5px] leading-[1.55] text-ink/65">{p.body}</p>
+                <p className="text-ink/65 mt-3 text-[14.5px] leading-[1.55]">{p.body}</p>
               </div>
             ))}
           </div>
@@ -98,27 +106,27 @@ export default function AboutPage() {
 
       <section className="px-14 py-32">
         <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-7 md:grid-cols-2">
-          <article className="rounded-3xl border border-hairline bg-paper p-10">
+          <article className="border-hairline bg-paper rounded-3xl border p-10">
             <Eyebrow className="mb-4">Right fit</Eyebrow>
             <h3 className="font-display text-[32px]">When we say yes</h3>
-            <ul className="mt-6 space-y-3 text-[15.5px] leading-[1.6] text-ink/75">
+            <ul className="text-ink/75 mt-6 space-y-3 text-[15.5px] leading-[1.6]">
               {rightFit.map((r) => (
                 <li key={r} className="flex gap-3">
-                  <span className="mt-2 inline-block h-1 w-3 rounded-full bg-success" />
+                  <span className="bg-success mt-2 inline-block h-1 w-3 rounded-full" />
                   <span>{r}</span>
                 </li>
               ))}
             </ul>
           </article>
-          <article className="rounded-3xl border border-hairline bg-ink p-10 text-cream">
+          <article className="border-hairline bg-ink text-cream rounded-3xl border p-10">
             <Eyebrow tone="glow" className="mb-4">
               Not a fit
             </Eyebrow>
             <h3 className="font-display text-[32px]">When we tell you no</h3>
-            <ul className="mt-6 space-y-3 text-[15.5px] leading-[1.6] text-cream/65">
+            <ul className="text-cream/65 mt-6 space-y-3 text-[15.5px] leading-[1.6]">
               {notFit.map((r) => (
                 <li key={r} className="flex gap-3">
-                  <span className="mt-2 inline-block h-1 w-3 rounded-full bg-accent" />
+                  <span className="bg-accent mt-2 inline-block h-1 w-3 rounded-full" />
                   <span>{r}</span>
                 </li>
               ))}

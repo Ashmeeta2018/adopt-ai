@@ -1,42 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { theme, withOpacity } from '@/lib/theme';
-
-const WORKFLOWS = [
-  {
-    id: 'wf-intake-coordination',
-    name: 'Inbound Carrier Coordination',
-    description: 'Reads carrier emails, classifies intent, extracts shipment data, and routes to TMS.',
-    status: 'ACTIVE' as const,
-    version: 4,
-    trigger: 'EVENT',
-    nodes: 6,
-    agents: 1,
-  },
-  {
-    id: 'wf-invoice-extraction',
-    name: 'Invoice Data Extraction',
-    description: 'Extracts structured data from PDF invoices and posts to QuickBooks.',
-    status: 'ACTIVE' as const,
-    version: 2,
-    trigger: 'EVENT',
-    nodes: 4,
-    agents: 1,
-  },
-  {
-    id: 'wf-support-triage',
-    name: 'Support Ticket Triage',
-    description: 'Classifies support requests by severity and routes to the correct team.',
-    status: 'ACTIVE' as const,
-    version: 1,
-    trigger: 'EVENT',
-    nodes: 4,
-    agents: 1,
-  },
-] as const;
+import { trpc } from '@/lib/trpc';
 
 const STATUS_COLORS: Record<string, string> = {
   ACTIVE: theme.colors.success,
@@ -47,19 +15,30 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function WorkflowsListScreen() {
   const router = useRouter();
+  const { data: workflows, isLoading } = trpc.workflows.list.useQuery();
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={[styles.safe, styles.center]}>
+        <ActivityIndicator size="large" color={theme.colors.ink} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.title}>Workflows</Text>
-        <Text style={styles.subtitle}>{WORKFLOWS.length} active</Text>
+        <Text style={styles.subtitle}>
+          {(workflows ?? []).filter((w) => w.status === 'ACTIVE').length} active
+        </Text>
 
-        {WORKFLOWS.map((wf) => (
+        {(workflows ?? []).map((wf) => (
           <Pressable
             key={wf.id}
             style={styles.card}
             onPress={() => router.push(`/(portal)/workflows/${wf.id}`)}
-            accessibilityLabel={`${wf.name} — ${wf.status.toLowerCase()}, version ${wf.version}, ${wf.nodes} nodes`}
+            accessibilityLabel={`${wf.name} — ${wf.status.toLowerCase()}, version ${wf.version}, ${wf._count.executions} executions`}
             accessibilityRole="button"
           >
             <View style={styles.cardHeader}>
@@ -72,7 +51,7 @@ export default function WorkflowsListScreen() {
                   <View style={[styles.statusDot, { backgroundColor: STATUS_COLORS[wf.status] }]} />
                 </View>
                 <Text style={styles.cardDescription} numberOfLines={2}>
-                  {wf.description}
+                  {wf.description ?? 'No description'}
                 </Text>
               </View>
               <Text style={styles.chevron}>›</Text>
@@ -80,9 +59,9 @@ export default function WorkflowsListScreen() {
 
             <View style={styles.metricsRow}>
               <Metric label="Version" value={`v${wf.version}`} />
-              <Metric label="Nodes" value={String(wf.nodes)} />
+              <Metric label="Executions" value={String(wf._count.executions)} />
               <Metric label="Trigger" value={wf.trigger.toLowerCase()} />
-              <Metric label="Agents" value={String(wf.agents)} />
+              <Metric label="Agents" value={String(wf._count.agents)} />
             </View>
           </Pressable>
         ))}
@@ -102,6 +81,7 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: theme.colors.cream },
+  center: { justifyContent: 'center', alignItems: 'center' },
   scroll: { padding: 18, paddingBottom: 120 },
   title: { fontFamily: 'Sora', fontSize: 26, color: theme.colors.ink },
   subtitle: {

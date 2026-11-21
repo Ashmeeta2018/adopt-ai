@@ -1,3 +1,4 @@
+import { authEnv } from '@adopt-ai/auth';
 import { AmbientOrbs, AmbientRings, BrandMark, Eyebrow } from '@adopt-ai/ui-web';
 
 import type { Metadata } from 'next';
@@ -15,6 +16,11 @@ export default async function PortalLoginPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
+  const oktaConfigured = !!(
+    authEnv.AUTH_OKTA_ID &&
+    authEnv.AUTH_OKTA_SECRET &&
+    authEnv.AUTH_OKTA_ISSUER
+  );
 
   return (
     <main className="bg-void text-cream relative min-h-screen overflow-hidden">
@@ -29,7 +35,7 @@ export default async function PortalLoginPage({
           <Eyebrow tone="glow">Client Portal</Eyebrow>
         </div>
 
-        <PortalLoginCard urlError={error} />
+        <PortalLoginCard urlError={error} showSso={oktaConfigured} />
 
         <p className="text-eyebrow text-cream/40 mt-12 font-mono uppercase tracking-[0.18em]">
           SOC 2 Type II · ISO 27001 · HIPAA · © 2026 Adopt AI

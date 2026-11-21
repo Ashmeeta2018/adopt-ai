@@ -8,14 +8,8 @@
 
 import { ImageResponse } from 'next/og';
 
-import {
-  OGShell,
-  OG_WIDTH,
-  OG_HEIGHT,
-  buildFontOptions,
-  loadDisplayFont,
-} from '@/lib/og';
 import { getAllPostSummaries, getPost } from '@/lib/blog';
+import { OGShell, OG_WIDTH, OG_HEIGHT, buildFontOptions, loadDisplayFont } from '@/lib/og';
 
 export const size = { width: OG_WIDTH, height: OG_HEIGHT };
 export const contentType = 'image/png';
@@ -25,11 +19,7 @@ export function generateStaticParams() {
   return getAllPostSummaries().map((p) => ({ slug: p.slug }));
 }
 
-export default async function BlogPostOGImage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function BlogPostOGImage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = getPost(slug);
 

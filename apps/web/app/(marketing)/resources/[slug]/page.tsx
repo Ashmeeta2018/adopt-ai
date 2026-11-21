@@ -1,11 +1,3 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-
-import { compileMDX } from 'next-mdx-remote/rsc';
-import rehypePrettyCode from 'rehype-pretty-code';
-import remarkGfm from 'remark-gfm';
-
 import {
   AmbientOrbs,
   BrandMark,
@@ -15,15 +7,22 @@ import {
   SiteFooter,
   SiteNav,
 } from '@adopt-ai/ui-web';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { compileMDX } from 'next-mdx-remote/rsc';
+import rehypePrettyCode from 'rehype-pretty-code';
+import remarkGfm from 'remark-gfm';
 
+import type { Metadata } from 'next';
+
+import { RelatedResources } from '@/components/resources/RelatedResources';
+import { ResourceCta } from '@/components/resources/ResourceCta';
 import { getAllResourceSummaries, getRelatedResources, getResource } from '@/lib/resources';
 import { typeAccentClass } from '@/lib/resources';
-import { ResourceCta } from '@/components/resources/ResourceCta';
-import { RelatedResources } from '@/components/resources/RelatedResources';
 
 // ── Static generation ─────────────────────────────────────────
 
-export async function generateStaticParams() {
+export function generateStaticParams() {
   return getAllResourceSummaries().map((r) => ({ slug: r.slug }));
 }
 
@@ -119,16 +118,16 @@ export default async function ResourceDetailPage({
       {/* ── Hero ─────────────────────────────────────────────── */}
       <header className="px-14 pb-14 pt-24">
         <div className="mx-auto max-w-[840px]">
-          <div className={`mb-4 font-mono text-eyebrow uppercase tracking-[0.18em] ${accentClass}`}>
+          <div className={`text-eyebrow mb-4 font-mono uppercase tracking-[0.18em] ${accentClass}`}>
             {resource.type} · {resource.format}
           </div>
           <h1
-            className="font-display font-medium text-ink"
+            className="font-display text-ink font-medium"
             style={{ fontSize: 56, letterSpacing: '-0.035em', lineHeight: 1.05 }}
           >
             {resource.title}
           </h1>
-          <p className="mt-6 max-w-[600px] text-[19px] leading-[1.55] text-ink/65">
+          <p className="text-ink/65 mt-6 max-w-[600px] text-[19px] leading-[1.55]">
             {resource.dek}
           </p>
 
@@ -149,13 +148,13 @@ export default async function ResourceDetailPage({
           className="relative mx-auto mt-14 max-w-[1280px] overflow-hidden rounded-3xl"
           style={{ aspectRatio: '16 / 6' }}
         >
-          <div className="absolute inset-0 bg-ember-cta" />
+          <div className="bg-ember-cta absolute inset-0" />
           <NeuralMesh dark style={{ position: 'absolute', inset: 0, opacity: 0.3 }} />
           <AmbientOrbs intensity={0.7} dark />
           <div className="absolute inset-0 flex items-center justify-center">
             <BrandMark size={120} withType={false} mono dark />
           </div>
-          <div className="absolute bottom-6 left-6 font-mono text-eyebrow uppercase tracking-[0.18em] text-cream/60">
+          <div className="text-eyebrow text-cream/60 absolute bottom-6 left-6 font-mono uppercase tracking-[0.18em]">
             {resource.type} · Adopt AI
           </div>
         </div>
@@ -164,7 +163,6 @@ export default async function ResourceDetailPage({
       {/* ── Body ─────────────────────────────────────────────── */}
       <div className="px-14 pb-32">
         <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-16 lg:grid-cols-[1fr_280px]">
-
           {/* Prose */}
           <article className="prose max-w-none">
             {content}
@@ -188,13 +186,15 @@ export default async function ResourceDetailPage({
           {/* Sticky sidebar */}
           <aside className="lg:sticky lg:top-24 lg:self-start">
             {/* Resource card */}
-            <div className="rounded-2xl border border-hairline bg-paper p-6 shadow-card-light">
+            <div className="border-hairline bg-paper shadow-card-light rounded-2xl border p-6">
               <Eyebrow className="mb-3">This resource</Eyebrow>
-              <div className={`mt-2 font-mono text-[11px] uppercase tracking-[0.18em] ${accentClass}`}>
+              <div
+                className={`mt-2 font-mono text-[11px] uppercase tracking-[0.18em] ${accentClass}`}
+              >
                 {resource.type}
               </div>
-              <h3 className="mt-2 font-display text-[17px] leading-snug">{resource.title}</h3>
-              <div className="my-5 h-px bg-hairline" />
+              <h3 className="font-display mt-2 text-[17px] leading-snug">{resource.title}</h3>
+              <div className="bg-hairline my-5 h-px" />
               <ResourceCta
                 type={resource.type}
                 downloadLabel={resource.downloadLabel}
@@ -206,9 +206,9 @@ export default async function ResourceDetailPage({
             </div>
 
             {/* Project CTA */}
-            <div className="mt-6 rounded-2xl border border-hairline bg-paper p-6">
+            <div className="border-hairline bg-paper mt-6 rounded-2xl border p-6">
               <Eyebrow className="mb-3">Ready to build?</Eyebrow>
-              <p className="text-[13px] leading-[1.55] text-ink/60">
+              <p className="text-ink/60 text-[13px] leading-[1.55]">
                 Fixed price. No per-seat fees. Most projects pay back in under 8 weeks.
               </p>
               <div className="mt-5 flex flex-col gap-2">

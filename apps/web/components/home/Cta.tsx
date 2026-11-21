@@ -1,10 +1,9 @@
-import Link from 'next/link';
-
 import { AmbientOrbs, Button, EmberText, Eyebrow } from '@adopt-ai/ui-web';
+import Link from 'next/link';
 
 export function Cta() {
   return (
-    <section className="relative overflow-hidden bg-void px-14 py-32 text-cream">
+    <section className="bg-void text-cream relative overflow-hidden px-14 py-32">
       <AmbientOrbs intensity={0.7} dark />
       <div className="relative mx-auto max-w-[920px] text-center">
         <Eyebrow tone="glow" className="mb-6">
@@ -16,9 +15,9 @@ export function Cta() {
         >
           Pick one workflow. <EmberText>We&rsquo;ll handle the rest.</EmberText>
         </h2>
-        <p className="mx-auto mt-7 max-w-[640px] text-[19px] leading-[1.55] text-cream/70">
-          A 30-minute call. We&rsquo;ll tell you whether what you&rsquo;re after is a fit, what
-          it would cost, and roughly how long it would take. No deck, no pitch.
+        <p className="text-cream/70 mx-auto mt-7 max-w-[640px] text-[19px] leading-[1.55]">
+          A 30-minute call. We&rsquo;ll tell you whether what you&rsquo;re after is a fit, what it
+          would cost, and roughly how long it would take. No deck, no pitch.
         </p>
         <div className="mt-10 flex flex-wrap justify-center gap-3.5">
           <Link href="/book">

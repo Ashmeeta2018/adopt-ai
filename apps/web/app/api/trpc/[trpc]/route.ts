@@ -1,7 +1,7 @@
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 
-import { appRouter } from '@/lib/trpc/router';
 import { createContext } from '@/lib/trpc/context';
+import { appRouter } from '@/lib/trpc/router';
 
 const handler = (req: Request) =>
   fetchRequestHandler({
@@ -10,7 +10,6 @@ const handler = (req: Request) =>
     router: appRouter,
     createContext: () => createContext(req),
     onError({ error, path }) {
-      // eslint-disable-next-line no-console
       console.error(`[trpc] ${path ?? '<no-path>'}`, error.message);
     },
   });

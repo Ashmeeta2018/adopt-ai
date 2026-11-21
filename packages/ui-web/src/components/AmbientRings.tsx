@@ -1,4 +1,5 @@
 import { emberStops } from '@adopt-ai/tokens';
+
 import type { CSSProperties } from 'react';
 
 interface AmbientRingsProps {
@@ -21,14 +22,8 @@ export function AmbientRings({ size = 480, dark = false, style }: AmbientRingsPr
   ];
 
   return (
-    <div
-      aria-hidden="true"
-      style={{ position: 'relative', width: size, height: size, ...style }}
-    >
-      <div
-        className="absolute inset-0"
-        style={{ animation: 'ringSpin 80s linear infinite' }}
-      >
+    <div aria-hidden="true" style={{ position: 'relative', width: size, height: size, ...style }}>
+      <div className="absolute inset-0" style={{ animation: 'ringSpin 80s linear infinite' }}>
         <svg viewBox="0 0 200 200" width={size} height={size}>
           <defs>
             <linearGradient id="ring-grad" x1="0" y1="0" x2="1" y2="1">

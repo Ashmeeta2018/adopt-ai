@@ -1,19 +1,19 @@
 import { BrandMark, Button, Eyebrow, SiteFooter, SiteNav } from '@adopt-ai/ui-web';
-import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-
 import { compileMDX } from 'next-mdx-remote/rsc';
 import rehypePrettyCode from 'rehype-pretty-code';
 import remarkGfm from 'remark-gfm';
 
-import { getAllPostSummaries, getPost, getRelatedPosts } from '@/lib/blog';
+import type { Metadata } from 'next';
+
 import { PostHero } from '@/components/blog/PostHero';
 import { RelatedPosts } from '@/components/blog/RelatedPosts';
+import { getAllPostSummaries, getPost, getRelatedPosts } from '@/lib/blog';
 
 // ── Static generation ─────────────────────────────────────────
 
-export async function generateStaticParams() {
+export function generateStaticParams() {
   return getAllPostSummaries().map((p) => ({ slug: p.slug }));
 }
 
@@ -76,11 +76,7 @@ const mdxComponents = {
 
 // ── Page ──────────────────────────────────────────────────────
 
-export default async function BlogPostPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = getPost(slug);
 
@@ -127,7 +123,6 @@ export default async function BlogPostPage({
       {/* ── Two-column body ─────────────────────────────────── */}
       <div className="px-14 pb-32">
         <div className="mx-auto grid max-w-[1280px] grid-cols-1 gap-16 lg:grid-cols-[1fr_300px]">
-
           {/* Main prose */}
           <article
             className="prose max-w-none"
@@ -149,18 +144,19 @@ export default async function BlogPostPage({
 
           {/* Sticky sidebar */}
           <aside className="lg:sticky lg:top-24 lg:self-start">
-            <div className="rounded-2xl border border-hairline bg-paper p-7 shadow-card-light">
+            <div className="border-hairline bg-paper shadow-card-light rounded-2xl border p-7">
               {/* Brand mark */}
               <div className="mb-5 flex justify-center">
                 <BrandMark size={40} withType={false} />
               </div>
 
               <Eyebrow className="mb-3 text-center">Adopt AI</Eyebrow>
-              <p className="text-center text-[13px] leading-[1.55] text-ink/60">
-                We build AI agents for small and mid-sized businesses. Fixed price. No per-seat fees.
+              <p className="text-ink/60 text-center text-[13px] leading-[1.55]">
+                We build AI agents for small and mid-sized businesses. Fixed price. No per-seat
+                fees.
               </p>
 
-              <div className="my-6 h-px bg-hairline" />
+              <div className="bg-hairline my-6 h-px" />
 
               <Link href="/book" className="block">
                 <Button variant="primary" className="w-full">

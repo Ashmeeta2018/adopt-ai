@@ -52,6 +52,13 @@ test.describe('Home page (/)', () => {
     ).toBeVisible();
   });
 
+  test('links local businesses to their packages', async ({ page }) => {
+    await loadPage(page, '/');
+    const link = page.locator('a[href="/services#local-business"]');
+    await expect(link).toBeVisible();
+    await expect(link).toContainText('From $399 / mo');
+  });
+
   test('shows the case study section', async ({ page }) => {
     await loadPage(page, '/');
     await expect(page.locator('text=Apex Regional').first()).toBeVisible();
@@ -110,6 +117,20 @@ test.describe('Pricing page (/pricing)', () => {
     await loadPage(page, '/pricing');
     await expect(page.locator('text=eight weeks').or(page.locator('text=8 weeks'))).toBeVisible();
   });
+
+  test('shows the four local business packages with prices', async ({ page }) => {
+    await loadPage(page, '/pricing');
+    const local = page.locator('#local-business');
+    for (const { name, price } of [
+      { name: 'Local Presence', price: '$1,500' },
+      { name: 'AI Receptionist', price: '$2,500' },
+      { name: 'Content Engine', price: '$750–1,500' },
+      { name: 'AI Visibility', price: '$399–799' },
+    ]) {
+      await expect(local.getByRole('heading', { name })).toBeVisible();
+      await expect(local.getByText(price, { exact: true })).toBeVisible();
+    }
+  });
 });
 
 // ── Services ───────────────────────────────────────────────────
@@ -138,6 +159,20 @@ test.describe('Services page (/services)', () => {
   test('shows "stays on the pager" in the hero', async ({ page }) => {
     await loadPage(page, '/services');
     await expect(page.locator('text=stays on the pager').first()).toBeVisible();
+  });
+
+  test('shows the local business packages', async ({ page }) => {
+    await loadPage(page, '/services#local-business');
+    await expect(page.getByRole('heading', { name: /Run a local business/i })).toBeVisible();
+    for (const name of [
+      'Local Presence',
+      'AI Receptionist & Lead Follow-up',
+      'Content Engine',
+      'AI Visibility',
+    ]) {
+      await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+    }
+    await expect(page.getByText('$1,500 setup · $499 / mo')).toBeVisible();
   });
 });
 

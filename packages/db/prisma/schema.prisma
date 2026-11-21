@@ -8,8 +8,10 @@
 //   - soft-delete via deletedAt where the data is sensitive (Users, Agents)
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearchPostgres"]
+  provider = "prisma-client-js"
+  // queryCompiler: pure-TypeScript client — no Rust query-engine binary, which
+  // removes the serverless-bundle tracing workarounds in apps/web/next.config.ts.
+  previewFeatures = ["fullTextSearchPostgres", "queryCompiler"]
 }
 
 datasource db {
@@ -292,7 +294,7 @@ model ContactSubmission {
   name           String
   email          String
   company        String
-  engagement     String   // spark | lift | scale | not-sure
+  engagement     String   // spark | lift | scale | local-business | not-sure
   workflow       String   @db.Text
   ticketId       String   @unique
   organisationId String?

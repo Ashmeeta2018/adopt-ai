@@ -1,9 +1,9 @@
+import { Eyebrow, Hairline } from '@adopt-ai/ui-web';
 import Link from 'next/link';
 
-import type { PostSummary } from '@/lib/blog';
-import { Eyebrow, Hairline } from '@adopt-ai/ui-web';
-
 import { PostMeta } from './PostMeta';
+
+import type { PostSummary } from '@/lib/blog';
 
 interface RelatedPostsProps {
   posts: PostSummary[];
@@ -25,13 +25,10 @@ export function RelatedPosts({ posts }: RelatedPostsProps) {
                 readMinutes={post.readMinutes}
                 className="mb-2"
               />
-              <h3
-                className="font-display text-[22px] leading-snug tracking-[-0.02em]
-                           group-hover:text-accent transition-colors duration-150"
-              >
+              <h3 className="font-display group-hover:text-accent text-[22px] leading-snug tracking-[-0.02em] transition-colors duration-150">
                 {post.title}
               </h3>
-              <p className="mt-2 text-[14.5px] leading-[1.55] text-ink/60 line-clamp-2">
+              <p className="text-ink/60 mt-2 line-clamp-2 text-[14.5px] leading-[1.55]">
                 {post.dek}
               </p>
             </Link>

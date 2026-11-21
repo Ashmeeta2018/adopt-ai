@@ -97,3 +97,17 @@ export const listAlertsOutput = z.object({
 });
 
 export const markAlertReadInput = z.object({ alertId: idSchema });
+export const markAlertReadOutput = z.object({ ok: z.literal(true) });
+
+/* ---------- Settings ---------- */
+export const settingsOutput = z.object({
+  user: z.object({
+    email: z.string(),
+    name: z.string(),
+  }),
+  role: z.enum(['OWNER', 'ADMIN', 'MEMBER']),
+  organisation: z.object({
+    name: z.string(),
+    plan: z.string(),
+  }),
+});

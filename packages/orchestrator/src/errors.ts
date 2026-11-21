@@ -34,7 +34,7 @@ export class ExecutionTimeoutError extends Error {
 
 export class WorkflowExecutionError extends Error {
   public readonly workflowId: string;
-  public readonly cause: unknown;
+  public override readonly cause: unknown;
 
   constructor(workflowId: string, message: string, cause?: unknown) {
     super(`Workflow ${workflowId} failed: ${message}`);

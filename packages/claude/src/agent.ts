@@ -1,7 +1,8 @@
+import { toolUseLoop } from './tools';
+
+import type { ClaudeProvider } from './provider';
+import type { ClaudeTool, ToolExecutorFn } from './tools';
 import type { ChatMessage, ModelConfig, TokenUsage } from '@adopt-ai/model-wrapper/types';
-import type { ClaudeProvider } from './provider;
-import type { ClaudeTool, ToolExecutorFn } from './tools;
-import { toolUseLoop } from './tools;
 
 export interface AgentConfig {
   systemPrompt: string;
@@ -49,8 +50,8 @@ export function createAgent(provider: ClaudeProvider, config: AgentConfig): Agen
   let abortController: AbortController | null = null;
 
   const modelConfig: Partial<ModelConfig> = {
-    model: config.model ?? 'claude-sonnet-4-6-20250514',
-    temperature: config.temperature ?? 0,
+    model: config.model ?? 'anthropic/claude-sonnet-5',
+    temperature: config.temperature,
     maxTokens: config.maxTokens ?? 4096,
     systemPrompt: config.systemPrompt,
   };
@@ -65,7 +66,12 @@ export function createAgent(provider: ClaudeProvider, config: AgentConfig): Agen
       state.messages.push(userMessage);
 
       try {
-        if (config.tools && config.tools.length > 0 && config.executors && config.executors.size > 0) {
+        if (
+          config.tools &&
+          config.tools.length > 0 &&
+          config.executors &&
+          config.executors.size > 0
+        ) {
           const result = await toolUseLoop({
             provider,
             messages: state.messages,
@@ -89,9 +95,9 @@ export function createAgent(provider: ClaudeProvider, config: AgentConfig): Agen
         }
 
         const response = await provider.complete(state.messages, {
-          model: modelConfig.model ?? 'claude-sonnet-4-6-20250514',
+          model: modelConfig.model ?? 'anthropic/claude-sonnet-5',
           maxTokens: modelConfig.maxTokens ?? 4096,
-          temperature: modelConfig.temperature ?? 0,
+          temperature: modelConfig.temperature,
           systemPrompt: modelConfig.systemPrompt,
         });
 
@@ -121,7 +127,12 @@ export function createAgent(provider: ClaudeProvider, config: AgentConfig): Agen
       state.messages.push(userMessage);
 
       try {
-        if (config.tools && config.tools.length > 0 && config.executors && config.executors.size > 0) {
+        if (
+          config.tools &&
+          config.tools.length > 0 &&
+          config.executors &&
+          config.executors.size > 0
+        ) {
           const result = await toolUseLoop({
             provider,
             messages: state.messages,
@@ -141,9 +152,9 @@ export function createAgent(provider: ClaudeProvider, config: AgentConfig): Agen
         }
 
         const stream = provider.stream(state.messages, {
-          model: modelConfig.model ?? 'claude-sonnet-4-6-20250514',
+          model: modelConfig.model ?? 'anthropic/claude-sonnet-5',
           maxTokens: modelConfig.maxTokens ?? 4096,
-          temperature: modelConfig.temperature ?? 0,
+          temperature: modelConfig.temperature,
           systemPrompt: modelConfig.systemPrompt,
         });
 
@@ -160,7 +171,11 @@ export function createAgent(provider: ClaudeProvider, config: AgentConfig): Agen
               yield { type: 'thinking', content: chunk.delta };
               break;
             case 'tool_call':
-              yield { type: 'tool_call', name: chunk.toolCall.name, args: chunk.toolCall.arguments };
+              yield {
+                type: 'tool_call',
+                name: chunk.toolCall.name,
+                args: chunk.toolCall.arguments,
+              };
               break;
             case 'usage':
               state.totalUsage = chunk.usage;

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { CodeValidator, validateBlock } from './validator';
+
 import { Language, DEFAULT_RESOURCE_LIMITS } from './types';
+import { CodeValidator, validateBlock } from './validator';
+
 import type { CodeBlock } from './types';
 
 describe('CodeValidator', () => {
@@ -30,10 +32,7 @@ describe('CodeValidator', () => {
   });
 
   it('rejects child_process', () => {
-    const result = validator.validate(
-      'require("child_process").exec("ls")',
-      Language.JavaScript,
-    );
+    const result = validator.validate('require("child_process").exec("ls")', Language.JavaScript);
     expect(result.valid).toBe(false);
     expect(result.errors).toContain('child_process is not allowed');
   });

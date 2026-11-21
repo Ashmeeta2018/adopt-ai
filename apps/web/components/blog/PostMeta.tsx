@@ -1,5 +1,6 @@
-import { formatDate } from '@/lib/blog';
 import { cn } from '@adopt-ai/ui-web';
+
+import { formatDate } from '@/lib/blog';
 
 interface PostMetaProps {
   date: string;
@@ -12,10 +13,7 @@ interface PostMetaProps {
 export function PostMeta({ date, category, readMinutes, className }: PostMetaProps) {
   return (
     <div
-      className={cn(
-        'font-mono text-eyebrow uppercase tracking-[0.18em] text-accent',
-        className,
-      )}
+      className={cn('text-eyebrow text-accent font-mono uppercase tracking-[0.18em]', className)}
     >
       {formatDate(date)} · {category} · {readMinutes} min
     </div>

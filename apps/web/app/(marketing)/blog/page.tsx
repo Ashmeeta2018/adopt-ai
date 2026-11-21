@@ -8,8 +8,9 @@ import {
   SiteFooter,
   SiteNav,
 } from '@adopt-ai/ui-web';
-import type { Metadata } from 'next';
 import Link from 'next/link';
+
+import type { Metadata } from 'next';
 
 import { PostMeta } from '@/components/blog/PostMeta';
 import { getAllPostSummaries } from '@/lib/blog';
@@ -32,11 +33,10 @@ export default function BlogPage() {
         <div className="mx-auto max-w-[1280px]">
           <Eyebrow className="mb-4">Field notes</Eyebrow>
           <h1
-            className="max-w-[1100px] font-display"
+            className="font-display max-w-[1100px]"
             style={{ fontSize: 80, letterSpacing: '-0.04em', lineHeight: 1 }}
           >
-            Build logs, mistakes, and the occasional{' '}
-            <EmberText>hot take</EmberText>.
+            Build logs, mistakes, and the occasional <EmberText>hot take</EmberText>.
           </h1>
         </div>
       </section>
@@ -51,7 +51,7 @@ export default function BlogPage() {
                   className="relative overflow-hidden rounded-[18px]"
                   style={{ aspectRatio: '16 / 9' }}
                 >
-                  <div className="absolute inset-0 bg-ember-cta" />
+                  <div className="bg-ember-cta absolute inset-0" />
                   <NeuralMesh dark style={{ position: 'absolute', inset: 0, opacity: 0.35 }} />
                   <AmbientOrbs intensity={0.7} dark />
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -66,12 +66,12 @@ export default function BlogPage() {
                   className="mb-3 mt-6"
                 />
                 <h2
-                  className="font-display font-medium transition-colors duration-150 group-hover:text-accent"
+                  className="font-display group-hover:text-accent font-medium transition-colors duration-150"
                   style={{ fontSize: 42, letterSpacing: '-0.03em', lineHeight: 1.05 }}
                 >
                   {featured.title}
                 </h2>
-                <p className="mt-4 max-w-[660px] text-[17px] leading-[1.6] text-ink/65">
+                <p className="text-ink/65 mt-4 max-w-[660px] text-[17px] leading-[1.6]">
                   {featured.dek}
                 </p>
               </Link>
@@ -90,10 +90,7 @@ export default function BlogPage() {
                     readMinutes={post.readMinutes}
                     className="mb-2"
                   />
-                  <h3
-                    className="font-display text-[18px] leading-snug tracking-[-0.015em]
-                               transition-colors duration-150 group-hover:text-accent"
-                  >
+                  <h3 className="font-display group-hover:text-accent text-[18px] leading-snug tracking-[-0.015em] transition-colors duration-150">
                     {post.title}
                   </h3>
                 </Link>

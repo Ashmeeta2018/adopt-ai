@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { type z } from 'zod';
 
 export interface ToolDefinition {
   name: string;
@@ -40,10 +40,7 @@ export function toolkit(tools: ToolDefinition[]): {
   };
 }
 
-export type ToolExecutor = Map<
-  string,
-  (args: Record<string, unknown>) => Promise<unknown>
->;
+export type ToolExecutor = Map<string, (args: Record<string, unknown>) => Promise<unknown>>;
 
 interface ZodDef {
   typeName: string;
@@ -59,6 +56,10 @@ interface ZodDef {
 
 function getDef(schema: z.ZodType): ZodDef {
   return (schema as unknown as { _def: ZodDef })._def;
+}
+
+function isCallable(value: unknown): value is () => unknown {
+  return typeof value === 'function';
 }
 
 function zodToJsonSchema(schema: z.ZodType): Record<string, unknown> {
@@ -120,7 +121,8 @@ function zodToJsonSchema(schema: z.ZodType): Record<string, unknown> {
   if (typeName === 'ZodDefault') {
     const inner = def.innerType ? zodToJsonSchema(def.innerType) : {};
     if (def.defaultValue !== undefined) {
-      inner.default = typeof def.defaultValue === 'function' ? def.defaultValue() : def.defaultValue;
+      const dv: unknown = def.defaultValue;
+      inner.default = isCallable(dv) ? dv() : dv;
     }
     return inner;
   }
@@ -140,7 +142,12 @@ function zodToJsonSchema(schema: z.ZodType): Record<string, unknown> {
   if (typeName === 'ZodLiteral') {
     const literalValue = def.value;
     return {
-      type: typeof literalValue === 'string' ? 'string' : typeof literalValue === 'number' ? 'number' : 'boolean',
+      type:
+        typeof literalValue === 'string'
+          ? 'string'
+          : typeof literalValue === 'number'
+            ? 'number'
+            : 'boolean',
       const: literalValue,
     };
   }

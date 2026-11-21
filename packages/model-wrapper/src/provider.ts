@@ -1,11 +1,11 @@
-import type { ModelProvider as ProviderType } from './types;
+import type { ModelProvider as ProviderType } from './types';
 import type {
   ChatMessage,
   CompletionResponse,
   ModelConfig,
   StreamChunk,
   TokenUsage,
-} from './types;
+} from './types';
 
 export interface ModelInfo {
   name: string;

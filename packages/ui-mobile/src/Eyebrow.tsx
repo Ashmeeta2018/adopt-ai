@@ -1,7 +1,7 @@
-import { StyleSheet, Text, type TextStyle } from 'react-native';
-import type { ReactNode } from 'react';
-
 import { nativeTokens } from '@adopt-ai/tokens/native';
+import { StyleSheet, Text, type TextStyle } from 'react-native';
+
+import type { ReactNode } from 'react';
 
 type Tone = 'default' | 'accent' | 'muted';
 type EyebrowSize = 'sm' | 'md';
@@ -25,12 +25,7 @@ const sizeMap: Record<EyebrowSize, number> = {
 
 export function Eyebrow({ children, tone = 'default', size = 'md' }: EyebrowProps) {
   return (
-    <Text
-      style={[
-        styles.base,
-        { color: toneColors[tone], fontSize: sizeMap[size] },
-      ]}
-    >
+    <Text style={[styles.base, { color: toneColors[tone], fontSize: sizeMap[size] }]}>
       {typeof children === 'string' ? children.toUpperCase() : children}
     </Text>
   );

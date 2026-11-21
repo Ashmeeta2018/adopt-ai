@@ -47,7 +47,7 @@ export interface ToolResult {
 export interface ModelClient {
   chat(options: {
     model: string;
-    messages: Array<{ role: 'system' | 'user' | 'assistant' | 'tool'; content: string }>;
+    messages: { role: 'system' | 'user' | 'assistant' | 'tool'; content: string }[];
     tools?: ToolDefinition[];
     toolResults?: ToolResult[];
     signal?: AbortSignal;
@@ -193,7 +193,7 @@ export interface AgentMetrics {
   avgLatencyMs: number;
   totalTokens: number;
   totalCostUsd: number;
-  hourlyBreakdown: Array<{ hour: string; runs: number; successRate: number; avgLatencyMs: number }>;
+  hourlyBreakdown: { hour: string; runs: number; successRate: number; avgLatencyMs: number }[];
 }
 
 export interface CostBreakdown {

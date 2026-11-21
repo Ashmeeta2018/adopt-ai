@@ -12,6 +12,7 @@ const engagementLabels: Record<ContactSubmitInput['engagement'], string> = {
   spark: 'Spark · $2,400',
   lift: 'Lift · $5,800',
   scale: 'Scale · from $12k',
+  'local-business': 'Local business · from $399/mo',
   'not-sure': 'Not sure yet',
 };
 
@@ -36,11 +37,10 @@ export function ContactForm() {
 
   if (submitted) {
     return (
-      <div className="rounded-3xl border border-hairline bg-paper p-10">
+      <div className="border-hairline bg-paper rounded-3xl border p-10">
         <h3 className="font-display text-[32px] leading-tight">Got it. We&rsquo;ll be in touch.</h3>
-        <p className="mt-4 text-ink/65">
-          We read every message ourselves. Expect a reply within one business day — usually
-          sooner.
+        <p className="text-ink/65 mt-4">
+          We read every message ourselves. Expect a reply within one business day — usually sooner.
         </p>
       </div>
     );
@@ -48,8 +48,8 @@ export function ContactForm() {
 
   return (
     <form
-      onSubmit={handleSubmit((data) => submit.mutate(data))}
-      className="rounded-3xl border border-hairline bg-paper p-8 shadow-card-light"
+      onSubmit={(e) => void handleSubmit((data) => submit.mutate(data))(e)}
+      className="border-hairline bg-paper shadow-card-light rounded-3xl border p-8"
       noValidate
     >
       {/* Honeypot — bots fill this; humans never see it. */}
@@ -58,7 +58,7 @@ export function ContactForm() {
         tabIndex={-1}
         autoComplete="off"
         aria-hidden="true"
-        className="absolute -left-[9999px] h-0 w-0 opacity-0"
+        className="absolute left-[-9999px] h-0 w-0 opacity-0"
         {...register('hp')}
       />
 
@@ -66,7 +66,7 @@ export function ContactForm() {
         <Field label="Your name" error={errors.name?.message}>
           <input
             type="text"
-            className="w-full rounded-xl border border-hairline bg-paper px-3.5 py-3 font-body text-[15px] text-ink transition-colors focus:border-accent focus:outline-none"
+            className="border-hairline bg-paper font-body text-ink focus:border-accent focus:outline-hidden w-full rounded-xl border px-3.5 py-3 text-[15px] transition-colors"
             autoComplete="name"
             {...register('name')}
           />
@@ -74,7 +74,7 @@ export function ContactForm() {
         <Field label="Work email" error={errors.email?.message}>
           <input
             type="email"
-            className="w-full rounded-xl border border-hairline bg-paper px-3.5 py-3 font-body text-[15px] text-ink transition-colors focus:border-accent focus:outline-none"
+            className="border-hairline bg-paper font-body text-ink focus:border-accent focus:outline-hidden w-full rounded-xl border px-3.5 py-3 text-[15px] transition-colors"
             autoComplete="email"
             {...register('email')}
           />
@@ -85,7 +85,7 @@ export function ContactForm() {
         <Field label="Company" error={errors.company?.message}>
           <input
             type="text"
-            className="w-full rounded-xl border border-hairline bg-paper px-3.5 py-3 font-body text-[15px] text-ink transition-colors focus:border-accent focus:outline-none"
+            className="border-hairline bg-paper font-body text-ink focus:border-accent focus:outline-hidden w-full rounded-xl border px-3.5 py-3 text-[15px] transition-colors"
             autoComplete="organization"
             {...register('company')}
           />
@@ -93,7 +93,7 @@ export function ContactForm() {
       </div>
 
       <div className="mt-6">
-        <div className="mb-2 font-mono text-eyebrow uppercase tracking-[0.18em] text-ink/60">
+        <div className="text-eyebrow text-ink/60 mb-2 font-mono uppercase tracking-[0.18em]">
           Engagement
         </div>
         <div className="flex flex-wrap gap-2">
@@ -106,8 +106,8 @@ export function ContactForm() {
                 onClick={() => setValue('engagement', key)}
                 className={
                   active
-                    ? 'rounded-full bg-ink px-4 py-2 text-[13px] text-cream'
-                    : 'rounded-full border border-hairline px-4 py-2 text-[13px]'
+                    ? 'bg-ink text-cream rounded-full px-4 py-2 text-[13px]'
+                    : 'border-hairline rounded-full border px-4 py-2 text-[13px]'
                 }
               >
                 {engagementLabels[key]}
@@ -121,7 +121,7 @@ export function ContactForm() {
         <Field label="The workflow" error={errors.workflow?.message}>
           <textarea
             rows={5}
-            className="w-full rounded-xl border border-hairline bg-paper px-3.5 py-3 font-body text-[15px] text-ink transition-colors focus:border-accent focus:outline-none min-h-[140px] resize-y"
+            className="border-hairline bg-paper font-body text-ink focus:border-accent focus:outline-hidden min-h-[140px] w-full resize-y rounded-xl border px-3.5 py-3 text-[15px] transition-colors"
             placeholder="What does someone on the team do today that you wish they didn't have to?"
             {...register('workflow')}
           />
@@ -129,7 +129,7 @@ export function ContactForm() {
       </div>
 
       {submit.isError && (
-        <p className="mt-4 text-[13px] text-error" role="alert">
+        <p className="text-error mt-4 text-[13px]" role="alert">
           {submit.error.message}
         </p>
       )}
@@ -139,10 +139,9 @@ export function ContactForm() {
           {isSubmitting ? 'Sending…' : 'Request a working session'}
         </Button>
       </div>
-      <p className="mt-5 text-center font-mono text-eyebrow uppercase tracking-[0.18em] text-ink/50">
+      <p className="text-eyebrow text-ink/50 mt-5 text-center font-mono uppercase tracking-[0.18em]">
         We never share your email. Ever.
       </p>
-
     </form>
   );
 }
@@ -156,12 +155,12 @@ interface FieldProps {
 function Field({ label, error, children }: FieldProps) {
   return (
     <label className="block">
-      <span className="mb-1.5 block font-mono text-eyebrow uppercase tracking-[0.18em] text-ink/60">
+      <span className="text-eyebrow text-ink/60 mb-1.5 block font-mono uppercase tracking-[0.18em]">
         {label}
       </span>
       {children}
       {error && (
-        <span className="mt-1 block text-[12px] text-error" role="alert">
+        <span className="text-error mt-1 block text-[12px]" role="alert">
           {error}
         </span>
       )}

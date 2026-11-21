@@ -1,5 +1,6 @@
-import type { CodeBlock, ExecutionContext, ExecutionResult, ResourceLimits } from './types.js';
 import { DEFAULT_RESOURCE_LIMITS, Language } from './types.js';
+
+import type { CodeBlock, ExecutionContext, ExecutionResult, ResourceLimits } from './types.js';
 
 interface InterceptedConsole {
   log: (...args: unknown[]) => void;
@@ -21,10 +22,7 @@ export class Sandbox {
     this.limits = { ...DEFAULT_RESOURCE_LIMITS, ...limits };
   }
 
-  async execute(
-    block: CodeBlock,
-    context?: Partial<ExecutionContext>,
-  ): Promise<ExecutionResult> {
+  async execute(block: CodeBlock, context?: Partial<ExecutionContext>): Promise<ExecutionResult> {
     const startTime = performance.now();
     const memoryBefore = process.memoryUsage();
 
@@ -33,9 +31,11 @@ export class Sandbox {
 
     const interceptedConsole: InterceptedConsole = {
       log: (...args: unknown[]) => stdoutChunks.push(args.map(String).join(' ') + '\n'),
-      warn: (...args: unknown[]) => stdoutChunks.push('[warn] ' + args.map(String).join(' ') + '\n'),
+      warn: (...args: unknown[]) =>
+        stdoutChunks.push('[warn] ' + args.map(String).join(' ') + '\n'),
       error: (...args: unknown[]) => stderrChunks.push(args.map(String).join(' ') + '\n'),
-      info: (...args: unknown[]) => stdoutChunks.push('[info] ' + args.map(String).join(' ') + '\n'),
+      info: (...args: unknown[]) =>
+        stdoutChunks.push('[info] ' + args.map(String).join(' ') + '\n'),
     };
 
     const timeoutMs = context?.timeout ?? this.limits.maxExecutionMs;
@@ -59,9 +59,8 @@ export class Sandbox {
       const inputKeys = Object.keys(block.inputs);
       const inputValues = Object.values(block.inputs);
 
-      const code = block.language === Language.TypeScript
-        ? stripTypeAnnotations(block.code)
-        : block.code;
+      const code =
+        block.language === Language.TypeScript ? stripTypeAnnotations(block.code) : block.code;
 
       const result = await this.runInSandbox(
         code,
@@ -74,7 +73,8 @@ export class Sandbox {
       const memoryAfter = process.memoryUsage();
       const memoryUsedMb = (memoryAfter.heapUsed - memoryBefore.heapUsed) / (1024 * 1024);
 
-      const combinedStderr = stderrChunks.join('') + (result.error ? `[execution] ${result.error}\n` : '');
+      const combinedStderr =
+        stderrChunks.join('') + (result.error ? `[execution] ${result.error}\n` : '');
 
       const outputSize = Buffer.byteLength(stdoutChunks.join('') + combinedStderr, 'utf-8');
       if (outputSize > this.limits.maxOutputBytes) {
@@ -153,12 +153,17 @@ export class Sandbox {
       }
     `;
 
+    // In-process sandbox by design: code is pre-validated against the rule set
+    // and only sees the allowlisted scope. Replacing this with an isolated
+    // runtime (e.g. Vercel Sandbox) is the tracked follow-up.
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval
     const fn = new Function(...scopeKeys, wrappedBody);
 
     if (abortSignal.aborted) {
       return { output: undefined, stdout: '', error: 'Execution aborted before start' };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const result: SandboxResult = await fn(...scopeValues);
     return {
       output: result.output,
@@ -170,7 +175,10 @@ export class Sandbox {
 
 function stripTypeAnnotations(code: string): string {
   return code
-    .replace(/:\s*(string|number|boolean|void|unknown|never|object|undefined|null|bigint|symbol)(\[\])?(\s*[=,);])/g, '$3')
+    .replace(
+      /:\s*(string|number|boolean|void|unknown|never|object|undefined|null|bigint|symbol)(\[\])?(\s*[=,);])/g,
+      '$3',
+    )
     .replace(/<[^>]+>/g, '')
     .replace(/\bas\s+(string|number|boolean|unknown)\b/g, '')
     .replace(/\?\s*:/g, ':');

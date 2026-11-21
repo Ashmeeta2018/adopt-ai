@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
-
 import { cn } from '../utils/cn';
+
+import type { ReactNode } from 'react';
 
 interface EmberTextProps {
   children: ReactNode;
@@ -15,7 +15,5 @@ interface EmberTextProps {
  */
 export function EmberText({ children, className, as = 'span' }: EmberTextProps) {
   const Tag = as;
-  return (
-    <Tag className={cn('bg-ember bg-clip-text text-transparent', className)}>{children}</Tag>
-  );
+  return <Tag className={cn('bg-ember bg-clip-text text-transparent', className)}>{children}</Tag>;
 }

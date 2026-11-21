@@ -1,3 +1,5 @@
+import { ExecutionTimeoutError } from './errors';
+
 import type {
   AgentConfig,
   AgentRunRecord,
@@ -7,8 +9,7 @@ import type {
   TokenUsage,
   ToolResult,
   WorkflowEngine,
-} from './types;
-import { ExecutionTimeoutError } from './errors;
+} from './types';
 
 const MAX_TOOL_ITERATIONS = 20;
 
@@ -106,23 +107,39 @@ export class AgentExecutor {
 
   private emitStart(run: AgentRunRecord): void {
     for (const handler of this.handlers['run:start']) {
-      try { handler(run); } catch { /* Subscriber errors must not break execution. */ }
+      try {
+        handler(run);
+      } catch {
+        /* Subscriber errors must not break execution. */
+      }
     }
   }
 
   private emitComplete(run: AgentRunRecord): void {
     for (const handler of this.handlers['run:complete']) {
-      try { handler(run); } catch { /* Subscriber errors must not break execution. */ }
+      try {
+        handler(run);
+      } catch {
+        /* Subscriber errors must not break execution. */
+      }
     }
   }
 
   private emitError(run: AgentRunRecord, err: Error): void {
     for (const handler of this.handlers['run:error']) {
-      try { handler(run, err); } catch { /* Subscriber errors must not break execution. */ }
+      try {
+        handler(run, err);
+      } catch {
+        /* Subscriber errors must not break execution. */
+      }
     }
   }
 
-  async execute(agent: AgentConfig, input: unknown, trigger: RunTrigger = 'manual'): Promise<AgentRunRecord> {
+  async execute(
+    agent: AgentConfig,
+    input: unknown,
+    trigger: RunTrigger = 'manual',
+  ): Promise<AgentRunRecord> {
     const run = createRunRecord(agent, trigger, input, 'running');
     this.emitStart(run);
 
@@ -186,10 +203,7 @@ export class AgentExecutor {
     });
 
     try {
-      const result = await Promise.race([
-        this.execute(agent, input, trigger),
-        timeoutPromise,
-      ]);
+      const result = await Promise.race([this.execute(agent, input, trigger), timeoutPromise]);
       return result;
     } finally {
       if (timer) clearTimeout(timer);
@@ -197,7 +211,7 @@ export class AgentExecutor {
   }
 
   async executeBatch(
-    runs: Array<{ agent: AgentConfig; input: unknown; trigger?: RunTrigger }>,
+    runs: { agent: AgentConfig; input: unknown; trigger?: RunTrigger }[],
     concurrency = 5,
   ): Promise<AgentRunRecord[]> {
     const results: AgentRunRecord[] = [];
@@ -216,7 +230,7 @@ export class AgentExecutor {
           if (!item) break;
 
           slotCount++;
-          this.execute(item.agent, item.input, item.trigger)
+          void this.execute(item.agent, item.input, item.trigger)
             .then((record) => {
               results.push(record);
             })
@@ -237,7 +251,7 @@ export class AgentExecutor {
     agent: AgentConfig,
     input: unknown,
   ): Promise<{ output: unknown; tokenUsage: TokenUsage }> {
-    const messages: Array<{ role: 'system' | 'user' | 'assistant' | 'tool'; content: string }> = [
+    const messages: { role: 'system' | 'user' | 'assistant' | 'tool'; content: string }[] = [
       { role: 'system', content: agent.systemPrompt },
       { role: 'user', content: JSON.stringify(input) },
     ];

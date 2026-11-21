@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import type { ResourceType } from '@/lib/resources';
+
 import {
   getAllResourceSummaries,
   getAllResources,
@@ -7,7 +9,6 @@ import {
   getResource,
   typeAccentClass,
 } from '@/lib/resources';
-import type { ResourceType } from '@/lib/resources';
 
 // ── getAllResources ────────────────────────────────────────────
 describe('getAllResources', () => {
@@ -26,7 +27,12 @@ describe('getAllResources', () => {
 
   it('every resource has required frontmatter fields', () => {
     const validTypes: ResourceType[] = [
-      'Whitepaper', 'Playbook', 'Template', 'Talk', 'Code', 'Guide',
+      'Whitepaper',
+      'Playbook',
+      'Template',
+      'Talk',
+      'Code',
+      'Guide',
     ];
     for (const r of getAllResources()) {
       expect(r.slug, `${r.slug} missing slug`).toBeTruthy();
@@ -68,8 +74,7 @@ describe('getAllResourceSummaries', () => {
 
   it('does not include the raw MDX content', () => {
     for (const summary of getAllResourceSummaries()) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((summary as any).content).toBeUndefined();
+      expect(Object.keys(summary)).not.toContain('content');
     }
   });
 });
@@ -151,9 +156,7 @@ describe('getRelatedResources', () => {
 // ── typeAccentClass ───────────────────────────────────────────
 describe('typeAccentClass', () => {
   it('has an entry for every ResourceType', () => {
-    const types: ResourceType[] = [
-      'Whitepaper', 'Playbook', 'Template', 'Talk', 'Code', 'Guide',
-    ];
+    const types: ResourceType[] = ['Whitepaper', 'Playbook', 'Template', 'Talk', 'Code', 'Guide'];
     for (const t of types) {
       expect(typeAccentClass[t], `missing accent class for ${t}`).toBeTruthy();
     }

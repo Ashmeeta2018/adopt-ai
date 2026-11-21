@@ -1,37 +1,23 @@
-import type { PrismaClient } from "@adopt-ai/db";
-import { WorkspaceService } from "./service";
+import { WorkspaceService } from './service';
 
-export { WorkspaceService } from "./service";
+import type { PrismaClient } from '@adopt-ai/db';
+
+export { WorkspaceService } from './service';
 
 export {
   WorkspaceNotFoundError,
   InsufficientPermissionsError,
   PlanLimitExceededError,
   MemberAlreadyExistsError,
-} from "./errors";
+} from './errors';
 
-export {
-  PlanTier,
-  PlanTierSchema,
-} from "./types";
+export { PlanTier, PlanTierSchema } from './types';
 
-export {
-  getPlanLimits,
-  canPerformAction,
-  getPlanFeatures,
-  PLAN_LIMITS,
-} from "./limits";
+export { getPlanLimits, canPerformAction, getPlanFeatures, PLAN_LIMITS } from './limits';
 
-export {
-  requireRole,
-  requireOwner,
-  requireAdmin,
-  requireMember,
-  canAccessAgent,
-} from "./guards";
+export { requireRole, requireOwner, requireAdmin, requireMember, canAccessAgent } from './guards';
 
 export type {
-  PlanTier,
   WorkspaceLimits,
   WorkspaceSettings,
   WorkspaceMember,
@@ -42,7 +28,7 @@ export type {
   UsageTrendPoint,
   PlanDetails,
   UpgradeImpact,
-} from "./types";
+} from './types';
 
 export function createWorkspaceService(prisma: PrismaClient): WorkspaceService {
   return new WorkspaceService(prisma);

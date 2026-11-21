@@ -11,8 +11,8 @@ export * from './typography';
 export * from './spacing';
 
 import { colors, emberGradient, emberStops, hairlines } from './colors';
-import { fontFamilies, fontVariables, typeScale } from './typography';
 import { containers, motion, pagePadding, radii, shadows, spacing } from './spacing';
+import { fontFamilies, fontVariables, typeScale } from './typography';
 
 export const tokens = {
   colors,

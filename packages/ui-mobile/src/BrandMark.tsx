@@ -1,7 +1,5 @@
 import { Image, StyleSheet, type ImageSourcePropType, type ViewStyle } from 'react-native';
 
-import { nativeTokens } from '@adopt-ai/tokens/native';
-
 type BrandMarkVariant = 'mark' | 'lockup' | 'mono' | 'cream';
 
 interface BrandMarkProps {

@@ -1,20 +1,23 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BrandMarkNative } from '@/components/BrandMarkNative';
-import { unlockWithBiometrics } from '@/lib/biometric';
 import { useOktaAuth, useAuthStore } from '@/lib/auth';
+import { unlockWithBiometrics } from '@/lib/biometric';
 import { theme, withOpacity } from '@/lib/theme';
-import { ORG, USER } from '@/lib/persona';
-import { useEffect } from 'react';
+import { trpc } from '@/lib/trpc';
 
 export default function SignInScreen() {
   const router = useRouter();
   const { signIn: signInWithOkta } = useOktaAuth();
   const authenticated = useAuthStore((s) => s.authenticated);
   const hydrate = useAuthStore((s) => s.hydrate);
+  const { data: settings } = trpc.portal.getSettings.useQuery(undefined, {
+    enabled: authenticated,
+  });
 
   useEffect(() => {
     void hydrate();
@@ -33,6 +36,8 @@ export default function SignInScreen() {
     }
   };
 
+  const firstName = settings?.user.name.split(/\s+/)[0] ?? '';
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -43,14 +48,18 @@ export default function SignInScreen() {
         <View style={styles.top}>
           <BrandMarkNative size={96} variant="color" />
           <Text style={styles.eyebrow}>CLIENT PORTAL</Text>
-          <Text style={styles.h1}>{`Welcome back,\n${USER.firstName}.`}</Text>
-          <Text style={styles.sub}>{`${ORG.name} · Director of Ops`}</Text>
+          <Text style={styles.h1}>
+            {firstName ? `Welcome back,\n${firstName}.` : 'Welcome back.'}
+          </Text>
+          <Text style={styles.sub}>
+            {settings ? `${settings.organisation.name} · ${settings.role}` : 'Sign in to continue'}
+          </Text>
         </View>
 
         <View style={styles.bottom}>
           <Pressable
             style={styles.faceCard}
-            onPress={handleBiometric}
+            onPress={() => void handleBiometric()}
             accessibilityLabel="Unlock with Face ID"
             accessibilityRole="button"
           >

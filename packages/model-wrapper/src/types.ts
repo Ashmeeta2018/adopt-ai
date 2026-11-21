@@ -9,7 +9,7 @@ export type MessageRole = z.infer<typeof MessageRoleSchema>;
 export const ToolCallSchema = z.object({
   id: z.string(),
   name: z.string(),
-  arguments: z.record(z.unknown()),
+  arguments: z.record(z.string(), z.unknown()),
 });
 export type ToolCall = z.infer<typeof ToolCallSchema>;
 
@@ -64,6 +64,14 @@ export type UserMessage = z.infer<typeof UserMessageSchema>;
 export type AssistantMessage = z.infer<typeof AssistantMessageSchema>;
 export type ToolMessage = z.infer<typeof ToolMessageSchema>;
 
+export const ModelToolSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  /** JSON Schema describing the tool's input parameters. */
+  inputSchema: z.record(z.string(), z.unknown()),
+});
+export type ModelTool = z.infer<typeof ModelToolSchema>;
+
 export const ModelConfigSchema = z.object({
   model: z.string(),
   temperature: z.number().min(0).max(2).optional(),
@@ -71,6 +79,8 @@ export const ModelConfigSchema = z.object({
   topP: z.number().min(0).max(1).optional(),
   stopSequences: z.array(z.string()).optional(),
   systemPrompt: z.string().optional(),
+  /** Tool definitions the model may call. Execution stays with the caller. */
+  tools: z.array(ModelToolSchema).optional(),
 });
 export type ModelConfig = z.infer<typeof ModelConfigSchema>;
 

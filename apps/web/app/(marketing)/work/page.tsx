@@ -1,10 +1,12 @@
 import { AmbientOrbs, EmberText, Eyebrow, NeuralMesh, SiteFooter, SiteNav } from '@adopt-ai/ui-web';
-import type { Metadata } from 'next';
 import Link from 'next/link';
+
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Work — Adopt AI',
-  description: 'Real agents, real results. Case studies from teams that moved faster by automating the work that slowed them down.',
+  description:
+    'Real agents, real results. Case studies from teams that moved faster by automating the work that slowed them down.',
 };
 
 interface CaseCard {
@@ -59,15 +61,14 @@ export default function WorkPage() {
         <div className="mx-auto max-w-[1280px]">
           <Eyebrow className="mb-5">Work</Eyebrow>
           <h1
-            className="max-w-[860px] font-display"
+            className="font-display max-w-[860px]"
             style={{ fontSize: 64, letterSpacing: '-0.04em', lineHeight: 1.0 }}
           >
-            Real agents.{' '}
-            <EmberText>Real results.</EmberText>
+            Real agents. <EmberText>Real results.</EmberText>
           </h1>
-          <p className="mt-6 max-w-[540px] text-[18px] leading-[1.6] text-ink/65">
-            Teams that moved faster by automating the work that slowed them down.
-            Every case study is a real engagement — two-week build, results in weeks, not quarters.
+          <p className="text-ink/65 mt-6 max-w-[540px] text-[18px] leading-[1.6]">
+            Teams that moved faster by automating the work that slowed them down. Every case study
+            is a real engagement — two-week build, results in weeks, not quarters.
           </p>
         </div>
       </section>
@@ -76,31 +77,31 @@ export default function WorkPage() {
         <div className="mx-auto max-w-[1280px] space-y-6">
           {cards.map((card) => (
             <Link key={card.slug} href={`/work/${card.slug}`} className="group block">
-              <div className="relative overflow-hidden rounded-3xl border border-hairline bg-ink transition-all duration-200 hover:border-accent/40">
+              <div className="border-hairline bg-ink hover:border-accent/40 relative overflow-hidden rounded-3xl border transition-all duration-200">
                 <NeuralMesh dark style={{ position: 'absolute', inset: 0, opacity: 0.6 }} />
                 <AmbientOrbs intensity={0.5} dark />
                 <div className="relative grid grid-cols-1 gap-8 p-10 md:grid-cols-[1fr_auto]">
                   <div>
                     <div className="mb-4 flex items-center gap-4">
-                      <span className="font-mono text-eyebrow uppercase tracking-[0.22em] text-cream/40">
+                      <span className="text-eyebrow text-cream/40 font-mono uppercase tracking-[0.22em]">
                         {card.caseNumber}
                       </span>
-                      <span className="font-mono text-eyebrow uppercase tracking-[0.22em] text-accent">
+                      <span className="text-eyebrow text-accent font-mono uppercase tracking-[0.22em]">
                         {card.sector}
                       </span>
-                      <span className="font-mono text-eyebrow uppercase tracking-[0.22em] text-cream/40">
+                      <span className="text-eyebrow text-cream/40 font-mono uppercase tracking-[0.22em]">
                         {card.team}
                       </span>
                     </div>
                     <h2
-                      className="max-w-[640px] font-display text-cream"
+                      className="font-display text-cream max-w-[640px]"
                       style={{ fontSize: 36, letterSpacing: '-0.03em', lineHeight: 1.1 }}
                     >
                       {card.headline}
                       <EmberText>{card.headlineAccent}</EmberText>
                       {card.headlineAfter ?? ''}
                     </h2>
-                    <p className="mt-4 font-mono text-eyebrow uppercase tracking-[0.18em] text-cream/40">
+                    <p className="text-eyebrow text-cream/40 mt-4 font-mono uppercase tracking-[0.18em]">
                       {card.chrome}
                     </p>
                   </div>
@@ -108,16 +109,16 @@ export default function WorkPage() {
                   <div className="flex flex-col items-end justify-between gap-6 md:items-end">
                     <div className="text-right">
                       <div
-                        className="font-display font-semibold leading-none text-cream"
+                        className="font-display text-cream font-semibold leading-none"
                         style={{ fontSize: 56, letterSpacing: '-0.04em' }}
                       >
                         {card.heroStat}
                       </div>
-                      <div className="mt-1 font-mono text-eyebrow uppercase tracking-[0.18em] text-cream/40">
+                      <div className="text-eyebrow text-cream/40 mt-1 font-mono uppercase tracking-[0.18em]">
                         {card.heroStatLabel}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-cream/50 transition-colors group-hover:text-accent">
+                    <div className="text-cream/50 group-hover:text-accent flex items-center gap-2 font-mono text-xs uppercase tracking-wider transition-colors">
                       Read case study <span className="ml-1">→</span>
                     </div>
                   </div>

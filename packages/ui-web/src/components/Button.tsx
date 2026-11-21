@@ -1,6 +1,6 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
-
 import { cn } from '../utils/cn';
+
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 type Variant = 'primary' | 'dark' | 'ghost';
 type Size = 'sm' | 'md' | 'lg';
@@ -32,30 +32,24 @@ export function Button({
   ...rest
 }: ButtonProps) {
   const base = cn(
-    'inline-flex items-center gap-2 rounded-full font-display font-medium',
+    'font-display inline-flex items-center gap-2 rounded-full font-medium',
     'tracking-tight transition-[transform,box-shadow] duration-150 ease-out',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+    'focus-visible:outline-hidden focus-visible:ring-accent focus-visible:ring-2',
     'disabled:cursor-not-allowed disabled:opacity-60',
     sizeClasses[size],
   );
 
   const variantClasses: Record<Variant, string> = {
-    primary: cn(
-      'bg-ember-cta text-[#FFF8F0] shadow-cta',
-      'hover:scale-[1.02] active:scale-[0.99]',
-    ),
+    primary: cn('bg-ember-cta shadow-cta text-[#FFF8F0]', 'hover:scale-[1.02] active:scale-[0.99]'),
     dark: cn('bg-ink text-cream hover:opacity-90'),
     ghost: cn(
-      'bg-transparent border',
+      'border bg-transparent',
       dark ? 'border-hairline-dark text-cream' : 'border-hairline text-ink',
       'hover:bg-[rgba(248,244,238,0.04)]',
     ),
   };
 
-  const icon =
-    trailingIcon === null
-      ? null
-      : (trailingIcon ?? <span className="ml-0.5">→</span>);
+  const icon = trailingIcon === null ? null : (trailingIcon ?? <span className="ml-0.5">→</span>);
 
   return (
     <button type={type} className={cn(base, variantClasses[variant], className)} {...rest}>

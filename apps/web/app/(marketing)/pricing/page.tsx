@@ -1,6 +1,7 @@
 import { AmbientOrbs, Button, EmberText, Eyebrow, SiteFooter, SiteNav } from '@adopt-ai/ui-web';
-import type { Metadata } from 'next';
 import Link from 'next/link';
+
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Pricing',
@@ -37,6 +38,33 @@ const tiers = [
   },
 ];
 
+const localPackages = [
+  {
+    name: 'Local Presence',
+    price: '$1,500',
+    monthly: '+ $499 / mo',
+    sub: 'Website, three short videos a month, social posts and Google Business Profile',
+  },
+  {
+    name: 'AI Receptionist',
+    price: '$2,500',
+    monthly: '+ $599 / mo',
+    sub: 'Answers questions, books appointments and follows up on every lead',
+  },
+  {
+    name: 'Content Engine',
+    price: '$750–1,500',
+    monthly: 'per month · by volume',
+    sub: 'Short videos, posts and articles every month, in your voice',
+  },
+  {
+    name: 'AI Visibility',
+    price: '$399–799',
+    monthly: 'per month',
+    sub: 'Reviews, listings, and what AI answers say about your business',
+  },
+];
+
 export default function PricingPage() {
   return (
     <main className="bg-cream text-ink">
@@ -61,19 +89,19 @@ export default function PricingPage() {
               key={t.name}
               className={
                 t.dark
-                  ? 'relative rounded-3xl border border-hairline-dark bg-ink p-8 text-cream'
-                  : 'relative rounded-3xl border border-hairline bg-paper p-8'
+                  ? 'border-hairline-dark bg-ink text-cream relative rounded-3xl border p-8'
+                  : 'border-hairline bg-paper relative rounded-3xl border p-8'
               }
             >
               {t.flag && (
-                <div className="absolute -top-3 left-8 rounded-full bg-ember-cta px-3 py-1 font-mono text-eyebrow uppercase tracking-[0.18em] text-cream">
+                <div className="bg-ember-cta text-eyebrow text-cream absolute -top-3 left-8 rounded-full px-3 py-1 font-mono uppercase tracking-[0.18em]">
                   {t.flag}
                 </div>
               )}
               <h3 className="font-display text-[44px] font-medium tracking-tight">{t.name}</h3>
-              <div className="mt-6 font-display text-[28px] font-medium">{t.build}</div>
-              <div className={t.dark ? 'mt-1 text-cream/65' : 'mt-1 text-ink/65'}>{t.operate}</div>
-              <div className={t.dark ? 'mt-6 text-cream/65' : 'mt-6 text-ink/65'}>{t.sub}</div>
+              <div className="font-display mt-6 text-[28px] font-medium">{t.build}</div>
+              <div className={t.dark ? 'text-cream/65 mt-1' : 'text-ink/65 mt-1'}>{t.operate}</div>
+              <div className={t.dark ? 'text-cream/65 mt-6' : 'text-ink/65 mt-6'}>{t.sub}</div>
               <div className="mt-10">
                 <Link href="/book" className="block">
                   <Button variant={t.dark ? 'primary' : 'dark'} className="w-full">
@@ -86,16 +114,48 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="border-t border-hairline px-14 py-24">
+      <section className="border-hairline border-t px-14 py-24">
         <div className="mx-auto max-w-[1080px] text-center">
           <h2 className="font-display text-[48px] tracking-[-0.035em]">
-            The average Spark pays back in under{' '}
-            <EmberText>eight weeks</EmberText>.
+            The average Spark pays back in under <EmberText>eight weeks</EmberText>.
           </h2>
-          <div className="mt-10 flex flex-wrap justify-center gap-x-16 gap-y-6 font-mono text-eyebrow uppercase tracking-[0.18em] text-ink/60">
+          <div className="text-eyebrow text-ink/60 mt-10 flex flex-wrap justify-center gap-x-16 gap-y-6 font-mono uppercase tracking-[0.18em]">
             <span>15+ hrs/wk saved</span>
             <span>8 wks avg payback</span>
             <span>$0 per-seat fees</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="local-business" className="border-hairline scroll-mt-24 border-t px-14 py-24">
+        <div className="mx-auto max-w-[1280px]">
+          <div className="text-center">
+            <Eyebrow className="mb-5">Local Business Growth · Monthly packages</Eyebrow>
+            <h2 className="font-display text-[48px] tracking-[-0.035em]">
+              Run a local business? <EmberText>Start from $399 a month.</EmberText>
+            </h2>
+            <p className="text-ink/65 mx-auto mt-6 max-w-[640px] text-[19px] leading-[1.55]">
+              Four packages for owner-run businesses. Start with one or combine them. You keep
+              ownership of every account we set up.
+            </p>
+          </div>
+          <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+            {localPackages.map((p) => (
+              <article key={p.name} className="border-hairline bg-paper rounded-3xl border p-7">
+                <h3 className="font-display text-[28px] font-medium tracking-tight">{p.name}</h3>
+                <div className="font-display mt-5 text-[24px] font-medium">{p.price}</div>
+                <div className="text-ink/65 mt-1">{p.monthly}</div>
+                <p className="text-ink/65 mt-5 text-[15.5px] leading-[1.55]">{p.sub}</p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <Link href="/services#local-business">
+              <Button variant="ghost">What each package includes</Button>
+            </Link>
+            <Link href="/book">
+              <Button variant="dark">Talk about your business</Button>
+            </Link>
           </div>
         </div>
       </section>

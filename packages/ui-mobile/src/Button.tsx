@@ -1,7 +1,14 @@
-import { StyleSheet, Text, type TextStyle, TouchableOpacity, type ViewStyle, ActivityIndicator } from 'react-native';
-import type { ReactNode } from 'react';
-
 import { nativeTokens } from '@adopt-ai/tokens/native';
+import {
+  StyleSheet,
+  Text,
+  type TextStyle,
+  TouchableOpacity,
+  type ViewStyle,
+  ActivityIndicator,
+} from 'react-native';
+
+import type { ReactNode } from 'react';
 
 type Variant = 'primary' | 'dark' | 'ghost';
 type Size = 'sm' | 'md' | 'lg';
@@ -90,9 +97,7 @@ export function Button({
         />
       ) : (
         <>
-          <Text style={[styles.text, sizeStyle.text, variantStyle.text]}>
-            {children}
-          </Text>
+          <Text style={[styles.text, sizeStyle.text, variantStyle.text]}>{children}</Text>
           {icon}
         </>
       )}

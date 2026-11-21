@@ -19,7 +19,7 @@ export function NeuralMesh({ rows = 8, cols = 14, dark = false, style }: NeuralM
     }
   }
 
-  const lines: Array<[[number, number], [number, number]]> = [];
+  const lines: [[number, number], [number, number]][] = [];
   let seed = 7;
   const rnd = () => {
     seed = (seed * 9301 + 49297) % 233280;

@@ -1,4 +1,9 @@
-import type { PrismaClient, Role } from "@adopt-ai/db";
+import {
+  WorkspaceNotFoundError,
+  InsufficientPermissionsError,
+  MemberAlreadyExistsError,
+} from './errors';
+import { getPlanLimits, getPlanFeatures, canPerformAction } from './limits';
 import {
   type PlanTier,
   type WorkspaceDashboard,
@@ -9,23 +14,15 @@ import {
   type UsageTrendPoint,
   type PlanDetails,
   type UpgradeImpact,
-} from "./types";
-import { PlanTier as PlanTierValues, PlanTierSchema } from "./types";
-import {
-  getPlanLimits,
-  getPlanFeatures,
-  canPerformAction,
-} from "./limits";
-import {
-  WorkspaceNotFoundError,
-  InsufficientPermissionsError,
-  MemberAlreadyExistsError,
-} from "./errors";
+} from './types';
+import { PlanTier as PlanTierValues, PlanTierSchema } from './types';
+
+import type { PrismaClient, Role } from '@adopt-ai/db';
 
 const PLAN_NAMES: Record<PlanTier, string> = {
-  [PlanTierValues.SPARK]: "Spark",
-  [PlanTierValues.LIFT]: "Lift",
-  [PlanTierValues.SCALE]: "Scale",
+  [PlanTierValues.SPARK]: 'Spark',
+  [PlanTierValues.LIFT]: 'Lift',
+  [PlanTierValues.SCALE]: 'Scale',
 };
 
 const PLAN_PRICES: Record<PlanTier, number> = {
@@ -34,11 +31,7 @@ const PLAN_PRICES: Record<PlanTier, number> = {
   [PlanTierValues.SCALE]: 199,
 };
 
-const PLAN_ORDER: PlanTier[] = [
-  PlanTierValues.SPARK,
-  PlanTierValues.LIFT,
-  PlanTierValues.SCALE,
-];
+const PLAN_ORDER: PlanTier[] = [PlanTierValues.SPARK, PlanTierValues.LIFT, PlanTierValues.SCALE];
 
 function toWorkspaceMember(m: {
   userId: string;
@@ -63,10 +56,7 @@ export class WorkspaceService {
     this.db = db;
   }
 
-  async getWorkspace(
-    organisationId: string,
-    currentUserId: string,
-  ): Promise<WorkspaceDashboard> {
+  async getWorkspace(organisationId: string, currentUserId: string): Promise<WorkspaceDashboard> {
     const [org, membership] = await Promise.all([
       this.db.organisation.findUnique({
         where: { id: organisationId },
@@ -86,11 +76,7 @@ export class WorkspaceService {
       throw new WorkspaceNotFoundError(organisationId);
     }
     if (!membership) {
-      throw new InsufficientPermissionsError(
-        currentUserId,
-        organisationId,
-        "view workspace",
-      );
+      throw new InsufficientPermissionsError(currentUserId, organisationId, 'view workspace');
     }
 
     const plan = PlanTierSchema.parse(org.plan);
@@ -98,7 +84,7 @@ export class WorkspaceService {
 
     const [activeAgents, memberCount, runsThisMonth] = await Promise.all([
       this.db.agent.count({
-        where: { organisationId, deletedAt: null, status: "RUNNING" },
+        where: { organisationId, deletedAt: null, status: 'RUNNING' },
       }),
       this.db.membership.count({ where: { organisationId } }),
       this.db.agentRun.count({
@@ -119,7 +105,8 @@ export class WorkspaceService {
 
   async updateSettings(
     organisationId: string,
-    settings: Partial<WorkspaceSettings>,
+    // TODO: persist settings — currently only bumps updatedAt.
+    _settings: Partial<WorkspaceSettings>,
   ): Promise<void> {
     const org = await this.db.organisation.findUnique({
       where: { id: organisationId },
@@ -149,7 +136,7 @@ export class WorkspaceService {
     const plan = PlanTierSchema.parse(org.plan);
     const [agentsActive, members, runsThisMonth] = await Promise.all([
       this.db.agent.count({
-        where: { organisationId, deletedAt: null, status: "RUNNING" },
+        where: { organisationId, deletedAt: null, status: 'RUNNING' },
       }),
       this.db.membership.count({ where: { organisationId } }),
       this.db.agentRun.count({
@@ -178,17 +165,13 @@ export class WorkspaceService {
     const memberships = await this.db.membership.findMany({
       where: { organisationId },
       include: { user: true },
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: 'asc' },
     });
 
     return memberships.map(toWorkspaceMember);
   }
 
-  async inviteMember(
-    organisationId: string,
-    email: string,
-    role: Role,
-  ): Promise<WorkspaceMember> {
+  async inviteMember(organisationId: string, email: string, role: Role): Promise<WorkspaceMember> {
     const org = await this.db.organisation.findUnique({
       where: { id: organisationId },
     });
@@ -201,11 +184,9 @@ export class WorkspaceService {
       where: { organisationId },
     });
 
-    const check = canPerformAction("add_member", plan, { members: memberCount });
+    const check = canPerformAction('add_member', plan, { members: memberCount });
     if (!check.allowed) {
-      throw new Error(
-        check.reason ?? "Team member limit reached",
-      );
+      throw new Error(check.reason ?? 'Team member limit reached');
     }
 
     const user = await this.db.user.findUnique({ where: { email } });
@@ -244,10 +225,10 @@ export class WorkspaceService {
       },
     });
     if (!membership) {
-      throw new InsufficientPermissionsError(userId, organisationId, "remove");
+      throw new InsufficientPermissionsError(userId, organisationId, 'remove');
     }
-    if (membership.role === "OWNER") {
-      throw new InsufficientPermissionsError(userId, organisationId, "remove owner");
+    if (membership.role === 'OWNER') {
+      throw new InsufficientPermissionsError(userId, organisationId, 'remove owner');
     }
 
     await this.db.membership.delete({
@@ -255,11 +236,7 @@ export class WorkspaceService {
     });
   }
 
-  async updateRole(
-    organisationId: string,
-    userId: string,
-    role: Role,
-  ): Promise<WorkspaceMember> {
+  async updateRole(organisationId: string, userId: string, role: Role): Promise<WorkspaceMember> {
     const org = await this.db.organisation.findUnique({
       where: { id: organisationId },
     });
@@ -274,10 +251,10 @@ export class WorkspaceService {
       include: { user: true },
     });
     if (!membership) {
-      throw new InsufficientPermissionsError(userId, organisationId, "update role");
+      throw new InsufficientPermissionsError(userId, organisationId, 'update role');
     }
-    if (membership.role === "OWNER" && role !== "OWNER") {
-      throw new InsufficientPermissionsError(userId, organisationId, "demote owner");
+    if (membership.role === 'OWNER' && role !== 'OWNER') {
+      throw new InsufficientPermissionsError(userId, organisationId, 'demote owner');
     }
 
     const updated = await this.db.membership.update({
@@ -289,10 +266,7 @@ export class WorkspaceService {
     return toWorkspaceMember(updated);
   }
 
-  async getMembership(
-    userId: string,
-    organisationId: string,
-  ): Promise<Role | null> {
+  async getMembership(userId: string, organisationId: string): Promise<Role | null> {
     const membership = await this.db.membership.findUnique({
       where: {
         userId_organisationId: { userId, organisationId },
@@ -313,7 +287,7 @@ export class WorkspaceService {
 
     const [agentsActive, members, runs, reports] = await Promise.all([
       this.db.agent.count({
-        where: { organisationId, deletedAt: null, status: "RUNNING" },
+        where: { organisationId, deletedAt: null, status: 'RUNNING' },
       }),
       this.db.membership.count({ where: { organisationId } }),
       this.db.agentRun.count({
@@ -325,18 +299,12 @@ export class WorkspaceService {
       }),
     ]);
 
-    const costThisMonthUsd = reports.reduce(
-      (sum, r) => sum + Number(r.costReducedUsd),
-      0,
-    );
+    const costThisMonthUsd = reports.reduce((sum, r) => sum + Number(r.costReducedUsd), 0);
 
     return { agentsActive, members, runsThisMonth: runs, costThisMonthUsd };
   }
 
-  async getUsageTrend(
-    organisationId: string,
-    months: number = 6,
-  ): Promise<UsageTrendPoint[]> {
+  async getUsageTrend(organisationId: string, months = 6): Promise<UsageTrendPoint[]> {
     const org = await this.db.organisation.findUnique({
       where: { id: organisationId },
     });
@@ -356,7 +324,7 @@ export class WorkspaceService {
           where: {
             organisationId,
             deletedAt: null,
-            status: "RUNNING",
+            status: 'RUNNING',
             createdAt: { lt: end },
           },
         }),
@@ -378,10 +346,7 @@ export class WorkspaceService {
         }),
       ]);
 
-      const costUsd = reports.reduce(
-        (sum, r) => sum + Number(r.costReducedUsd),
-        0,
-      );
+      const costUsd = reports.reduce((sum, r) => sum + Number(r.costReducedUsd), 0);
 
       points.push({ month: label, agentsActive: agents, members: memberCount, runs, costUsd });
     }
@@ -407,10 +372,7 @@ export class WorkspaceService {
     };
   }
 
-  async canUpgrade(
-    organisationId: string,
-    targetPlan: PlanTier,
-  ): Promise<boolean> {
+  async canUpgrade(organisationId: string, targetPlan: PlanTier): Promise<boolean> {
     const org = await this.db.organisation.findUnique({
       where: { id: organisationId },
     });
@@ -424,10 +386,7 @@ export class WorkspaceService {
     return targetIndex > currentIndex;
   }
 
-  async getUpgradeImpact(
-    organisationId: string,
-    targetPlan: PlanTier,
-  ): Promise<UpgradeImpact> {
+  async getUpgradeImpact(organisationId: string, targetPlan: PlanTier): Promise<UpgradeImpact> {
     const org = await this.db.organisation.findUnique({
       where: { id: organisationId },
     });

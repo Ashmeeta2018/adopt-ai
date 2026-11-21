@@ -1,4 +1,5 @@
 import { EmberText, Eyebrow, SiteFooter, SiteNav } from '@adopt-ai/ui-web';
+
 import type { Metadata } from 'next';
 
 import { ContactForm } from '@/components/contact/ContactForm';
@@ -22,12 +23,12 @@ export default function ContactPage() {
             >
               Tell us about the workflow <EmberText>eating someone&rsquo;s day.</EmberText>
             </h1>
-            <p className="mt-8 max-w-[480px] text-[19px] leading-[1.55] text-ink/65">
-              A 30-minute call, no deck. If we can&rsquo;t show you the math on how it pays back,
-              we won&rsquo;t take the project.
+            <p className="text-ink/65 mt-8 max-w-[480px] text-[19px] leading-[1.55]">
+              A 30-minute call, no deck. If we can&rsquo;t show you the math on how it pays back, we
+              won&rsquo;t take the project.
             </p>
 
-            <div className="mt-12 space-y-3 font-mono text-eyebrow uppercase tracking-[0.18em] text-ink/55">
+            <div className="text-eyebrow text-ink/55 mt-12 space-y-3 font-mono uppercase tracking-[0.18em]">
               <div>hello@adoptai.com</div>
               <div>+1 (555) 382-3830</div>
               <div>500 Enterprise Way, Suite 100 · Orlando, FL 32801</div>

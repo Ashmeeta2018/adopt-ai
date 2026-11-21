@@ -30,9 +30,7 @@ test.describe('Portal login page (/portal)', () => {
 
   test('shows SSO button', async ({ page }) => {
     await page.goto('/portal');
-    await expect(
-      page.getByRole('button', { name: /SSO|Okta/i }),
-    ).toBeVisible();
+    await expect(page.getByRole('button', { name: /SSO|Okta/i })).toBeVisible();
   });
 
   test('shows security compliance footer', async ({ page }) => {
@@ -52,42 +50,36 @@ test.describe('Portal login page (/portal)', () => {
 // ── Portal login form interaction ─────────────────────────────
 test.describe('Portal login form', () => {
   test('accepts a valid email and shows confirmation', async ({ page }) => {
-    // We don't have a real mail server — just test that the form submits
-    // successfully to the tRPC endpoint and shows the confirmation message.
-    // The tRPC mock layer (or real dev server) handles the mutation.
+    // Stub Auth.js so no email is sent and the test does not depend on a
+    // Resend key. The rate-limit step still runs against the real server.
+    await page.route('**/api/auth/providers', (route) =>
+      route.fulfill({
+        json: { resend: { id: 'resend', name: 'Resend', type: 'email' } },
+      }),
+    );
+    await page.route('**/api/auth/signin/resend*', (route) =>
+      route.fulfill({
+        json: { url: 'http://localhost/api/auth/verify-request?provider=resend&type=email' },
+      }),
+    );
+
     await page.goto('/portal');
+    await page.getByRole('textbox').first().fill('delivered@resend.dev');
 
-    const emailInput = page.getByRole('textbox').first();
-    await emailInput.fill('maya@apex.example');
+    const rateLimitResponse = page.waitForResponse('**/api/trpc/auth.requestMagicLink**');
+    await page.getByRole('button', { name: /sign.?in link/i }).click();
 
-    const submitBtn = page.getByRole('button', { name: /sign.?in link|send/i });
-    await submitBtn.click();
-
-    // Either shows confirmation or an error — we just check it responded.
-    // In CI the dev tRPC endpoint is live so it should show the confirmation.
-    await expect(
-      page.locator('text=Check your inbox').or(
-        page.locator('text=sent you a sign-in link'),
-      ).or(
-        // If rate-limited or server error
-        page.locator('[role="alert"]'),
-      ),
-    ).toBeVisible({ timeout: 10_000 });
+    expect((await rateLimitResponse).status()).toBe(200);
+    await expect(page.getByText('Check your inbox')).toBeVisible({ timeout: 10_000 });
   });
 
   test('shows an error for an invalid email', async ({ page }) => {
     await page.goto('/portal');
 
-    const emailInput = page.getByRole('textbox').first();
-    await emailInput.fill('not-an-email');
+    await page.getByRole('textbox').first().fill('not-an-email');
+    await page.getByRole('button', { name: /sign.?in link/i }).click();
 
-    const submitBtn = page.getByRole('button', { name: /sign.?in link|send/i });
-    await submitBtn.click();
-
-    // Zod validation error should appear
-    await expect(
-      page.locator('[role="alert"]').or(page.locator('text=valid email')),
-    ).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText(/invalid email/i)).toBeVisible({ timeout: 5_000 });
   });
 });
 
@@ -117,7 +109,7 @@ test.describe('API health', () => {
   test('/api/health returns { ok: true }', async ({ request }) => {
     const response = await request.get('/api/health');
     expect(response.status()).toBe(200);
-    const body = await response.json() as { ok: boolean; ts?: string };
+    const body = (await response.json()) as { ok: boolean; ts?: string };
     expect(body.ok).toBe(true);
     expect(body.ts).toBeTruthy();
   });

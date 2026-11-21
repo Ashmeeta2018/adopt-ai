@@ -1,6 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
-
 import { nativeTokens } from '@adopt-ai/tokens/native';
+import { StyleSheet, Text, View } from 'react-native';
 
 interface MetricProps {
   value: string;

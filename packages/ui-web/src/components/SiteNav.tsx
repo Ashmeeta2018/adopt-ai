@@ -1,20 +1,13 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
+import { useState } from 'react';
 
-import { BrandMark } from './BrandMark';
 import { cn } from '../utils/cn';
 
-type NavCurrent =
-  | 'home'
-  | 'services'
-  | 'work'
-  | 'resources'
-  | 'blog'
-  | 'about'
-  | 'pricing'
-  | null;
+import { BrandMark } from './BrandMark';
+
+type NavCurrent = 'home' | 'services' | 'work' | 'resources' | 'blog' | 'about' | 'pricing' | null;
 
 interface SiteNavProps {
   dark?: boolean;
@@ -34,7 +27,15 @@ const items = [
 
 function MenuIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
       <line x1="3" y1="6" x2="21" y2="6" />
       <line x1="3" y1="12" x2="21" y2="12" />
       <line x1="3" y1="18" x2="21" y2="18" />
@@ -44,7 +45,15 @@ function MenuIcon() {
 
 function CloseIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
       <line x1="6" y1="6" x2="18" y2="18" />
       <line x1="6" y1="18" x2="18" y2="6" />
     </svg>
@@ -66,16 +75,13 @@ export function SiteNav({
         sticky ? 'sticky top-0' : 'relative',
         glass
           ? cn(
-              'backdrop-blur-md backdrop-saturate-140 border-b',
+              'backdrop-saturate-140 border-b backdrop-blur-md',
               dark
-                ? 'bg-[rgba(15,8,5,0.55)] border-hairline-dark'
-                : 'bg-[rgba(248,244,238,0.65)] border-hairline',
+                ? 'border-hairline-dark bg-[rgba(15,8,5,0.55)]'
+                : 'border-hairline bg-[rgba(248,244,238,0.65)]',
             )
           : sticky
-            ? cn(
-                'border-b',
-                dark ? 'bg-void border-hairline-dark' : 'bg-cream border-hairline',
-              )
+            ? cn('border-b', dark ? 'bg-void border-hairline-dark' : 'bg-cream border-hairline')
             : '',
       )}
     >
@@ -86,7 +92,7 @@ export function SiteNav({
       {/* Desktop nav */}
       <nav
         className={cn(
-          'hidden items-center gap-7 font-body text-[14px] md:flex',
+          'font-body hidden items-center gap-7 text-[14px] md:flex',
           dark ? 'text-cream/65' : 'text-ink/65',
         )}
         aria-label="Main navigation"
@@ -111,17 +117,20 @@ export function SiteNav({
       <div className="flex items-center gap-3">
         <Link
           href="/portal"
-          className={cn('hidden font-body text-[15px] md:inline', dark ? 'text-cream/65' : 'text-ink/65')}
+          className={cn(
+            'font-body hidden text-[15px] md:inline',
+            dark ? 'text-cream/65' : 'text-ink/65',
+          )}
         >
           Sign in
         </Link>
         <Link
           href="/book"
           className={cn(
-            'hidden md:inline-flex items-center gap-2 rounded-full font-display font-medium',
+            'font-display hidden items-center gap-2 rounded-full font-medium md:inline-flex',
             'px-[18px] py-[12px] text-[14px] tracking-tight',
             'transition-[transform,box-shadow] duration-150 ease-out',
-            'bg-ember-cta text-[#FFF8F0] shadow-cta',
+            'bg-ember-cta shadow-cta text-[#FFF8F0]',
             'hover:scale-[1.02] active:scale-[0.99]',
           )}
         >
@@ -131,7 +140,10 @@ export function SiteNav({
         {/* Mobile hamburger */}
         <button
           type="button"
-          className={cn('flex items-center justify-center md:hidden', dark ? 'text-cream' : 'text-ink')}
+          className={cn(
+            'flex items-center justify-center md:hidden',
+            dark ? 'text-cream' : 'text-ink',
+          )}
           onClick={() => setMenuOpen((v) => !v)}
           aria-label={menuOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={menuOpen}
@@ -168,7 +180,12 @@ export function SiteNav({
                 </Link>
               );
             })}
-            <div className={cn('mt-2 flex flex-col gap-3 border-t pt-4', dark ? 'border-hairline-dark' : 'border-hairline')}>
+            <div
+              className={cn(
+                'mt-2 flex flex-col gap-3 border-t pt-4',
+                dark ? 'border-hairline-dark' : 'border-hairline',
+              )}
+            >
               <Link
                 href="/portal"
                 onClick={() => setMenuOpen(false)}
@@ -180,10 +197,10 @@ export function SiteNav({
                 href="/book"
                 onClick={() => setMenuOpen(false)}
                 className={cn(
-                  'inline-flex w-full items-center justify-center gap-2 rounded-full font-display font-medium',
+                  'font-display inline-flex w-full items-center justify-center gap-2 rounded-full font-medium',
                   'px-[18px] py-[12px] text-[14px] tracking-tight',
                   'transition-[transform,box-shadow] duration-150 ease-out',
-                  'bg-ember-cta text-[#FFF8F0] shadow-cta',
+                  'bg-ember-cta shadow-cta text-[#FFF8F0]',
                   'hover:scale-[1.02] active:scale-[0.99]',
                 )}
               >

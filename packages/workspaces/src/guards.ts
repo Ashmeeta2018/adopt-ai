@@ -1,5 +1,6 @@
-import type { PrismaClient, Role } from "@adopt-ai/db";
-import { InsufficientPermissionsError } from "./errors";
+import { InsufficientPermissionsError } from './errors';
+
+import type { PrismaClient, Role } from '@adopt-ai/db';
 
 type RoleChecker = (role: Role) => boolean;
 
@@ -16,8 +17,8 @@ export async function requireOwner(
   const membership = await prisma.membership.findUnique({
     where: { userId_organisationId: { userId, organisationId } },
   });
-  if (!membership || membership.role !== "OWNER") {
-    throw new InsufficientPermissionsError(userId, organisationId, "owner-only action");
+  if (membership?.role !== 'OWNER') {
+    throw new InsufficientPermissionsError(userId, organisationId, 'owner-only action');
   }
 }
 
@@ -29,8 +30,8 @@ export async function requireAdmin(
   const membership = await prisma.membership.findUnique({
     where: { userId_organisationId: { userId, organisationId } },
   });
-  if (!membership || (membership.role !== "OWNER" && membership.role !== "ADMIN")) {
-    throw new InsufficientPermissionsError(userId, organisationId, "admin-only action");
+  if (!membership || (membership.role !== 'OWNER' && membership.role !== 'ADMIN')) {
+    throw new InsufficientPermissionsError(userId, organisationId, 'admin-only action');
   }
 }
 
@@ -43,7 +44,7 @@ export async function requireMember(
     where: { userId_organisationId: { userId, organisationId } },
   });
   if (!membership) {
-    throw new InsufficientPermissionsError(userId, organisationId, "member-only action");
+    throw new InsufficientPermissionsError(userId, organisationId, 'member-only action');
   }
 }
 

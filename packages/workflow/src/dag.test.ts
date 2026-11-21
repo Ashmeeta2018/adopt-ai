@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import {
   validateDAG,
   topologicalSort,
@@ -6,9 +7,10 @@ import {
   getDescendants,
   getExecutionBatches,
 } from './dag';
+
 import type { WorkflowNode, WorkflowEdge } from './types';
 
-function node(id: string, kind = 'agent' as const): WorkflowNode {
+function node(id: string, kind: WorkflowNode['kind'] = 'agent'): WorkflowNode {
   return { id, kind, label: id, config: {}, position: { x: 0, y: 0 } };
 }
 
@@ -41,9 +43,7 @@ describe('validateDAG', () => {
     const edges = [edge('e1', 'a', 'missing')];
     const result = validateDAG(nodes, edges);
     expect(result.valid).toBe(false);
-    expect(result.errors).toContain(
-      'Edge "e1" references unknown target node "missing"',
-    );
+    expect(result.errors).toContain('Edge "e1" references unknown target node "missing"');
   });
 
   it('rejects duplicate edges', () => {
@@ -97,7 +97,7 @@ describe('getRootNodes', () => {
     const edges = [edge('e1', 'a', 'b'), edge('e2', 'a', 'c')];
     const roots = getRootNodes(nodes, edges);
     expect(roots).toHaveLength(1);
-    expect(roots[0].id).toBe('a');
+    expect(roots[0]?.id).toBe('a');
   });
 
   it('returns all nodes when there are no edges', () => {
@@ -141,7 +141,7 @@ describe('getExecutionBatches', () => {
     ];
     const batches = getExecutionBatches(nodes, edges);
     expect(batches[0]).toEqual(['a']);
-    expect(batches[1].sort()).toEqual(['b', 'c']);
+    expect(batches[1]?.sort()).toEqual(['b', 'c']);
     expect(batches[2]).toEqual(['d']);
   });
 
@@ -149,6 +149,6 @@ describe('getExecutionBatches', () => {
     const nodes = [node('a'), node('b'), node('c')];
     const batches = getExecutionBatches(nodes, []);
     expect(batches).toHaveLength(1);
-    expect(batches[0].sort()).toEqual(['a', 'b', 'c']);
+    expect(batches[0]?.sort()).toEqual(['a', 'b', 'c']);
   });
 });

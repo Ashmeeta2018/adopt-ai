@@ -2,8 +2,8 @@ import { PrismaNeon } from '@prisma/adapter-neon';
 import { PrismaClient } from '@prisma/client';
 
 function makePrismaClient() {
-  // PrismaNeon v6.x accepts a PoolConfig object, not a Pool instance.
-  // It manages the Neon WebSocket pool internally — no binary engine required.
+  // PrismaNeon v6.x accepts a PoolConfig object — it manages the Neon WebSocket
+  // pool internally. No binary engine required. Node 22 has native WebSocket.
   const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL });
   return new PrismaClient({
     adapter,

@@ -1,26 +1,32 @@
-import Anthropic from '@anthropic-ai/sdk';
-import type { ChatMessage, CompletionResponse, ModelConfig, StreamChunk, TokenUsage } from '@adopt-ai/model-wrapper/types';
-import type { ModelInfo } from '@adopt-ai/model-wrapper/provider';
-import type { ClaudeEnv } from './env;
-import { getClaudeEnv } from './env;
-import { ClaudeProvider } from './provider;
-import type { AgentConfig, Agent } from './agent;
-import { createAgent } from './agent;
+import { createAgent } from './agent';
+import { getClaudeEnv } from './env';
+import { ClaudeProvider } from './provider';
 
-export { getClaudeEnv, type ClaudeEnv } from './env;
-export { ClaudeProvider } from './provider;
-export type { ClaudeTool, ToolExecutorFn, ToolUseBlock, ToolResultBlock } from './tools;
-export { claudeTool, executeToolUse, toolFromDefinition, toolUseLoop } from './tools;
-export type { CacheStrategy, CacheStats } from './caching;
-export { withCacheControl, withCachedTools, buildCachedMessages, getCacheStats } from './caching;
-export type { AgentConfig, AgentState, AgentEvent, Agent } from './agent;
-export { createAgent } from './agent;
+import type { AgentConfig, Agent } from './agent';
+import type { ClaudeEnv } from './env';
+import type { ModelInfo } from '@adopt-ai/model-wrapper/provider';
+import type {
+  ChatMessage,
+  CompletionResponse,
+  ModelConfig,
+  StreamChunk,
+  TokenUsage,
+} from '@adopt-ai/model-wrapper/types';
+
+export { getClaudeEnv, type ClaudeEnv } from './env';
+export { ClaudeProvider } from './provider';
+export type { ClaudeTool, ToolExecutorFn, ToolUseBlock, ToolResultBlock } from './tools';
+export { claudeTool, executeToolUse, toolFromDefinition, toolUseLoop } from './tools';
+export type { CacheStrategy, CacheStats } from './caching';
+export { withCacheControl, withCachedTools, buildCachedMessages, getCacheStats } from './caching';
+export type { AgentConfig, AgentState, AgentEvent, Agent } from './agent';
+export { createAgent } from './agent';
 export {
   inboxTriageSystem,
   documentExtractionSystem,
   supportRoutingSystem,
   workflowAnalysisSystem,
-} from './prompt-templates;
+} from './prompt-templates';
 
 export interface ClaudeClient {
   complete(messages: ChatMessage[], config?: Partial<ModelConfig>): Promise<CompletionResponse>;
@@ -32,20 +38,23 @@ export interface ClaudeClient {
   getProvider(): ClaudeProvider;
 }
 
-function toEnvOverrides(env: Partial<ClaudeEnv> | undefined): Partial<Record<string, string | undefined>> {
+function toEnvOverrides(
+  env: Partial<ClaudeEnv> | undefined,
+): Partial<Record<string, string | undefined>> {
   if (!env) return {};
   const overrides: Partial<Record<string, string | undefined>> = {};
-  if (env.ANTHROPIC_API_KEY !== undefined) overrides.ANTHROPIC_API_KEY = env.ANTHROPIC_API_KEY;
+  if (env.AI_GATEWAY_API_KEY !== undefined) overrides.AI_GATEWAY_API_KEY = env.AI_GATEWAY_API_KEY;
   if (env.CLAUDE_MODEL !== undefined) overrides.CLAUDE_MODEL = env.CLAUDE_MODEL;
-  if (env.CLAUDE_MAX_TOKENS !== undefined) overrides.CLAUDE_MAX_TOKENS = String(env.CLAUDE_MAX_TOKENS);
-  if (env.CLAUDE_TEMPERATURE !== undefined) overrides.CLAUDE_TEMPERATURE = String(env.CLAUDE_TEMPERATURE);
+  if (env.CLAUDE_MAX_TOKENS !== undefined)
+    overrides.CLAUDE_MAX_TOKENS = String(env.CLAUDE_MAX_TOKENS);
+  if (env.CLAUDE_TEMPERATURE !== undefined)
+    overrides.CLAUDE_TEMPERATURE = String(env.CLAUDE_TEMPERATURE);
   return overrides;
 }
 
 export function createClaudeClient(env?: Partial<ClaudeEnv>): ClaudeClient {
   const resolvedEnv = getClaudeEnv(toEnvOverrides(env));
-  const anthropic = new Anthropic({ apiKey: resolvedEnv.ANTHROPIC_API_KEY });
-  const provider = new ClaudeProvider(anthropic, resolvedEnv);
+  const provider = new ClaudeProvider(resolvedEnv);
 
   const defaultConfig: ModelConfig = {
     model: resolvedEnv.CLAUDE_MODEL,

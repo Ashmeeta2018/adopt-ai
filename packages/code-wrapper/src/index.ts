@@ -16,10 +16,17 @@ export {
   aggregateMetrics,
 } from './templates.js';
 
-import type { CodeBlock, Language, ResourceLimits, ValidationRule } from './types.js';
+import { Sandbox } from './sandbox.js';
 import { DEFAULT_RESOURCE_LIMITS } from './types.js';
 import { CodeValidator } from './validator.js';
-import { Sandbox } from './sandbox.js';
+
+import type {
+  CodeBlock,
+  ExecutionResult,
+  Language,
+  ResourceLimits,
+  ValidationRule,
+} from './types.js';
 
 export class CodeValidationError extends Error {
   public readonly errors: readonly string[];
@@ -54,18 +61,19 @@ export class ResourceLimitError extends Error {
 }
 
 export interface CodeRunner {
-  run(block: CodeBlock): Promise<import('./types.js').ExecutionResult>;
-  runBatch(blocks: CodeBlock[]): Promise<import('./types.js').ExecutionResult[]>;
-  validate(code: string, language: Language): { valid: boolean; errors: string[]; warnings: string[] };
+  run(block: CodeBlock): Promise<ExecutionResult>;
+  runBatch(blocks: CodeBlock[]): Promise<ExecutionResult[]>;
+  validate(
+    code: string,
+    language: Language,
+  ): { valid: boolean; errors: string[]; warnings: string[] };
   addValidationRule(rule: ValidationRule): void;
 }
 
-export function createCodeRunner(
-  config?: {
-    limits?: Partial<ResourceLimits>;
-    customRules?: ValidationRule[];
-  },
-): CodeRunner {
+export function createCodeRunner(config?: {
+  limits?: Partial<ResourceLimits>;
+  customRules?: ValidationRule[];
+}): CodeRunner {
   const limits: ResourceLimits = { ...DEFAULT_RESOURCE_LIMITS, ...config?.limits };
   const validator = new CodeValidator(config?.customRules);
   const sandbox = new Sandbox(limits);
@@ -91,7 +99,7 @@ export function createCodeRunner(
     },
 
     async runBatch(blocks: CodeBlock[]) {
-      const results: import('./types.js').ExecutionResult[] = [];
+      const results: ExecutionResult[] = [];
       for (const block of blocks) {
         const validation = validator.validate(block.code, block.language, limits);
         if (!validation.valid) {

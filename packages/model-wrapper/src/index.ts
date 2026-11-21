@@ -1,33 +1,34 @@
-import type { ChatMessage, CompletionResponse, ModelConfig, StreamChunk, TokenUsage } from './types;
-import { ModelError, RateLimitError } from './errors;
-import type { ModelProvider, ModelInfo } from './provider;
-import { CostTracker, assertWithinBudget } from './cost-tracker;
+import { type CostTracker, assertWithinBudget } from './cost-tracker';
+import { ModelError, RateLimitError } from './errors';
 
-export type { ModelProvider, ModelInfo } from './provider;
-export type {
-  CostConfig,
-  CostConfigSchema,
+import type { ModelProvider, ModelInfo } from './provider';
+import type {
+  ChatMessage,
   CompletionResponse,
-  CompletionResponseSchema,
-  ContentDeltaChunk,
   ModelConfig,
-  ModelConfigSchema,
-  ModelProvider as ModelProviderType,
-  ModelProviderSchema,
   StreamChunk,
   TokenUsage,
-  TokenUsageSchema,
+} from './types';
+
+export type { ModelProvider, ModelInfo } from './provider';
+export type {
+  CostConfig,
+  CompletionResponse,
+  ContentDeltaChunk,
+  ModelConfig,
+  ModelProvider as ModelProviderType,
+  ModelTool,
+  StreamChunk,
+  TokenUsage,
   ToolCall,
-  ToolCallSchema,
   ToolResult,
-  ToolResultSchema,
   ChatMessage,
   SystemMessage,
   UserMessage,
   AssistantMessage,
   ToolMessage,
   MessageRole,
-} from './types;
+} from './types';
 export {
   ModelProviderSchema,
   MessageRoleSchema,
@@ -35,15 +36,16 @@ export {
   ToolResultSchema,
   ChatMessageSchema,
   ModelConfigSchema,
+  ModelToolSchema,
   TokenUsageSchema,
   CostConfigSchema,
   CompletionResponseSchema,
   StreamChunkSchema,
-} from './types;
-export { ModelError, RateLimitError, TokenLimitError, BudgetExceededError } from './errors;
-export { CostTracker, assertWithinBudget } from './cost-tracker;
-export { estimateTokens, truncateToTokenLimit, countMessagesTokens } from './tokenizer;
-export { tool, toolkit, type ToolDefinition, type ToolExecutor } from './tool-def;
+} from './types';
+export { ModelError, RateLimitError, TokenLimitError, BudgetExceededError } from './errors';
+export { CostTracker, assertWithinBudget } from './cost-tracker';
+export { estimateTokens, truncateToTokenLimit, countMessagesTokens } from './tokenizer';
+export { tool, toolkit, type ToolDefinition, type ToolExecutor } from './tool-def';
 
 export interface ProviderConfig {
   provider: ModelProvider;
@@ -66,7 +68,13 @@ function isRetryable(error: unknown): boolean {
   if (error instanceof RateLimitError) return true;
   if (error instanceof ModelError) {
     const message = error.message.toLowerCase();
-    return message.includes('rate limit') || message.includes('server error') || message.includes('503') || message.includes('500') || message.includes('overloaded');
+    return (
+      message.includes('rate limit') ||
+      message.includes('server error') ||
+      message.includes('503') ||
+      message.includes('500') ||
+      message.includes('overloaded')
+    );
   }
   return false;
 }
@@ -107,9 +115,7 @@ export function createModelClient(config: ProviderConfig): ModelClient {
         assertWithinBudget(costTracker);
       }
 
-      const response = await withRetry(
-        () => provider.complete(messages, modelConfig),
-      );
+      const response = await withRetry(() => provider.complete(messages, modelConfig));
 
       if (costTracker && modelConfig.model) {
         costTracker.recordUsage(modelConfig.model, response.usage);
@@ -118,7 +124,7 @@ export function createModelClient(config: ProviderConfig): ModelClient {
       return response;
     },
 
-    async stream(messages: ChatMessage[], modelConfig: ModelConfig): AsyncIterable<StreamChunk> {
+    stream(messages: ChatMessage[], modelConfig: ModelConfig): AsyncIterable<StreamChunk> {
       if (costTracker) {
         assertWithinBudget(costTracker);
       }
@@ -141,16 +147,19 @@ export function createModelClient(config: ProviderConfig): ModelClient {
       })();
     },
 
-    async streamAndCollect(messages: ChatMessage[], modelConfig: ModelConfig): Promise<CompletionResponse> {
+    async streamAndCollect(
+      messages: ChatMessage[],
+      modelConfig: ModelConfig,
+    ): Promise<CompletionResponse> {
       if (costTracker) {
         assertWithinBudget(costTracker);
       }
 
-      const innerStream = await provider.stream(messages, modelConfig);
+      const innerStream = provider.stream(messages, modelConfig);
 
       let lastUsage: TokenUsage | null = null;
       let content = '';
-      const toolCalls: Array<{ id: string; name: string; arguments: Record<string, unknown> }> = [];
+      const toolCalls: { id: string; name: string; arguments: Record<string, unknown> }[] = [];
       let finalResponse: CompletionResponse | null = null;
 
       for await (const chunk of innerStream) {

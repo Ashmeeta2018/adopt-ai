@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { emailSchema } from './common';
 
-export const engagementTier = z.enum(['spark', 'lift', 'scale', 'not-sure']);
+export const engagementTier = z.enum(['spark', 'lift', 'scale', 'local-business', 'not-sure']);
 
 export const contactSubmitInput = z.object({
   name: z.string().trim().min(2, 'Tell us your name').max(80),

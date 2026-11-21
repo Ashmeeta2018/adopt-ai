@@ -1,13 +1,9 @@
-import { z } from 'zod';
-import type {
-  WorkflowDefinition,
-  WorkflowExecution,
-  NodeExecution,
-  NodeExecutor,
-  ExecutionContext,
-} from './types';
-import { ExecutionStatus } from './types';
+import { type z } from 'zod';
+
 import { validateDAG, getExecutionBatches } from './dag';
+import { type ExecutionStatus, ExecutionContext } from './types';
+
+import type { WorkflowDefinition, WorkflowExecution, NodeExecution, NodeExecutor } from './types';
 
 type EngineState = 'idle' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
 
@@ -108,15 +104,7 @@ export class WorkflowEngine {
         }
 
         const settled = await Promise.allSettled(
-          batch.map((nodeId) =>
-            this.executeNode(
-              nodeId,
-              input,
-              executor,
-              context,
-              nodeExecutions,
-            ),
-          ),
+          batch.map((nodeId) => this.executeNode(nodeId, input, executor, context, nodeExecutions)),
         );
 
         for (const result of settled) {
@@ -190,8 +178,7 @@ export class WorkflowEngine {
     try {
       const output = await executor(node, nodeInput, context);
       const completedAt = new Date().toISOString();
-      const durationMs =
-        new Date(completedAt).getTime() - new Date(execution.startedAt).getTime();
+      const durationMs = new Date(completedAt).getTime() - new Date(execution.startedAt).getTime();
 
       execution.status = 'success';
       execution.output = output;
@@ -201,8 +188,7 @@ export class WorkflowEngine {
       context.setNodeOutput(nodeId, output);
     } catch (err) {
       const completedAt = new Date().toISOString();
-      const durationMs =
-        new Date(completedAt).getTime() - new Date(execution.startedAt).getTime();
+      const durationMs = new Date(completedAt).getTime() - new Date(execution.startedAt).getTime();
 
       execution.status = 'failed';
       execution.error = err instanceof Error ? err.message : String(err);
@@ -245,10 +231,7 @@ export class WorkflowEngine {
     return predecessorOutputs;
   }
 
-  private skipDescendants(
-    failedNodeId: string,
-    nodeExecutions: Map<string, NodeExecution>,
-  ): void {
+  private skipDescendants(failedNodeId: string, nodeExecutions: Map<string, NodeExecution>): void {
     const visited = new Set<string>();
     const stack: string[] = [];
 
@@ -265,7 +248,7 @@ export class WorkflowEngine {
       visited.add(current);
 
       const exec = nodeExecutions.get(current);
-      if (exec && exec.status === 'pending') {
+      if (exec?.status === 'pending') {
         exec.status = 'skipped';
         exec.completedAt = new Date().toISOString();
       }

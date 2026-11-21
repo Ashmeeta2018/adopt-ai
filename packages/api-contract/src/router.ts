@@ -1,23 +1,34 @@
 /**
- * Router *types* live here. The runtime implementation lives in apps/web/lib/trpc/router.ts.
+ * Contract router — type-level twin of the runtime router in apps/web/lib/trpc/router.ts.
  *
  * Why split: this package is imported by apps/mobile (no server dependencies). The router
  * implementation would pull Prisma, Auth.js, Pino — none of which belong in a mobile binary.
  *
- * The implementation file imports these types and asserts compatibility.
+ * This is a *real* tRPC router so `createTRPCReact<AppRouter>` gets full inference on
+ * stable tRPC v11 (hand-written contract interfaces no longer decorate). Every resolver
+ * throws — the runtime implementation lives in apps/web, and mobile only ever does
+ * `import type { AppRouter }`, which is erased at compile time.
+ *
+ * Rules for adding entries here:
+ *   - Mirror the procedure kind (query/mutation/subscription) of the web implementation.
+ *   - Input and output schemas come from packages/api-contract/src/schemas/*.
+ *   - `.output()` is mandatory — it is what gives the client its return types.
  */
 
-import type { z } from 'zod';
+import { initTRPC } from '@trpc/server';
+import superjson from 'superjson';
 
-import type {
+import {
   // portal
   agentDetailInput,
   agentDetailOutput,
   dashboardOutput,
-  feedEvent,
+  type feedEvent,
   listAlertsInput,
   listAlertsOutput,
   markAlertReadInput,
+  markAlertReadOutput,
+  settingsOutput,
   weeklyReportInput,
   weeklyReportOutput,
   // auth
@@ -36,115 +47,95 @@ import type {
   workflowGetOutput,
   paginatedExecutionsOutput,
 } from './schemas';
-import type { contactSubmitInput, contactSubmitOutput } from './schemas/marketing';
-import type { streamFeedInput } from './schemas/portal';
+import { contactSubmitInput, contactSubmitOutput } from './schemas/marketing';
+import { streamFeedInput } from './schemas/portal';
 
-/**
- * Shape of the AppRouter.
- *
- * Mobile derives its tRPC client types from this interface — it never imports
- * the runtime implementation in apps/web/lib/trpc/router.ts.
- *
- * Rules for adding entries here:
- *   - Input types come from a named `*Input` export in packages/api-contract/src/schemas/*.
- *   - Output types come from a named `*Output` or `*Item` export in the same location.
- *   - `void` is used for procedures that take no input.
- *   - `null` is included in output unions when the procedure can return nothing
- *     (e.g. `agentsRouter.get` returns null when the agent is not found).
- */
-export interface AppRouterContract {
-  // ── Marketing ──────────────────────────────────────────────
-  marketing: {
-    contact: {
-      submit: {
-        input: z.infer<typeof contactSubmitInput>;
-        output: z.infer<typeof contactSubmitOutput>;
-      };
-    };
-  };
+import type { z } from 'zod';
 
-  // ── Auth ───────────────────────────────────────────────────
-  auth: {
-    requestMagicLink: {
-      input: z.infer<typeof requestMagicLinkInput>;
-      output: z.infer<typeof requestMagicLinkOutput>;
-    };
-  };
+const t = initTRPC.create({ transformer: superjson });
 
-  // ── Portal (dashboard, agent detail, weekly report, alerts) ─
-  portal: {
-    getDashboard: {
-      input: void;
-      output: z.infer<typeof dashboardOutput>;
-    };
-    getAgent: {
-      input: z.infer<typeof agentDetailInput>;
-      output: z.infer<typeof agentDetailOutput>;
-    };
-    streamFeed: {
-      input: z.infer<typeof streamFeedInput>;
-      output: AsyncIterable<z.infer<typeof feedEvent>>;
-    };
-    getWeeklyReport: {
-      input: z.infer<typeof weeklyReportInput>;
-      output: z.infer<typeof weeklyReportOutput>;
-    };
-    listAlerts: {
-      input: z.infer<typeof listAlertsInput>;
-      output: z.infer<typeof listAlertsOutput>;
-    };
-    markAlertRead: {
-      input: z.infer<typeof markAlertReadInput>;
-      output: { ok: true };
-    };
-  };
-
-  // ── Agents ─────────────────────────────────────────────────
-  agents: {
-    /** List all non-deleted agents for the caller's organisation. */
-    list: {
-      input: void;
-      output: z.infer<typeof agentListItem>[];
-    };
-    /** Get a single agent by ID (includes last 10 runs + workflow graph). */
-    get: {
-      input: z.infer<typeof agentIdInput>;
-      output: z.infer<typeof agentGetOutput> | null;
-    };
-    /** Cursor-paginated run history for a single agent (50/page). */
-    runs: {
-      input: z.infer<typeof agentRunsInput>;
-      output: z.infer<typeof paginatedRunsOutput>;
-    };
-    /** Pause or resume an agent — requires OWNER or ADMIN role. */
-    togglePause: {
-      input: z.infer<typeof togglePauseInput>;
-      output: z.infer<typeof agentListItem>;
-    };
-  };
-
-  // ── Workflows ──────────────────────────────────────────────
-  workflows: {
-    /** List all non-deleted workflows for the caller's organisation. */
-    list: {
-      input: void;
-      output: z.infer<typeof workflowListItem>[];
-    };
-    /** Get a single workflow by ID (includes agents + last 10 executions). */
-    get: {
-      input: z.infer<typeof workflowIdInput>;
-      output: z.infer<typeof workflowGetOutput> | null;
-    };
-    /** Cursor-paginated execution history for a single workflow (50/page). */
-    executions: {
-      input: z.infer<typeof workflowExecutionsInput>;
-      output: z.infer<typeof paginatedExecutionsOutput>;
-    };
-  };
+function contractOnly(): never {
+  throw new Error(
+    'Contract-only router — the runtime implementation lives in apps/web/lib/trpc/router.ts.',
+  );
 }
 
+export const appRouterContract = t.router({
+  // ── Marketing ──────────────────────────────────────────────
+  marketing: t.router({
+    contact: t.router({
+      submit: t.procedure
+        .input(contactSubmitInput)
+        .output(contactSubmitOutput)
+        .mutation(contractOnly),
+    }),
+  }),
+
+  // ── Auth ───────────────────────────────────────────────────
+  auth: t.router({
+    requestMagicLink: t.procedure
+      .input(requestMagicLinkInput)
+      .output(requestMagicLinkOutput)
+      .mutation(contractOnly),
+  }),
+
+  // ── Portal (dashboard, agent detail, weekly report, alerts) ─
+  portal: t.router({
+    getDashboard: t.procedure.output(dashboardOutput).query(contractOnly),
+    getAgent: t.procedure.input(agentDetailInput).output(agentDetailOutput).query(contractOnly),
+    streamFeed: t.procedure.input(streamFeedInput).subscription(
+      // Contract stub — throws before yielding or awaiting anything.
+      // eslint-disable-next-line require-yield, @typescript-eslint/require-await
+      async function* (): AsyncGenerator<z.infer<typeof feedEvent>> {
+        contractOnly();
+      },
+    ),
+    getWeeklyReport: t.procedure
+      .input(weeklyReportInput)
+      .output(weeklyReportOutput)
+      .query(contractOnly),
+    listAlerts: t.procedure.input(listAlertsInput).output(listAlertsOutput).query(contractOnly),
+    markAlertRead: t.procedure
+      .input(markAlertReadInput)
+      .output(markAlertReadOutput)
+      .mutation(contractOnly),
+    getSettings: t.procedure.output(settingsOutput).query(contractOnly),
+  }),
+
+  // ── Agents ─────────────────────────────────────────────────
+  agents: t.router({
+    /** List all non-deleted agents for the caller's organisation. */
+    list: t.procedure.output(agentListItem.array()).query(contractOnly),
+    /** Get a single agent by ID (includes last 10 runs + workflow graph). */
+    get: t.procedure.input(agentIdInput).output(agentGetOutput.nullable()).query(contractOnly),
+    /** Cursor-paginated run history for a single agent (50/page). */
+    runs: t.procedure.input(agentRunsInput).output(paginatedRunsOutput).query(contractOnly),
+    /** Pause or resume an agent — requires OWNER or ADMIN role. */
+    togglePause: t.procedure.input(togglePauseInput).output(agentListItem).mutation(contractOnly),
+  }),
+
+  // ── Workflows ──────────────────────────────────────────────
+  workflows: t.router({
+    /** List all non-deleted workflows for the caller's organisation. */
+    list: t.procedure.output(workflowListItem.array()).query(contractOnly),
+    /** Get a single workflow by ID (includes agents + last 10 executions). */
+    get: t.procedure
+      .input(workflowIdInput)
+      .output(workflowGetOutput.nullable())
+      .query(contractOnly),
+    /** Cursor-paginated execution history for a single workflow (50/page). */
+    executions: t.procedure
+      .input(workflowExecutionsInput)
+      .output(paginatedExecutionsOutput)
+      .query(contractOnly),
+  }),
+});
+
 /**
- * Web side imports AppRouter from apps/web/lib/trpc/router.ts.
- * Mobile imports this type to type the tRPC client.
+ * Web side implements this contract in apps/web/lib/trpc/router.ts.
+ * Mobile imports this type (type-only — erased at compile time) to type its client.
  */
-export type AppRouter = AppRouterContract;
+export type AppRouter = typeof appRouterContract;
+
+/** @deprecated superseded by the real router type above; kept for existing imports. */
+export type AppRouterContract = AppRouter;

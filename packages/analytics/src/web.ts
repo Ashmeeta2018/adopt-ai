@@ -1,7 +1,6 @@
-import type { ReactNode } from 'react';
-
 import type { AnalyticsEnv } from './env';
 import type { AnalyticsEvent, ErrorContext } from './types';
+import type { ReactNode } from 'react';
 
 interface SentryBrowserSdk {
   captureException: (err: Error) => string;

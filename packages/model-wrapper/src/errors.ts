@@ -1,7 +1,7 @@
 export class ModelError extends Error {
   public readonly provider: string;
   public readonly model: string;
-  public readonly cause: unknown;
+  public override readonly cause: unknown;
 
   constructor(provider: string, model: string, message: string, cause?: unknown) {
     super(message);

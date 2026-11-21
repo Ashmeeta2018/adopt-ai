@@ -1,16 +1,17 @@
 import { makeRedirectUri, useAuthRequest, useAutoDiscovery } from 'expo-auth-session';
+import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 import { useCallback, useEffect } from 'react';
 import { create } from 'zustand';
 
-import Constants from 'expo-constants';
-
 const SESSION_KEY = 'adopt-auth-session';
 
-const extra = Constants.expoConfig?.extra as {
-  oktaIssuer?: string;
-  oktaClientId?: string;
-} | undefined;
+const extra = Constants.expoConfig?.extra as
+  | {
+      oktaIssuer?: string;
+      oktaClientId?: string;
+    }
+  | undefined;
 
 const oktaIssuer = extra?.oktaIssuer ?? '';
 const oktaClientId = extra?.oktaClientId ?? '';

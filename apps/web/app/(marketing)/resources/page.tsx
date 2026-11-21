@@ -1,4 +1,5 @@
 import { EmberText, Eyebrow, SiteFooter, SiteNav } from '@adopt-ai/ui-web';
+
 import type { Metadata } from 'next';
 
 import { ResourceCard } from '@/components/resources/ResourceCard';
@@ -23,11 +24,10 @@ export default function ResourcesPage() {
         <div className="mx-auto max-w-[1280px]">
           <Eyebrow className="mb-4">Resources · The playbook library</Eyebrow>
           <h1
-            className="max-w-[1100px] font-display"
+            className="font-display max-w-[1100px]"
             style={{ fontSize: 80, letterSpacing: '-0.04em', lineHeight: 1 }}
           >
-            Field notes on shipping{' '}
-            <EmberText>production-grade agents</EmberText>.
+            Field notes on shipping <EmberText>production-grade agents</EmberText>.
           </h1>
         </div>
       </section>
@@ -45,7 +45,7 @@ export default function ResourcesPage() {
       </section>
 
       {/* Full library grid */}
-      <section className="border-t border-hairline px-14 py-20">
+      <section className="border-hairline border-t px-14 py-20">
         <div className="mx-auto max-w-[1280px]">
           <div className="mb-8 flex items-baseline justify-between">
             <Eyebrow>Library · {grid.length} entries</Eyebrow>

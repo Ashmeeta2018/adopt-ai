@@ -1,9 +1,7 @@
 import type { AnalyticsEnv } from './env';
 import type { AnalyticsEvent, ErrorContext, PerformanceMetric } from './types';
 
-interface SentryCapture {
-  (err: Error): string;
-}
+type SentryCapture = (err: Error) => string;
 
 interface SentryScope {
   setTag(key: string, value: string): void;
@@ -20,8 +18,15 @@ interface SentrySdk {
 let serverSdk: SentrySdk | null = null;
 
 const PII_FIELDS = [
-  'email', 'password', 'token', 'ip_address', 'phone', 'name',
-  'authorization', 'cookie', 'session',
+  'email',
+  'password',
+  'token',
+  'ip_address',
+  'phone',
+  'name',
+  'authorization',
+  'cookie',
+  'session',
 ] as const;
 
 function stripPiiFromObject(obj: Record<string, unknown>): Record<string, unknown> {
@@ -50,7 +55,7 @@ export async function initServerAnalytics(env: AnalyticsEnv): Promise<void> {
       environment: env.SENTRY_ENVIRONMENT,
       tracesSampleRate: env.SENTRY_TRACES_SAMPLE_RATE,
       beforeSend(event) {
-        return stripPiiFromObject(event) as typeof event;
+        return stripPiiFromObject(event);
       },
     });
     serverSdk = sentryModule;
@@ -108,12 +113,10 @@ export function trackPerformance(metric: PerformanceMetric): void {
   });
 }
 
-export function serverAnalyticsMiddleware(
-  handler: (req: unknown, res: unknown) => unknown | Promise<unknown>,
-) {
-  return async (req: unknown, res: unknown): Promise<unknown> => {
-    if (!serverSdk) return handler(req, res);
+export function serverAnalyticsMiddleware(handler: (req: unknown, res: unknown) => unknown) {
+  return (req: unknown, res: unknown): Promise<unknown> => {
+    if (!serverSdk) return Promise.resolve(handler(req, res));
 
-    return serverSdk.withScope(() => handler(req, res));
+    return Promise.resolve(serverSdk.withScope(() => handler(req, res)));
   };
 }

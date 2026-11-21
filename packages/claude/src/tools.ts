@@ -1,11 +1,6 @@
+import type { ClaudeProvider } from './provider';
 import type { ToolDefinition } from '@adopt-ai/model-wrapper/tool-def';
-import type {
-  ChatMessage,
-  CompletionResponse,
-  ModelConfig,
-  ToolCall,
-} from '@adopt-ai/model-wrapper/types';
-import type { ClaudeProvider } from './provider;
+import type { ChatMessage, CompletionResponse, ModelConfig } from '@adopt-ai/model-wrapper/types';
 
 export interface ClaudeTool {
   name: string;
@@ -91,12 +86,17 @@ export async function toolUseLoop(options: ToolUseLoopOptions): Promise<ToolUseL
   let toolCallCount = 0;
 
   const baseConfig: ModelConfig = {
-    model: options.config.model ?? 'claude-sonnet-4-6-20250514',
+    model: options.config.model ?? 'anthropic/claude-sonnet-5',
     maxTokens: options.config.maxTokens ?? 4096,
-    temperature: options.config.temperature ?? 0,
+    temperature: options.config.temperature,
     topP: options.config.topP,
     stopSequences: options.config.stopSequences,
     systemPrompt: options.config.systemPrompt,
+    tools: tools.map((t) => ({
+      name: t.name,
+      description: t.description,
+      inputSchema: t.input_schema,
+    })),
   };
 
   for (let turn = 0; turn < maxTurns; turn++) {

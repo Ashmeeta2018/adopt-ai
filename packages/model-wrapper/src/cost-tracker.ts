@@ -1,5 +1,6 @@
-import type { CostConfig, TokenUsage } from './types;
-import { BudgetExceededError } from './errors;
+import { BudgetExceededError } from './errors';
+
+import type { CostConfig, TokenUsage } from './types';
 
 interface UsageRecord {
   timestamp: number;
@@ -14,7 +15,7 @@ type EventCallback = (record: UsageRecord) => void;
 export class CostTracker {
   private readonly pricing: Map<string, CostConfig>;
   private readonly history: UsageRecord[] = [];
-  private readonly listeners: Map<EventName, Set<EventCallback>> = new Map();
+  private readonly listeners = new Map<EventName, Set<EventCallback>>();
   private budgetLimit: number | null = null;
 
   constructor(pricing: Record<string, CostConfig>) {
@@ -51,7 +52,7 @@ export class CostTracker {
     return breakdown;
   }
 
-  getUsageHistory(): ReadonlyArray<Readonly<UsageRecord>> {
+  getUsageHistory(): readonly Readonly<UsageRecord>[] {
     return this.history;
   }
 
@@ -76,7 +77,7 @@ export class CostTracker {
   on(event: 'usage' | 'budget-exceeded', callback: EventCallback): () => void {
     const listeners = this.listeners.get(event);
     if (!listeners) {
-      return () => {};
+      return () => undefined;
     }
     listeners.add(callback);
     return () => {

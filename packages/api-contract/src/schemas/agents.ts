@@ -54,20 +54,14 @@ export type WorkflowTriggerEnum = z.infer<typeof workflowTriggerEnum>;
 // inspect the graph.  When the router returns these as-is from
 // Prisma we keep them `z.unknown()` to avoid a deep re-parse.
 
-export const workflowNodeKind = z.enum([
-  'trigger',
-  'agent',
-  'condition',
-  'transform',
-  'output',
-]);
+export const workflowNodeKind = z.enum(['trigger', 'agent', 'condition', 'transform', 'output']);
 export type WorkflowNodeKind = z.infer<typeof workflowNodeKind>;
 
 export const workflowNode = z.object({
   id: z.string(),
   kind: workflowNodeKind,
   label: z.string(),
-  config: z.record(z.unknown()),
+  config: z.record(z.string(), z.unknown()),
   position: z.object({ x: z.number(), y: z.number() }),
 });
 export type WorkflowNode = z.infer<typeof workflowNode>;
@@ -180,18 +174,14 @@ export type PaginatedRunsOutput = z.infer<typeof paginatedRunsOutput>;
  * Extends `agentListItem` without `_count`, adds the last 10 runs and
  * the full workflow graph (nodes/edges remain opaque `z.unknown()`).
  */
-export const agentGetOutput = agentListItem
-  .omit({ _count: true })
-  .extend({
-    systemPrompt: z.string().nullable(),
-    modelConfig: z.unknown(),
-    scheduleJson: z.unknown(),
-    toolsJson: z.unknown(),
-    workflow: workflowRef
-      .extend({ nodesJson: z.unknown(), edgesJson: z.unknown() })
-      .nullable(),
-    runs: agentRunItem.array(),
-  });
+export const agentGetOutput = agentListItem.omit({ _count: true }).extend({
+  systemPrompt: z.string().nullable(),
+  modelConfig: z.unknown(),
+  scheduleJson: z.unknown(),
+  toolsJson: z.unknown(),
+  workflow: workflowRef.extend({ nodesJson: z.unknown(), edgesJson: z.unknown() }).nullable(),
+  runs: agentRunItem.array(),
+});
 export type AgentGetOutput = z.infer<typeof agentGetOutput>;
 
 // ── Output schemas — workflows ────────────────────────────────
@@ -248,16 +238,12 @@ export type PaginatedExecutionsOutput = z.infer<typeof paginatedExecutionsOutput
  * schemas rather than `z.unknown()` — this is the only endpoint where
  * a client legitimately needs to parse the graph.
  */
-export const workflowGetOutput = workflowListItem
-  .omit({ _count: true })
-  .extend({
-    inputSchema: z.unknown(),
-    outputSchema: z.unknown(),
-    nodesJson: workflowNode.array(), // refined from z.unknown()
-    edgesJson: workflowEdge.array(), // refined from z.unknown()
-    agents: z
-      .object({ id: idSchema, name: z.string(), status: agentStatusEnum })
-      .array(),
-    executions: workflowExecutionItem.array(),
-  });
+export const workflowGetOutput = workflowListItem.omit({ _count: true }).extend({
+  inputSchema: z.unknown(),
+  outputSchema: z.unknown(),
+  nodesJson: workflowNode.array(), // refined from z.unknown()
+  edgesJson: workflowEdge.array(), // refined from z.unknown()
+  agents: z.object({ id: idSchema, name: z.string(), status: agentStatusEnum }).array(),
+  executions: workflowExecutionItem.array(),
+});
 export type WorkflowGetOutput = z.infer<typeof workflowGetOutput>;
